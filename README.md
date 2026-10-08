@@ -74,8 +74,9 @@ python tools/build_mobile_html.py \
   --out index.html
 ```
 
-根目录的 `index.html` 是构建产物，动了源码就得重跑这条命令再提交。CI 会拿源码重新构建一次逐字节比对，
-再核一遍 `checksums.sha256`，对不上直接红。只想体检不写文件就在后面加 `--check`。
+根目录的 `index.html` 是构建产物，动了源码就得重跑这条命令再提交。换过发布件（index.html 或桌面 exe）之后
+要再跑一次 `python tools/gen_checksums.py` 重算 `checksums.sha256`，否则 CI 的校验会红——它会拿源码重新构建一次
+逐字节比对，再核一遍校验值。只想体检不写文件就在打包命令后面加 `--check`。
 
 ## 说明
 
