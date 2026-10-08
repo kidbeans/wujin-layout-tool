@@ -12,7 +12,7 @@ import os
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILES = ['WujinLayoutTool-v4.0.7-portable.exe', 'WujinLayoutTool-v4.0.7-setup.exe', 'index.html']
+FILES = ['WujinLayoutTool-v4.0.8-portable.exe', 'WujinLayoutTool-v4.0.8-setup.exe', 'index.html']
 OUT = os.path.join(ROOT, 'checksums.sha256')
 
 

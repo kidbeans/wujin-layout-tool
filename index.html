@@ -27052,7 +27052,7 @@ var V3Agent = {
       V3Bridge.appInfo().then(function (info){
         if (info && info.wsRoot){ self.st.wsRoot = info.wsRoot; self.save(); self.renderSettings(); }
         var about = self.el('v3setAbout');
-        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.0.7') + '）· Tauri 2 桌面壳 · '
+        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.0.8') + '）· Tauri 2 桌面壳 · '
           + '技能库：resource/agent_skill/（用户可在 %APPDATA%/com.mpz.wujinbz.v3beta/agent_ws 同级自建技能目录参考）；'
           + '数据存本机 WebView localStorage（不随程序传播）。';
       });
