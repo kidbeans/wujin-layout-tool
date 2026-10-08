@@ -13,6 +13,7 @@ PvZ2 无尽用的布阵工具：9×5 画布摆阵（主植物、融合、藤蔓�
   系统要求 Windows 10/11 x64，依赖系统自带的 WebView2（一般都有）；不用装 Python 和 Node。
 
 文件校验值都写在 `checksums.sha256` 里。
+以后发新版就放 [Releases](https://github.com/kidbeans/wujin-layout-tool/releases)，4.0.7 这版已经在那儿了。
 
 ## 手机上怎么用
 
