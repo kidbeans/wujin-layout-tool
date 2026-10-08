@@ -1,0 +1,277 @@
+/* ================= MAA 风格皮肤（body.maa 深色海军蓝 + 左侧图标导航） =================
+ * 原则：变量级回深（吃掉全部 var() 引用点）+ 镜像 style_v2.css 的浅色选择器逐条覆盖。
+ * 本文件置于构建序最后：同特异性下后写必胜。浅色主题仍在（去 body.maa 即回）。
+ * 布局（两主题统一）：左侧 60px 图标导航常驻，app-container 右移；v2bar 隐藏（功能由侧栏代理）。
+ */
+
+body.maa {
+    --bg-main: #0f1421;
+    --bg-card: #1a2233;
+    --bg-card-hover: #202a42;
+    --border-color: rgba(255, 255, 255, 0.09);
+    --border-highlight: rgba(77, 163, 255, 0.55);
+
+    --accent-blue: #4da3ff;
+    --accent-indigo: #6d7cff;
+    --text-main: #e6edf7;
+    --text-sub: #93a1bf;
+    --text-muted: #5f6d8c;
+
+    --c-base: #fbbf24;
+    --bg-base: rgba(245, 158, 11, 0.16);
+    --c-vine: #34d399;
+    --bg-vine: rgba(16, 185, 129, 0.16);
+    --c-merge: #c084fc;
+    --bg-merge: rgba(168, 85, 247, 0.16);
+    --c-tool: #22d3ee;
+    --bg-tool: rgba(6, 182, 212, 0.16);
+
+    --lawn-light: #183324;
+    --lawn-dark: #12281c;
+    --lawn-border: rgba(46, 117, 72, 0.5);
+    --lawn-hover: #234c35;
+
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* ---------- 侧边导航（两主题统一布局：常驻显示，仅配色随主题切换） ---------- */
+#v2side {
+    display: flex; flex-direction: column; align-items: stretch;
+    position: fixed; left: 0; top: 0; bottom: 0; width: 60px; z-index: 950;
+    background: #f4f7fc; border-right: 1px solid #d8e0ea;
+    padding: 8px 6px; gap: 2px; overflow-y: auto;
+}
+body.maa #v2side { background: #131a2c; border-right-color: rgba(255, 255, 255, 0.08); }
+#v2side .vs-logo { text-align: center; font-size: 20px; padding: 4px 0 8px; }
+#v2side .vss { height: 1px; background: #d3deec; margin: 4px 8px; }
+body.maa #v2side .vss { background: rgba(255, 255, 255, 0.1); }
+#v2side .vsi {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    background: transparent; border: none; border-radius: 10px; padding: 6px 0 4px;
+    color: var(--text-sub); cursor: pointer; font-size: 17px; line-height: 1.1;
+    box-shadow: none; position: relative;
+}
+#v2side .vsi i { font-style: normal; font-size: 10px; letter-spacing: 0; }
+#v2side .vsi:hover { background: rgba(2, 132, 199, 0.1); color: var(--text-main); }
+#v2side .vsi.active { background: rgba(2, 132, 199, 0.14); color: #0369a1; font-weight: 600; }
+body.maa #v2side .vsi:hover { background: rgba(77, 163, 255, 0.14); }
+body.maa #v2side .vsi.active { background: rgba(77, 163, 255, 0.2); color: #cfe6ff; }
+#v2side .vsi.active::before {
+    content: ''; position: absolute; left: -6px; top: 8px; bottom: 8px; width: 3px;
+    border-radius: 2px; background: var(--accent-blue);
+}
+/* 布局统一：侧栏常驻 → 内容右移；v2bar 功能由侧栏全量代理，两主题不再有排版差异 */
+.app-container { margin-left: 64px; }
+#v2bar { display: none; }
+/* 原生壳（伪标题栏）下：侧栏下移让出 36px 标题栏 */
+body.native-shell #v2side { top: 36px; }
+/* 原生壳下垂直滚动收进 #v2scroll（95_maa.js 包住 .app-container）：
+   根滚动条会贯穿全窗高、顶到标题栏右端；这里滚动条贴窗口右缘、从标题栏下缘开始。
+   右/下各让 6px 给边缘缩放热区（.v2rz-e/s），最大化后热区隐藏即归零；
+   padding 接管 body 的原内边距（fixed 定位不吃 body padding）。 */
+body.native-shell.v2scrolled { overflow: hidden; }
+body.native-shell #v2scroll {
+    position: fixed; left: 0; top: 36px; right: 6px; bottom: 6px;
+    overflow-y: auto; overflow-x: hidden;
+    padding: 16px 20px 36px;
+    scrollbar-width: thin; scrollbar-color: rgba(15, 23, 42, 0.25) transparent;
+}
+body.native-shell #v2scroll::-webkit-scrollbar { width: 8px; }
+body.native-shell #v2scroll::-webkit-scrollbar-track { background: transparent; }
+body.native-shell #v2scroll::-webkit-scrollbar-thumb { background: rgba(15, 23, 42, 0.25); border-radius: 4px; }
+body.native-shell #v2scroll::-webkit-scrollbar-thumb:hover { background: rgba(15, 23, 42, 0.42); }
+body.maa #v2scroll { scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+body.maa #v2scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); }
+body.maa #v2scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+body.native-shell.maximized #v2scroll { right: 0; bottom: 0; }
+
+/* ---------- 伪标题栏（launch.py 无边框原生壳专用；浏览器模式不渲染） ---------- */
+#v2titlebar {
+    display: none; align-items: stretch; position: fixed; left: 0; top: 0; right: 0;
+    height: 36px; z-index: 990; user-select: none;
+    background: #f4f7fc; border-bottom: 1px solid #d8e0ea;
+}
+body.native-shell #v2titlebar { display: flex; }
+body.maa #v2titlebar { background: #131a2c; border-bottom-color: rgba(255, 255, 255, 0.08); }
+#v2tbDrag { flex: 1; display: flex; align-items: center; gap: 8px; padding: 0 12px; overflow: hidden; }
+#v2titlebar .v2tb-logo { font-size: 15px; line-height: 1; }
+#v2titlebar .v2tb-title { font-size: 12.5px; color: var(--text-sub); white-space: nowrap; }
+#v2titlebar button {
+    width: 46px; padding: 0; border: none; border-radius: 0;
+    background: transparent; color: var(--text-sub); font-size: 13px; box-shadow: none;
+}
+#v2titlebar button:hover { background: rgba(2, 132, 199, 0.14); color: var(--text-main); box-shadow: none; }
+body.maa #v2titlebar button:hover { background: rgba(77, 163, 255, 0.16); }
+#v2titlebar #v2tbClose:hover { background: #e81123; color: #fff; }
+/* 边缘缩放热区：mousedown → api.resize_edge(edge) → 系统原生缩放循环；最大化时隐藏 */
+.v2rz { display: none; position: fixed; z-index: 995; }
+body.native-shell .v2rz { display: block; }
+body.native-shell #v2rz-n { top: 0; left: 0; right: 0; height: 4px; cursor: n-resize; }
+body.native-shell #v2rz-s { bottom: 0; left: 0; right: 0; height: 6px; cursor: s-resize; }
+body.native-shell #v2rz-e { top: 0; bottom: 0; right: 0; width: 6px; cursor: e-resize; }
+body.native-shell #v2rz-w { top: 0; bottom: 0; left: 0; width: 5px; cursor: w-resize; }
+body.native-shell .v2rz-c { width: 12px; height: 12px; }
+body.native-shell #v2rz-ne { top: 0; right: 0; cursor: ne-resize; }
+body.native-shell #v2rz-nw { top: 0; left: 0; cursor: nw-resize; }
+body.native-shell #v2rz-se { bottom: 0; right: 0; cursor: se-resize; }
+body.native-shell #v2rz-sw { bottom: 0; left: 0; cursor: sw-resize; }
+body.native-shell.maximized .v2rz { display: none; }
+
+/* ---------- 全局底色 ---------- */
+body.maa {
+    background: linear-gradient(180deg, #0d1120 0%, #0f1421 100%);
+    color: var(--text-main);
+}
+body.maa .header-title-group h1 {
+    background: linear-gradient(90deg, #7dd3fc, #4da3ff, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+body.maa .subnote { color: var(--text-sub); }
+body.maa .subnote code { background: rgba(77, 163, 255, 0.12); color: #7dd3fc; }
+
+/* 说明折叠框 */
+body.maa details.intro { background: var(--bg-card); border-color: var(--border-color); color: #c7d2e8; }
+body.maa details.intro:hover { border-color: var(--border-highlight); }
+body.maa details.intro pre { background: #101728; border-color: rgba(255, 255, 255, 0.08); color: #b9c6dd; }
+
+/* ---------- 按钮与工具栏 ---------- */
+body.maa .toolbar { background: var(--bg-card); border-color: var(--border-color); }
+body.maa button {
+    background: #232c44; border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #dbe4f5; box-shadow: none;
+}
+body.maa button:hover {
+    background: #2b3757; border-color: rgba(77, 163, 255, 0.5);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+body.maa button.primary {
+    background: linear-gradient(135deg, #2f7bff, #1f5eff);
+    border-color: #1f5eff; color: #fff; font-weight: 600;
+}
+body.maa button.primary:hover { background: linear-gradient(135deg, #4d93ff, #2f7bff); box-shadow: 0 4px 12px rgba(47, 123, 255, 0.4); }
+body.maa button.on { background: linear-gradient(135deg, #059669, #10b981) !important; border-color: #10b981 !important; color: #fff !important; }
+
+/* 状态栏 / 卡片 / 标题 */
+body.maa .status { background: var(--bg-card); border-color: var(--border-color); border-left: 4px solid var(--accent-blue); color: var(--text-main); }
+body.maa .panel { background: var(--bg-card); border-color: var(--border-color); }
+body.maa .panel:hover { border-color: var(--border-highlight); }
+body.maa .ptitle { color: var(--text-main); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+body.maa .psub { color: var(--text-sub); }
+
+/* ---------- 植物库 ---------- */
+body.maa .palette-tabs { background: #101728; border: 1px solid rgba(255, 255, 255, 0.08); }
+body.maa .palette-tabs .tab { color: var(--text-sub); }
+body.maa .palette-tabs .tab:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.07); }
+body.maa .palette-tabs .tab.active { background: rgba(77, 163, 255, 0.18); color: #cfe6ff; box-shadow: none; }
+body.maa .psubgroup { background: #141b2e; border: 1px solid rgba(255, 255, 255, 0.06); }
+body.maa .chip { background: #1d2540; border: 1px solid rgba(255, 255, 255, 0.11); color: #dbe4f5; }
+body.maa .chip:hover { background: #26304e; border-color: rgba(77, 163, 255, 0.45); }
+body.maa .chip.sel { background: #2f7bff !important; border-color: #1f5eff !important; color: #fff !important; }
+body.maa .chip.v { background: var(--bg-vine); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+body.maa .chip.v.sel { background: #059669 !important; border-color: #10b981 !important; color: #fff !important; }
+body.maa .chip.m { background: var(--bg-merge); border-color: rgba(168, 85, 247, 0.4); color: #d8b4fe; }
+body.maa .chip.m.sel { background: #7c3aed !important; border-color: #8b5cf6 !important; color: #fff !important; }
+body.maa .chip.clear { background: rgba(239, 68, 68, 0.14); border-color: rgba(220, 38, 38, 0.45); color: #fca5a5; }
+body.maa .chip.clear.sel { background: #dc2626 !important; border-color: #dc2626 !important; color: #fff !important; }
+body.maa .chip.tilechip { background: rgba(168, 85, 247, 0.14); border-color: rgba(147, 51, 234, 0.45); color: #d8b4fe; }
+body.maa .chip.tilechip.sel { background: #7c3aed !important; border-color: #8b5cf6 !important; color: #fff !important; }
+body.maa .custom-add select, body.maa .custom-add input { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-main); }
+body.maa .hint { background: #141b2e; border-left: 3px solid rgba(77, 163, 255, 0.4); color: var(--text-sub); }
+
+/* ---------- 棋盘 ---------- */
+body.maa .ghead, body.maa .rlabel { color: var(--text-sub); background: #1a2233; }
+body.maa .ghead:hover, body.maa .rlabel:hover { background: #232c44; color: var(--text-main); }
+body.maa .cell { box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25); }
+body.maa .cell:hover { border-color: rgba(74, 222, 128, 0.6); box-shadow: inset 0 0 8px rgba(74, 222, 128, 0.14), 0 2px 8px rgba(0, 0, 0, 0.35); }
+body.maa .cell.has { border-color: rgba(77, 163, 255, 0.4); }
+body.maa .celltxt { color: #eef4ff; text-shadow: none; }
+body.maa .cell.has .celltxt {
+    background: none; border: none;
+    color: var(--txt-fill, #eef4ff);
+    -webkit-text-stroke: 3px rgba(7, 11, 22, 0.85); paint-order: stroke fill;
+}
+body.maa .cell.tile { box-shadow: inset 0 0 0 2px #a855f7, inset 0 0 10px rgba(168, 85, 247, 0.3); }
+body.maa .cell.tile::after { border: 1px dashed rgba(192, 132, 252, 0.55); }
+body.maa .cell.tile[data-rar] { box-shadow: inset 0 0 0 2px #c084fc, inset 0 0 12px rgba(168, 85, 247, 0.6) !important; }
+/* 头像层：深色草坪不需要白纱，改轻微暗纱提对比 */
+body.maa .cell .cellava { opacity: 0.92; }
+body.maa .cell .cellava::before { background: rgba(8, 14, 26, 0.14); }
+/* 特效文字：深底用亮色系 */
+body.maa .cell.eff-dian .celltxt { color: #7dd3fc; }
+body.maa .cell.eff-dian .fx-self::after { background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%); }
+body.maa .cell.eff-huo .celltxt { color: #fdba74; }
+body.maa .cell.eff-huo .fx-self::after { background: radial-gradient(ellipse at bottom, rgba(251, 146, 60, 0.26) 0%, rgba(249, 115, 22, 0.12) 50%, transparent 80%); }
+body.maa .cell.eff-bing .celltxt { color: #bfdbfe; }
+body.maa .cell.eff-bing .fx-self::after { background: radial-gradient(circle, rgba(147, 197, 253, 0.3) 0%, transparent 70%); }
+body.maa .cell.eff-du .celltxt, body.maa .cell.eff-vine .celltxt { color: #d8b4fe; }
+body.maa .cell.eff-du .fx-self::after, body.maa .cell.eff-vine .fx-self::after { background: radial-gradient(circle, rgba(192, 132, 252, 0.2) 0%, transparent 75%); }
+body.maa .cell.eff-yuan .celltxt { color: #fbbf24; }
+body.maa .cell.eff-yali .celltxt { color: #7dd3fc; }
+body.maa .cell.eff-yali .fx-self::after {
+    mix-blend-mode: normal;
+    background: linear-gradient(115deg, transparent 25%, rgba(56, 189, 248, 0.34) 42%, rgba(224, 242, 254, 0.85) 50%, rgba(56, 189, 248, 0.34) 58%, transparent 75%);
+}
+body.maa .cell.eff-pool .fx-pool {
+    --w-hi: rgba(255, 255, 255, 0.92);
+    --w-top: rgba(224, 247, 255, 0.8);
+    --w-body: rgba(56, 189, 248, 0.7);
+    --w-mid: rgba(56, 189, 248, 0.55);
+    --w-rim: rgba(2, 110, 180, 0.5);
+    --w-shadow: rgba(2, 110, 180, 0.3);
+    --w-wash: rgba(56, 189, 248, 0.16);
+}
+
+/* 控件与输入 */
+body.maa .size-ctl { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+body.maa .size-ctl input[type=number] { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-main); }
+body.maa .split-tabs .stab { background: #1d2540; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-sub); }
+body.maa .split-tabs .stab:hover { color: var(--text-main); background: #26304e; }
+body.maa .sbtoggle { background: #1d2540; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-sub); }
+body.maa .sbtoggle.on { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+body.maa .slot input, body.maa .ops-ctl input[type=number] { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-main); }
+body.maa .slot input:focus, body.maa textarea:focus { border-color: var(--accent-blue); box-shadow: 0 0 5px rgba(77, 163, 255, 0.35); }
+body.maa .grid-scroll { scrollbar-color: rgba(255, 255, 255, 0.22) transparent; }
+body.maa .grid-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.22); }
+
+/* 导出区 / 弹窗 */
+body.maa textarea { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: #c7d2e8; }
+body.maa dialog { background: #1a2233; border-color: var(--border-color); color: var(--text-main); box-shadow: var(--shadow-lg); }
+body.maa dialog::backdrop { background: rgba(5, 8, 16, 0.6); }
+body.maa #dlgTitle { color: var(--text-main); }
+
+/* ---------- v2 组件（抽屉/列表/表格） ---------- */
+body.maa .v2sep { background: rgba(255, 255, 255, 0.14); }
+body.maa .v2panel { background: #1a2233; color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.14); box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55); }
+body.maa .v2p-h { color: var(--text-main); }
+body.maa .v2close { color: var(--text-sub); }
+body.maa .v2close:hover { color: var(--text-main); }
+body.maa .v2row label { color: #c7d2e8; }
+body.maa .v2row input, body.maa .v2row select { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-main); }
+body.maa .v2grid2 label { color: #c7d2e8; }
+body.maa .v2muted { color: var(--text-muted); }
+body.maa .v2hint { color: var(--text-sub); background: #141b2e; border: 1px solid rgba(255, 255, 255, 0.07); }
+body.maa .v2report { border: 1px solid rgba(255, 255, 255, 0.12); background: #101728; color: #b9c6dd; }
+body.maa .v2card { border: 1px solid rgba(255, 255, 255, 0.09); background: #161d31; }
+body.maa .v2card-h { color: var(--text-main); }
+body.maa .v2filebtn { border: 1px solid rgba(255, 255, 255, 0.12); background: #232c44; color: #dbe4f5; }
+body.maa .v2filebtn:hover { background: #2b3757; }
+body.maa .v2orderlist { border: 1px dashed rgba(255, 255, 255, 0.16); background: #141b2e; }
+body.maa .ordrow { border-bottom: 1px solid rgba(255, 255, 255, 0.07); color: var(--text-main); }
+body.maa .ordchk { color: #c7d2e8; }
+body.maa .ordtxt { color: var(--text-sub); }
+body.maa .ordalt { color: var(--text-muted); }
+body.maa .ordmv { color: var(--text-sub); }
+body.maa .ordmv:hover { color: var(--text-main); }
+body.maa .ordslot, body.maa .ordcell, body.maa .ordpd { background: #101728; border: 1px solid rgba(255, 255, 255, 0.12); color: var(--text-main); }
+body.maa .v2simwrap { border: 1px dashed rgba(255, 255, 255, 0.16); background: #141b2e; }
+body.maa .v2table { color: var(--text-main); }
+body.maa .v2table th, body.maa .v2table td { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+body.maa .v2table th { background: #1d2540; color: #c7d2e8; }
+body.maa .rk-bossrow { background: rgba(220, 38, 38, 0.12); }
+body.maa #v2PlantSearch { border: 1px solid rgba(255, 255, 255, 0.16); background: #101728; color: var(--text-main); }
+body.maa .v2filelist { border: 1px solid rgba(255, 255, 255, 0.09); background: #141b2e; }
+body.maa .v2filelist label:hover { background: rgba(77, 163, 255, 0.14); }

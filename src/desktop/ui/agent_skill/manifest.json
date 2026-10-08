@@ -1,0 +1,109 @@
+{
+ "skills": [
+  {
+   "id": "formation-check",
+   "name": "formation-check",
+   "description": "对当前布阵（棋盘/卡槽/顺序/路由/Boss）做全面体检，按 P0/P1/P2 分级输出问题清单。",
+   "visible": true,
+   "order": 100,
+   "label": "🔍 AI 体检",
+   "defaults": {
+    "context": [
+     "formation",
+     "pipeline",
+     "order",
+     "route",
+     "boss",
+     "checks"
+    ]
+   }
+  },
+  {
+   "id": "order-review",
+   "name": "order-review",
+   "description": "按种植链 O1~O8 规则审查 deck1/deck2 遍历顺序，输出违规步与修正序列。",
+   "visible": true,
+   "order": 200,
+   "label": "🔢 顺序审查",
+   "defaults": {
+    "context": [
+     "formation",
+     "order"
+    ]
+   }
+  },
+  {
+   "id": "route-review",
+   "name": "route-review",
+   "description": "审查配队路由参数（尾数/阶段分流、front 段、farm 起始关）与 R1~R6 规则，输出修正参数。",
+   "visible": true,
+   "order": 300,
+   "label": "🧭 路由审查",
+   "defaults": {
+    "context": [
+     "route",
+     "order"
+    ]
+   }
+  },
+  {
+   "id": "boss-review",
+   "name": "boss-review",
+   "description": "按 B1~B6 规则审查 Boss 关 ops 链（叠种/喂豆/加速/能量花），输出修正 ops。",
+   "visible": true,
+   "order": 400,
+   "label": "👑 Boss 审查",
+   "defaults": {
+    "context": [
+     "boss",
+     "formation"
+    ]
+   }
+  },
+  {
+   "id": "formation-design",
+   "name": "formation-design",
+   "description": "根据用户要求设计或调整阵型，输出可导入文本与取舍理由。",
+   "visible": true,
+   "order": 500,
+   "label": "🎨 个性化设计",
+   "defaults": {
+    "context": [
+     "formation"
+    ]
+   }
+  },
+  {
+   "id": "free-chat",
+   "name": "free-chat",
+   "description": "自由对话：不限定工作流，按用户输入直接回应（布阵工具相关问题优先结合上下文）。",
+   "visible": true,
+   "order": 600,
+   "label": "💬 自由对话",
+   "defaults": {
+    "context": [
+     "formation",
+     "checks"
+    ]
+   }
+  },
+  {
+   "id": "charter",
+   "name": "charter",
+   "description": "任务宪章：所有任务的输出契约、视觉组织与证据规则，常驻生效。",
+   "visible": false,
+   "order": 900,
+   "label": "charter",
+   "defaults": {}
+  },
+  {
+   "id": "mpz-redlines",
+   "name": "mpz-redlines",
+   "description": "MPZ / MaaFramework pipeline 硬约束红线，作为一切评审的依据，常驻生效。",
+   "visible": false,
+   "order": 900,
+   "label": "mpz-redlines",
+   "defaults": {}
+  }
+ ]
+}

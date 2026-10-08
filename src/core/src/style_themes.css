@@ -1,0 +1,462 @@
+/* ================= 主题皮肤层（style_themes.css，构建序在 style_maa 之后） =================
+ * 架构参考 dsh-dream-skin：壁纸层 fixed + z-index:-1（弥散光），主画布/侧栏半透明，
+ * 渐变从底层透出来；浅色/深色 colorScheme 各自配套。
+ * 约定：body 无类 = 浅色（默认，无弥散层）；body.maa = 深色（无弥散层）；
+ * body.t-grad = 渐变主题（挂弥散光层 + 主画布透明化）；t-paper/t-brand/t-success/
+ * t-danger/t-diff = 浅色基底主题；t-glass/t-aurora/t-sunset = 深色渐变主题；
+ * t-custom = 自定义（强调色注入）。 */
+
+/* ---------- v3 外壳基础变量（2026-09-13 自 v3_chrome.css 迁入） ----------
+ * 必须位于各皮肤块之前：同特异性下后者胜，t-paper/t-success 等皮肤的
+ * --v3-accent/--v3-panel 等覆盖才能生效（原先被 v3_chrome.css 尾部加载压死，
+ * 浅色皮肤在 v3 外壳上从未生效——右坞主题化后暴露）。 */
+body.v3.maa {
+    --v3-bg: #0a0e16;
+    --v3-bg-grad: radial-gradient(1200px 500px at 70% -10%, rgba(77, 107, 254, 0.10), transparent 60%),
+                 radial-gradient(900px 420px at -10% 110%, rgba(56, 189, 248, 0.06), transparent 55%);
+    --v3-rail: #0c1018;
+    --v3-panel: #0d121d;
+    --v3-card: rgba(255, 255, 255, 0.045);
+    --v3-card-hi: rgba(255, 255, 255, 0.075);
+    --v3-border: rgba(255, 255, 255, 0.085);
+    --v3-accent: #4d6bfe;
+    --v3-accent-soft: rgba(77, 107, 254, 0.16);
+    --v3-ok: #34d399;
+    --v3-warn: #fbbf24;
+    --v3-err: #f87171;
+    --v3-text: #e8ecf4;
+    --v3-sub: #96a0b6;
+    --v3-muted: #616d88;
+    --v3-tb: rgba(12, 16, 24, 0.86);
+}
+
+body.v3:not(.maa) {
+    --v3-bg: #eef1f7;
+    --v3-bg-grad: radial-gradient(1200px 500px at 70% -10%, rgba(77, 107, 254, 0.07), transparent 60%);
+    --v3-rail: #e6eaf3;
+    --v3-panel: #f6f8fc;
+    --v3-card: rgba(255, 255, 255, 0.9);
+    --v3-card-hi: #ffffff;
+    --v3-border: #d9e0ec;
+    --v3-accent: #4d6bfe;
+    --v3-accent-soft: rgba(77, 107, 254, 0.12);
+    --v3-ok: #059669;
+    --v3-warn: #b45309;
+    --v3-err: #dc2626;
+    --v3-text: #16202f;
+    --v3-sub: #4c5a70;
+    --v3-muted: #8593a8;
+    --v3-tb: rgba(244, 246, 251, 0.92);
+}
+
+
+/* ---------- 浅色（默认） ---------- */
+:root {
+    --bg-main: #eef2f8;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5fb;
+    --border-color: #d9e0ec;
+    --border-highlight: rgba(37, 99, 235, 0.45);
+
+    --accent-blue: #2563eb;
+    --accent-indigo: #6366f1;
+    --text-main: #16202f;
+    --text-sub: #4c5a70;
+    --text-muted: #8593a8;
+
+    --c-base: #b45309;
+    --bg-base: rgba(245, 158, 11, 0.16);
+    --c-vine: #059669;
+    --bg-vine: rgba(16, 185, 129, 0.15);
+    --c-merge: #9333ea;
+    --bg-merge: rgba(168, 85, 247, 0.15);
+    --c-tool: #0e7490;
+    --bg-tool: rgba(6, 182, 212, 0.15);
+
+    --lawn-light: rgba(255, 255, 255, 0.62);
+    --lawn-dark: rgba(255, 255, 255, 0.30);
+    --lawn-border: rgba(15, 23, 42, 0.10);
+    --lawn-hover: rgba(255, 255, 255, 0.8);
+
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.10);
+    --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.10);
+    --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.14);
+}
+body {
+    background: #eef2f8;
+    color: #16202f;
+}
+
+/* ---------- 深色（maa）：经典纯色底，无弥散层 ---------- */
+body.maa {
+    background: radial-gradient(circle at 50% 0%, #16243b 0%, #0c121e 65%, #070a11 100%);
+    color: var(--text-main);
+}
+
+/* ---------- 弥散光壁纸层（dream-skin 式）：t-grad 主题挂载，缓慢漂移 ----------
+ * 每主题经 --blob1/2/3 与 --grad-base 提供色相；层固定视口、模糊、低频动画。 */
+body.t-grad { background: var(--grad-base, #0e1f2e); }
+body.t-grad::before {
+    content: '';
+    position: fixed;
+    inset: -22%;
+    z-index: -1;
+    pointer-events: none;
+    filter: blur(70px) saturate(1.25);
+    opacity: 0.85;
+    background:
+        radial-gradient(38% 42% at 18% 28%, var(--blob1, rgba(56, 189, 248, 0.55)), transparent 70%),
+        radial-gradient(34% 38% at 78% 22%, var(--blob2, rgba(129, 90, 245, 0.5)), transparent 70%),
+        radial-gradient(46% 46% at 55% 82%, var(--blob3, rgba(244, 114, 182, 0.4)), transparent 70%),
+        radial-gradient(30% 30% at 90% 70%, var(--blob1, rgba(56, 189, 248, 0.4)), transparent 70%);
+    animation: v2blobdrift 46s ease-in-out infinite alternate;
+}
+@keyframes v2blobdrift {
+    0%   { transform: translate(0, 0) scale(1) rotate(0deg); }
+    50%  { transform: translate(-3.5%, 2.5%) scale(1.1) rotate(4deg); }
+    100% { transform: translate(3%, -3%) scale(0.95) rotate(-4deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    body.t-grad::before { animation: none; }
+}
+/* v3 主画布透明化：让弥散光透出（dream-skin 的 alias-bg 半透明思路） */
+body.v3.t-grad #v3main { background: transparent; background-image: none; }
+
+/* ---------- 毛玻璃（深色）：彩色弥散 + 卡片 Blur ---------- */
+body.t-glass {
+    --grad-base: #0b1120;
+    --blob1: rgba(56, 189, 248, 0.55);
+    --blob2: rgba(129, 90, 245, 0.55);
+    --blob3: rgba(244, 114, 182, 0.42);
+    --bg-main: #101a2e;
+    --bg-card: rgba(17, 27, 48, 0.55);
+    --bg-card-hover: rgba(24, 36, 62, 0.65);
+    --border-color: rgba(255, 255, 255, 0.14);
+    --accent-blue: #4da3ff;
+}
+body.t-glass .header-card, body.t-glass .panel, body.t-glass .v2panel,
+body.t-glass .toolbar, body.t-glass #v2bar, body.t-glass .intro,
+body.t-glass #v2p-help, body.t-glass .v2help-toc {
+    background: rgba(17, 27, 48, 0.55) !important;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+    box-shadow: 0 8px 32px rgba(2, 8, 20, 0.45);
+}
+body.v3.t-glass {
+    --v3-bg: #101a2e;
+    --v3-accent: #4da3ff;
+    --v3-accent-soft: rgba(77, 163, 255, 0.16);
+    --v3-rail: rgba(10, 15, 28, 0.82);
+    --v3-panel: rgba(13, 18, 29, 0.66);
+    --v3-card: rgba(255, 255, 255, 0.06);
+    --v3-card-hi: rgba(255, 255, 255, 0.1);
+    --v3-tb: rgba(10, 14, 24, 0.66);
+}
+
+/* ---------- 极光渐变（深色）：青绿/靛蓝弥散 ---------- */
+body.t-aurora {
+    --grad-base: #0c1e2c;
+    --blob1: rgba(16, 185, 129, 0.6);
+    --blob2: rgba(99, 102, 241, 0.62);
+    --blob3: rgba(34, 211, 238, 0.45);
+    --bg-main: #0f2637;
+    --bg-card: rgba(15, 38, 55, 0.72);
+    --bg-card-hover: rgba(20, 47, 68, 0.78);
+    --border-color: rgba(125, 211, 252, 0.16);
+    --accent-blue: #34d399;
+    --accent-indigo: #22d3ee;
+    --border-highlight: rgba(52, 211, 238, 0.5);
+}
+body.v3.t-aurora {
+    --v3-bg: #0f2637;
+    --v3-accent: #34d399;
+    --v3-accent-soft: rgba(52, 211, 153, 0.16);
+    --v3-rail: rgba(6, 18, 26, 0.8);
+    --v3-panel: rgba(13, 32, 46, 0.66);
+    --v3-card: rgba(125, 211, 252, 0.08);
+    --v3-card-hi: rgba(125, 211, 252, 0.13);
+    --v3-tb: rgba(7, 16, 24, 0.62);
+}
+
+/* ---------- 暮霞渐变（深色）：橙粉/紫红弥散 ---------- */
+body.t-sunset {
+    --grad-base: #2a1030;
+    --blob1: rgba(251, 146, 60, 0.55);
+    --blob2: rgba(244, 63, 94, 0.5);
+    --blob3: rgba(168, 85, 247, 0.45);
+    --bg-main: #331633;
+    --bg-card: rgba(51, 22, 51, 0.68);
+    --bg-card-hover: rgba(64, 28, 62, 0.75);
+    --border-color: rgba(251, 146, 60, 0.16);
+    --accent-blue: #fb923c;
+    --accent-indigo: #f472b6;
+    --border-highlight: rgba(251, 146, 60, 0.5);
+}
+body.v3.t-sunset {
+    --v3-bg: #331633;
+    --v3-accent: #fb923c;
+    --v3-accent-soft: rgba(251, 146, 60, 0.16);
+    --v3-rail: rgba(18, 8, 22, 0.8);
+    --v3-panel: rgba(40, 18, 42, 0.66);
+    --v3-card: rgba(251, 146, 60, 0.08);
+    --v3-card-hi: rgba(251, 146, 60, 0.13);
+    --v3-tb: rgba(16, 7, 18, 0.62);
+}
+
+/* ---------- 浅色基底主题：完整浅色调色 + 柔和弥散 ---------- */
+
+/* ---- DSH 纸白：暖纸底 + 琥珀弥散 ---- */
+body.t-paper {
+    --grad-base: #f6f1e6;
+    --blob1: rgba(235, 200, 130, 0.5);
+    --blob2: rgba(230, 160, 160, 0.4);
+    --blob3: rgba(170, 205, 170, 0.4);
+    --bg-main: #f6f1e6;
+    --bg-card: rgba(255, 253, 247, 0.85);
+    --bg-card-hover: #f7f2e7;
+    --border-color: #e2d9c6;
+}
+body.v3.t-paper {
+    --v3-bg: #f6f1e6;
+    --v3-accent: #b45309;
+    --v3-accent-soft: rgba(180, 83, 9, 0.12);
+    --v3-rail: rgba(240, 232, 214, 0.85);
+    --v3-panel: rgba(250, 246, 236, 0.82);
+    --v3-card: rgba(120, 90, 40, 0.06);
+    --v3-card-hi: rgba(120, 90, 40, 0.1);
+    --v3-tb: rgba(248, 243, 230, 0.85);
+}
+
+/* ---- DSH 品牌蓝（浅色长春花底 + DeepSeek 蓝） ---- */
+body.t-brand {
+    --grad-base: #edf1fd;
+    --blob1: rgba(77, 107, 254, 0.35);
+    --blob2: rgba(140, 120, 255, 0.3);
+    --blob3: rgba(56, 189, 248, 0.3);
+    --bg-main: #edf1fd;
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-card-hover: #f0f3ff;
+    --border-color: #cdd7f5;
+    --accent-blue: #4d6bfe;
+    --accent-indigo: #6d7cff;
+    --border-highlight: rgba(77, 107, 254, 0.45);
+}
+body.v3.t-brand {
+    --v3-bg: #edf1fd;
+    --v3-accent: #4d6bfe;
+    --v3-accent-soft: rgba(77, 107, 254, 0.14);
+    --v3-rail: rgba(226, 232, 250, 0.85);
+    --v3-panel: rgba(240, 243, 255, 0.82);
+    --v3-card: rgba(77, 107, 254, 0.07);
+    --v3-card-hi: rgba(77, 107, 254, 0.12);
+    --v3-tb: rgba(238, 242, 253, 0.85);
+}
+
+/* ---- Success 翠绿（浅色薄荷底 + 翡翠强调） ---- */
+body.t-success {
+    --grad-base: #eafaf1;
+    --blob1: rgba(16, 185, 129, 0.35);
+    --blob2: rgba(52, 211, 153, 0.3);
+    --blob3: rgba(110, 231, 183, 0.3);
+    --bg-main: #eafaf1;
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-card-hover: #eefaf3;
+    --border-color: #c8ecd9;
+    --accent-blue: #059669;
+    --accent-indigo: #10b981;
+    --border-highlight: rgba(5, 150, 105, 0.45);
+    --lawn-light: #e0f3e2;
+    --lawn-dark: #cdead2;
+    --lawn-hover: #c4e6c8;
+}
+body.v3.t-success {
+    --v3-bg: #eafaf1;
+    --v3-accent: #059669;
+    --v3-accent-soft: rgba(5, 150, 105, 0.12);
+    --v3-ok: #059669;
+    --v3-rail: rgba(216, 240, 226, 0.85);
+    --v3-panel: rgba(236, 250, 242, 0.82);
+    --v3-card: rgba(5, 150, 105, 0.07);
+    --v3-card-hi: rgba(5, 150, 105, 0.12);
+    --v3-tb: rgba(234, 250, 241, 0.85);
+}
+
+/* ---- Danger 绯红（浅色玫瑰底 + 绯红强调） ---- */
+body.t-danger {
+    --grad-base: #fdf1f4;
+    --blob1: rgba(244, 63, 94, 0.3);
+    --blob2: rgba(251, 113, 133, 0.28);
+    --blob3: rgba(196, 130, 220, 0.28);
+    --bg-main: #fdf1f4;
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-card-hover: #fdf3f6;
+    --border-color: #f3cdd7;
+    --accent-blue: #e11d48;
+    --accent-indigo: #f43f5e;
+    --border-highlight: rgba(225, 29, 72, 0.45);
+}
+body.v3.t-danger {
+    --v3-bg: #fdf1f4;
+    --v3-accent: #e11d48;
+    --v3-accent-soft: rgba(225, 29, 72, 0.12);
+    --v3-err: #e11d48;
+    --v3-rail: rgba(248, 222, 229, 0.85);
+    --v3-panel: rgba(253, 242, 245, 0.82);
+    --v3-card: rgba(225, 29, 72, 0.06);
+    --v3-card-hi: rgba(225, 29, 72, 0.11);
+    --v3-tb: rgba(253, 241, 244, 0.85);
+}
+
+/* ---- Diff 墨青（浅色天青底 + 改蓝强调） ---- */
+body.t-diff {
+    --grad-base: #ecf6fc;
+    --blob1: rgba(56, 189, 248, 0.32);
+    --blob2: rgba(129, 140, 248, 0.28);
+    --blob3: rgba(45, 212, 191, 0.28);
+    --bg-main: #ecf6fc;
+    --bg-card: rgba(255, 255, 255, 0.82);
+    --bg-card-hover: #eff7fd;
+    --border-color: #c9e4f4;
+    --accent-blue: #0284c7;
+    --accent-indigo: #38bdf8;
+    --border-highlight: rgba(2, 132, 199, 0.45);
+}
+body.v3.t-diff {
+    --v3-bg: #ecf6fc;
+    --v3-accent: #0284c7;
+    --v3-accent-soft: rgba(2, 132, 199, 0.12);
+    --v3-rail: rgba(218, 236, 248, 0.85);
+    --v3-panel: rgba(238, 247, 253, 0.82);
+    --v3-card: rgba(2, 132, 199, 0.07);
+    --v3-card-hi: rgba(2, 132, 199, 0.12);
+    --v3-tb: rgba(236, 246, 252, 0.85);
+}
+
+/* 浅色渐变主题的卡片轻微透玻璃（弥散光透出） */
+body.t-grad:not(.maa) .panel, body.t-grad:not(.maa) .header-card {
+    background: rgba(255, 255, 255, 0.78) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* ---------- 自定义（变量由 97_theme.js 注入；玻璃开关挂点） ---------- */
+body.t-custom.glass-on .header-card, body.t-custom.glass-on .panel,
+body.t-custom.glass-on .v2panel, body.t-custom.glass-on #v2bar,
+body.t-custom.glass-on .toolbar, body.t-custom.glass-on .intro {
+    background: rgba(17, 27, 48, 0.5) !important;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+body.t-custom.glass-on:not(.maa) .header-card, body.t-custom.glass-on:not(.maa) .panel,
+body.t-custom.glass-on:not(.maa) .v2panel, body.t-custom.glass-on:not(.maa) #v2bar,
+body.t-custom.glass-on:not(.maa) .toolbar, body.t-custom.glass-on:not(.maa) .intro {
+    background: rgba(255, 255, 255, 0.62) !important;
+    border: 1px solid rgba(15, 23, 42, 0.10) !important;
+}
+
+/* ---------- v3 外壳在非 maa（浅色）下补齐 v2 内容区变量 ---------- */
+body.v3:not(.maa) {
+    --bg-main: #eef2f8;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f1f5fb;
+    --border-color: #d9e0ec;
+    --text-main: #16202f;
+    --text-sub: #4c5a70;
+    --text-muted: #8593a8;
+    --lawn-light: rgba(255, 255, 255, 0.62);
+    --lawn-dark: rgba(255, 255, 255, 0.30);
+    --lawn-border: rgba(15, 23, 42, 0.10);
+    --lawn-hover: rgba(255, 255, 255, 0.8);
+    --c-base: #b45309; --bg-base: rgba(245, 158, 11, 0.16);
+    --c-vine: #059669; --bg-vine: rgba(16, 185, 129, 0.15);
+    --c-merge: #9333ea; --bg-merge: rgba(168, 85, 247, 0.15);
+    --c-tool: #0e7490; --bg-tool: rgba(6, 182, 212, 0.15);
+}
+body.v3 { background: var(--v3-bg, #eef2f8); }
+body.v3.t-grad { background: var(--grad-base, #eef2f8); }
+
+/* ---------- 帮助视图/面板布局 ---------- */
+#helpBody:not(.v2help-body) { display: none; }        /* 保险：未挂载前不裸露 */
+#helpBody.v2help-body { flex: 1 1 auto; min-height: 0; }
+#v3view-help .v3help-wrap { flex: 1; min-height: 0; display: flex; }
+#v3view-help .v2help-toc { padding-top: 14px; }
+#v3view-help .v2help-body { padding: 18px 26px 40px; }
+#v3view-help { background: transparent; }
+body:not(.v3) #v2p-help { padding: 0 !important; overflow: hidden !important; }
+
+/* ---------- 换肤中心（v3 独立视图） ---------- */
+#v3view-skin { display: none; }
+#v3view-skin.on { display: block; overflow-y: auto; }
+.v3skin-h { font-size: 15px; font-weight: 700; margin: 2px 0 12px; color: var(--v3-text, #16202f); }
+.v3skin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.v3skin-card { border: 2px solid var(--v3-border, #d9e0ec); border-radius: 14px; overflow: hidden;
+  cursor: pointer; background: var(--v3-card, rgba(255,255,255,0.05)); transition: transform .15s, border-color .15s; }
+.v3skin-card:hover { transform: translateY(-2px); }
+.v3skin-card.on { border-color: var(--v3-accent, #4d6bfe); box-shadow: 0 0 0 3px var(--v3-accent-soft, rgba(77,107,254,0.16)); }
+.v3skin-prev { height: 92px; position: relative; overflow: hidden; }
+.v3skin-prev::before { content: ''; position: absolute; inset: -30%; filter: blur(18px) saturate(1.25); }
+.v3skin-name { padding: 8px 12px; font-size: 12.5px; font-weight: 600; color: var(--v3-text, #16202f);
+  display: flex; justify-content: space-between; align-items: center; }
+.v3skin-tag { font-size: 10px; color: var(--v3-sub, #4c5a70); font-weight: 500; }
+
+/* 每主题的预览卡底（弥散光缩样；::before 由 .skp-* 提供） */
+.skp-light   { background: #eef2f8; } .skp-light::before   { background: radial-gradient(60% 80% at 30% 30%, rgba(37,99,235,.14), transparent 70%), radial-gradient(50% 70% at 80% 70%, rgba(99,102,241,.12), transparent 70%); }
+.skp-paper   { background: #f6f1e6; } .skp-paper::before   { background: radial-gradient(60% 80% at 25% 30%, rgba(235,200,130,.7), transparent 70%), radial-gradient(55% 70% at 80% 75%, rgba(230,160,160,.5), transparent 70%); }
+.skp-dark    { background: #0c121e; } .skp-dark::before    { background: radial-gradient(60% 80% at 50% 0%, rgba(22,36,59,.9), transparent 75%); }
+.skp-glass   { background: #0b1120; } .skp-glass::before   { background: radial-gradient(55% 75% at 20% 30%, rgba(56,189,248,.8), transparent 70%), radial-gradient(50% 70% at 78% 25%, rgba(129,90,245,.75), transparent 70%), radial-gradient(55% 70% at 55% 85%, rgba(244,114,182,.6), transparent 70%); }
+.skp-aurora  { background: #0c1e2c; } .skp-aurora::before  { background: radial-gradient(55% 75% at 18% 75%, rgba(16,185,129,.85), transparent 70%), radial-gradient(50% 70% at 82% 20%, rgba(99,102,241,.85), transparent 70%), radial-gradient(50% 65% at 55% 60%, rgba(34,211,238,.6), transparent 70%); }
+.skp-sunset  { background: #2a1030; } .skp-sunset::before  { background: radial-gradient(55% 75% at 22% 18%, rgba(251,146,60,.8), transparent 70%), radial-gradient(50% 70% at 85% 80%, rgba(244,63,94,.7), transparent 70%), radial-gradient(50% 65% at 55% 60%, rgba(168,85,247,.6), transparent 70%); }
+.skp-brand   { background: #edf1fd; } .skp-brand::before   { background: radial-gradient(55% 75% at 25% 30%, rgba(77,107,254,.55), transparent 70%), radial-gradient(50% 70% at 80% 70%, rgba(140,120,255,.45), transparent 70%); }
+.skp-success { background: #eafaf1; } .skp-success::before { background: radial-gradient(55% 75% at 25% 35%, rgba(16,185,129,.5), transparent 70%), radial-gradient(50% 70% at 78% 72%, rgba(110,231,183,.45), transparent 70%); }
+.skp-danger  { background: #fdf1f4; } .skp-danger::before  { background: radial-gradient(55% 75% at 25% 35%, rgba(244,63,94,.45), transparent 70%), radial-gradient(50% 70% at 78% 72%, rgba(196,130,220,.4), transparent 70%); }
+.skp-diff    { background: #ecf6fc; } .skp-diff::before    { background: radial-gradient(55% 75% at 25% 35%, rgba(56,189,248,.5), transparent 70%), radial-gradient(50% 70% at 78% 72%, rgba(129,140,248,.42), transparent 70%); }
+.skp-custom  { background: conic-gradient(from 45deg, #f59e0b33, #10b98133, #3b82f633, #a855f733, #f59e0b33); }
+
+/* ---------- 背景图片壁纸层（自定义主题） ---------- */
+#v3wall { position: fixed; inset: -26px; z-index: -2; background: center / cover no-repeat;
+  pointer-events: none; display: none; }
+body.wall-on #v3wall { display: block; }
+
+/* ---------- 换肤中心：自定义设置面板 ---------- */
+#v3skinCustom { margin-top: 4px; padding: 12px 14px 14px; border-radius: 12px;
+  background: var(--v3-card, rgba(255,255,255,0.05)); border: 1px solid var(--v3-border, #d9e0ec); }
+.v3skin-cfg { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.v3skin-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px;
+  color: var(--v3-text, #16202f); }
+.v3skin-row input[type="range"] { width: 130px; }
+.v3skin-row input[type="color"] { width: 34px; height: 24px; padding: 0; border: none;
+  background: none; cursor: pointer; }
+
+/* ---------- 侧栏/标题栏跟随背景（自定义主题选项，默认开） ----------
+ * 壁纸/弥散光透到 rail 与伪标题栏，backdrop 模糊做毛玻璃。 */
+body.shell-glass #v3rail, body.shell-glass #v3tb {
+    background: rgba(10, 14, 24, 0.42);
+    backdrop-filter: blur(22px) saturate(1.35);
+    -webkit-backdrop-filter: blur(22px) saturate(1.35);
+    border-right-color: rgba(255, 255, 255, 0.10);
+}
+body.shell-glass:not(.maa) #v3rail, body.shell-glass:not(.maa) #v3tb {
+    background: rgba(255, 255, 255, 0.46);
+}
+
+/* 右工具坞一并跟随背景（2026-09-14：自定义图片主题下右坞纯白 → 纳入毛玻璃）。
+   --v3-panel 浅色基底不透明，壁纸被整块盖住；玻璃化后透出弥散光/壁纸，
+   坞内卡片在浅色玻璃下同步降不透明度（深色基底 --v3-card 本身已是低透明度）。 */
+body.shell-glass #v3dock {
+    background: rgba(10, 14, 24, 0.42);
+    backdrop-filter: blur(22px) saturate(1.35);
+    -webkit-backdrop-filter: blur(22px) saturate(1.35);
+    border-left-color: rgba(255, 255, 255, 0.10);
+}
+body.shell-glass:not(.maa) #v3dock {
+    background: rgba(255, 255, 255, 0.08);
+}
+/* 「玻璃 + 卡片 + 输入框」三层白叠加会让面板发白（2026-09-14 两轮用户反馈）：
+   坞底 0.08 / 卡片 0.22 / 输入框 0.45 / 大文本域 0.22 —— 白只留在保证可读的输入件上 */
+body.shell-glass:not(.maa) #v3dockBody .v2card { background: rgba(255, 255, 255, 0.22); }
+body.shell-glass:not(.maa) #v3dockBody textarea { background: rgba(255, 255, 255, 0.22); }
+body.shell-glass:not(.maa) #v3dockBody input,
+body.shell-glass:not(.maa) #v3dockBody select { background: rgba(255, 255, 255, 0.45); }
+body.shell-glass:not(.maa) #v3dockBody .v2table th { background: rgba(255, 255, 255, 0.3); }

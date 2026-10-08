@@ -1,0 +1,220 @@
+<div class="app-container">
+
+  <!-- 头部信息 -->
+  <div class="header-card">
+    <div class="header-title-group">
+      <h1>🧩 无尽布阵小工具（主植物+融合+藤蔓）</h1>
+      <p class="subnote">📄 阵型文本格式规范与完整说明见同目录 <code>README.md</code></p>
+    </div>
+  </div>
+
+  <!-- 使用说明 -->
+  <details class="intro">
+    <summary>📖 使用说明 / 导入示例（点击展开）</summary>
+    <p><b>布阵：</b>点选植物库 → 点格子放置；也可把植物直接拖到格子/卡槽。格子↔格子拖拽互换，列头↔列头拖整列互换，行号↔行号拖整行互换。右键清空格子/卡槽，右键植物名从库中删除，双击格子改主植物名（<code>-</code> 清空）。</p>
+    <p><b>叠种：</b>藤蔓（毒藤/南瓜头/豆藤/小守卫菇）叠在主植物上 → 显示 <code>桑葚(毒藤)</code>；融合（原豌/电豌/火豌/冰豌/毒豌）只叠在"大哥"上 → 棋盘显示 <code>原大/电大/火大/冰大/毒大</code> 并带专属特效（电大闪电、火大火焰、冰大下雪、毒大紫烟、原大加粗），导出文本仍为完整 <code>大哥+电豌</code> 格式；毒藤叠桑葚/药师有紫烟缭绕；鸭梨大弟带雷霆水流特效。</p>
+    <p><b>导入：</b>点「导入阵型」粘贴任意文本即可自动还原。支持下方 4 种格式；其中 <code>原大</code>=大哥+原豌、<code>电大</code>=大哥+电豌、<code>原碗</code> 自动纠正为原豌、<code>-</code>/空=空格；文本不带卡槽时保留现有卡槽。<b>瓷砖</b>用 <code>[瓷]</code> 后缀标记（如 <code>大哥+原豌[瓷]</code>，兼容 <code>[瓷砖]</code>）。示例（原大桑葚阵）：</p>
+    <pre>    列1     列2      列3      列4      列5      列6      列7     列8 列9
+路1: 大哥+原豌  桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 芦荟   桑葚(毒藤) -  -
+路2: 大哥+原豌  桑葚(毒藤) 芦荟    桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) -  -
+路3: 大哥+原豌  桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) -  -
+路4: 大哥+原豌  桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 芦荟   桑葚(毒藤) -  -
+路5: 大哥+原豌  桑葚(毒藤) 芦荟    桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) 桑葚(毒藤) -  -
+（卡槽：1:能量花 2:桑葚 3:大哥 4:毒藤 5:原豌 6:芦荟 7:补植物 8:补植物）</pre>
+    <p><b>其他格式：</b>紧凑 <code>9x5 布阵: 大哥+原豌,桑葚(毒藤),...|-,- 卡槽: 1:能量花 ...</code>；逗号分隔 <code>路1: 大哥+原豌,桑葚(毒藤),…</code>；卡槽逐行 <code>卡槽1:能量花</code>…</p>
+  </details>
+
+  <!-- 顶部操作工具栏 -->
+  <div class="toolbar">
+    <button class="primary" id="btnExport">导出文本</button>
+    <button class="primary" id="btnCopy">复制全部</button>
+    <button id="btnImport">导入阵型</button>
+    <button id="btnClear">清空棋盘</button>
+    <button id="btnClearSlots">清空卡槽</button>
+    <button id="btnResetPlants">恢复默认植物库</button>
+    <button id="btnClearBrush">🧹 清空种植卡</button>
+    <button id="btnFx">特效：开</button>
+    <button id="btnSplit">分阵型：关</button>
+  </div>
+
+  <!-- 状态栏通知 -->
+  <div id="status" class="status"></div>
+
+  <!-- 主工作区：左-植物库，中-棋盘，右-卡槽 -->
+  <div class="main">
+    
+    <!-- 板块1：植物库 -->
+    <div class="panel" id="palette">
+      <div class="palette-tabs">
+        <div class="tab active" data-tab="base">主植物</div>
+        <div class="tab" data-tab="vine">藤蔓</div>
+        <div class="tab" data-tab="merge">融合</div>
+        <div class="tab" data-tab="tool">工具</div>
+        <div class="tab" data-tab="ops">动作</div>
+      </div>
+
+      <div class="palette-panel active" id="panel-base">
+        <div class="pgroup" id="pgroupBase">
+          <div class="ptitle">主植物 <span class="tag base">叠种基底</span></div>
+          <div class="pgroup-cols">
+            <div class="psubgroup"><div class="psub">挂机核心</div>
+            <div class="chips" id="chipsCore"></div></div>
+            <div class="psubgroup"><div class="psub">辅助</div>
+            <div class="chips" id="chipsSupport"></div></div>
+            <div class="psubgroup"><div class="psub">boss 输出</div>
+            <div class="chips" id="chipsBoss"></div></div>
+            <div class="psubgroup"><div class="psub">世界特殊对策</div>
+            <div class="chips" id="chipsWorld"></div></div>
+            <div class="psubgroup"><div class="psub">竞速植物</div>
+            <div class="chips" id="chipsSpeed"></div></div>
+          </div>
+          <div class="custom-add">
+            <select id="addBaseGroup">
+              <option value="core">挂机核心</option>
+              <option value="support">辅助</option>
+              <option value="boss">boss输出</option>
+              <option value="world">世界对策</option>
+              <option value="speed">竞速</option>
+            </select>
+            <input id="addBase" placeholder="自定义主植物" maxlength="8">
+            <button data-g="base">添加</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="palette-panel" id="panel-vine">
+        <div class="pgroup">
+          <div class="ptitle">藤蔓 <span class="tag vine">叠在主植物上（最多1种）</span></div>
+          <div class="chips" id="chipsVine"></div>
+          <div class="custom-add">
+            <input id="addVine" placeholder="自定义藤蔓" maxlength="8">
+            <button data-g="vine">添加</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="palette-panel" id="panel-merge">
+        <div class="pgroup">
+          <div class="ptitle">融合 <span class="tag merge">叠在“大哥”上（原大/电大）</span></div>
+          <div class="chips" id="chipsMerge"></div>
+          <div class="custom-add">
+            <input id="addMerge" placeholder="自定义融合体" maxlength="8">
+            <button data-g="merge">添加</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="palette-panel" id="panel-tool">
+        <div class="pgroup">
+          <div class="ptitle">工具 <span class="tag tool">画笔操作</span></div>
+          <div class="chips" id="chipsTool"></div>
+        </div>
+      </div>
+
+      <div class="palette-panel" id="panel-ops">
+        <div class="pgroup">
+          <div class="ptitle">动作 <span class="tag tool">分棋盘专用（空格跳过）</span></div>
+          <div class="chips" id="chipsOps"></div>
+          <div class="ops-ctl">
+            <span>时间(ms)</span><input type="number" id="opsCount" min="0" max="9999" value="0" title="仅对 delay 生效">
+            <button id="btnOpsUndo">撤销上步</button>
+            <button id="btnOpsClear">清空本格</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hint">
+        🖱 拖拽：植物→格子/卡槽；格子→格子互换<br>
+        🔀 拖拽列头 = 整列互换；拖拽行号 = 整行互换<br>
+        🧹 空白画笔时点格子 = 复制该格组合，再点其他格连续粘贴<br>
+        🧰 工具组：清空整格 / 放置瓷砖 / 移除瓷砖（独立于植物，不参与复制）<br>
+        ⚡ 动作组（分棋盘专用）：抛花 / 抛蕾 / 喂豆 / 铲除 / delay——点格子在原组合后追加，可连续叠加（例：大守卫菇+喂豆+delay500+铲除+心叶兰）；时间框(ms)仅对 delay 生效，其余动作固定追加一次<br>
+        🗑 右键清空格子/卡槽；右键植物名=从库删除<br>
+        ✏️ 双击格子编辑主植物名（- 清空）<br>
+        📥 工具栏「导入阵型」可粘贴文本智能还原；导入对话框支持「从 txt 导入」读文件<br>
+        💾 导出区「导出 txt」把结果保存为 .txt 文件<br>
+        🎛️ 工具栏「特效」开关：关闭后仅保留瓷砖/芦荟提示，其余特效与动画全部停止<br>
+        📑 工具栏「分阵型」开关：开启后显示 总阵型/前期/后期 三个棋盘，可切换编辑并一键从总棋盘复制<br>
+        ✔️ 分阵型下点「校验一致性」：逐格检查 前期+后期 是否等于总阵型（能量花/蓓蕾等一次性消耗不计；铲除会使格清空、铲除后换种按最后种下为准；大守卫菇/守卫菇+喂豆按 3×3 产小守卫菇计算）
+      </div>
+    </div>
+
+    <!-- 板块2：棋盘 -->
+    <div class="panel" id="gridWrap">
+      <div class="ptitle">
+        <span>🌱 布阵草坪棋盘</span>
+        <span style="font-size:12px; font-weight:normal; color:var(--text-sub);">拖动列头整列互换 / 拖动行号整行互换</span>
+      </div>
+      
+      <div id="splitBar" style="display:none; margin-bottom:10px;">
+        <div class="split-tabs">
+          <div class="stab active" data-split="main">总阵型</div>
+          <div class="stab" data-split="early">前期/第一关</div>
+          <div class="stab" data-split="late">后期/第二关</div>
+        </div>
+        <button id="btnCopyToSplit" style="display:none">从总棋盘复制</button>
+        <button id="btnCheckSplit" style="display:none">校验一致性</button>
+      </div>
+
+      <div class="grid-scroll">
+        <div id="grid"></div>
+      </div>
+
+      <div class="size-ctl">
+        列数 <input type="number" id="colN" min="1" max="9" value="9">
+        行数 <input type="number" id="rowN" min="1" max="5" value="5">
+        <button id="btnResize">应用尺寸</button>
+      </div>
+    </div>
+
+    <!-- 板块3：卡槽 -->
+    <div class="panel" id="slots">
+      <div class="ptitle">
+        <span>🃏 配队卡槽</span>
+        <button class="sbtoggle" id="btnSubSlots">配队2：关</button>
+      </div>
+      <div class="psub">配队1（卡槽1~8）</div>
+      <div id="slotList"></div>
+      <div id="subSlotList" style="display:none; margin-top:10px; border-top:1px dashed var(--border-color); padding-top:10px;">
+        <div class="psub">配队2（卡槽9~16）</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 板块4：导出区 -->
+  <div class="panel" id="exportBox">
+    <div class="ptitle">
+      <span>📤 导出结果（可直接编辑后再复制）</span>
+      <div>
+        <button id="btnClearOut" class="sbtoggle">清空导出</button>
+        <button id="btnExportTxt" class="sbtoggle">导出 txt</button>
+      </div>
+    </div>
+    <textarea id="out" placeholder="点击上方「导出文本」生成…"></textarea>
+  </div>
+
+</div>
+
+<!-- 导入弹窗 -->
+<dialog id="dlg">
+  <div id="dlgTitle">导入阵型（粘贴文本）</div>
+  <textarea id="dlgIn" placeholder="粘贴「导出文本」/「紧凑格式」/手写的阵型文本…"></textarea>
+  <div class="dlg-hint">
+    支持：① 本工具导出的表格/紧凑格式 ② 你平时的文本（如：列1 列2… / 路1: 珊瑚 芦荟…）
+    <br>组合识别：桑葚(毒藤)、大哥+原豌、原大(=大哥+原豌)、电大(=大哥+电豌)；- 或空为空格
+    <br>瓷砖标记：<code>大哥+原豌[瓷]</code>（简写）、<code>【瓷砖】</code> 或单独 <code>瓷</code>/<code>瓷砖</code>（放置瓷砖的格子）
+    <br>卡槽识别：1:能量花 2:洋芋… 或 卡槽1:能量花
+  </div>
+  <div class="dlg-btns">
+    <button id="btnDlgClear">一键清空</button>
+    <button id="btnDlgSample">填入示例</button>
+    <button id="btnDlgFile">从 txt 导入</button>
+    <button id="btnDlgCancel">取消</button>
+    <button class="primary" id="btnDlgOk">导入</button>
+  </div>
+  <input type="file" id="fileIn" accept=".txt,text/plain" style="display:none">
+</dialog>
+
+<div id="toast"></div>
+<div id="v2tip" role="tooltip"></div>

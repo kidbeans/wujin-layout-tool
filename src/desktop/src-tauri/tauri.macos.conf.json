@@ -1,0 +1,13 @@
+{
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "backgroundColor": "#0a0e16"
+      }
+    ]
+  }
+}

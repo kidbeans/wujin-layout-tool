@@ -1,0 +1,6 @@
+{
+  "visible": true,
+  "order": 200,
+  "label": "🔢 顺序审查",
+  "defaults": { "context": ["formation", "order"] }
+}

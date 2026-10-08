@@ -1,0 +1,6 @@
+{
+  "visible": true,
+  "order": 600,
+  "label": "💬 自由对话",
+  "defaults": { "context": ["formation", "checks"] }
+}

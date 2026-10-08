@@ -1,0 +1,9 @@
+# 构建产物 / 缓存（源码仓库只放源码与发布件）
+__pycache__/
+*.pyc
+node_modules/
+src/desktop/src-tauri/target/
+src/desktop/dist_shell/
+*.bak
+*.bak.*
+_dl_*

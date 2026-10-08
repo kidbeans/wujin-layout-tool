@@ -1,0 +1,6 @@
+{
+  "visible": true,
+  "order": 300,
+  "label": "🧭 路由审查",
+  "defaults": { "context": ["route", "order"] }
+}

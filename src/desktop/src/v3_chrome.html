@@ -1,0 +1,253 @@
+<!-- ================= v3 chrome：dsh_desktop 风格外壳（无边框标题栏 + 左导航 + 中央视图 + 右工具坞 + 状态栏） =================
+     布局重构由 96_v3_boot.js 完成：.app-container 移入 #v3view-formation，#v2Drawer 移入 #v3dockBody，
+     v2 的 #v2titlebar/.v2rz/#v2side 移除、#v2bar 隐藏（功能由 #v3rail 代理同一批 v2OpenPanel/v2ClosePanels）。 -->
+
+<header id="v3tb">
+  <div id="v3tbDrag" data-tauri-drag-region>
+    <span class="v3tb-logo">🎴</span>
+    <span class="v3tb-name">无尽布阵工具</span>
+    <span class="v3tb-ver">v4</span>
+    <span id="v3tbCrumb" data-tauri-drag-region></span>
+  </div>
+  <div class="v3tb-act">
+    <button id="v3tbTheme" title="切换深/浅主题">🌙</button>
+    <span id="v3tbSys" class="v3tb-sys">
+      <button id="v3tbMin" title="最小化">─</button>
+      <button id="v3tbMax" title="最大化 / 还原">□</button>
+      <button id="v3tbClose" title="关闭">✕</button>
+    </span>
+  </div>
+</header>
+
+<div id="v3body">
+  <!-- 左：图标导航（代理 v2 面板按钮 + v3 视图切换） -->
+  <nav id="v3rail">
+    <div class="v3rail-logo" title="无尽布阵工具 v4">🎴</div>
+    <button class="v3ni" data-view="formation" title="布阵工作台（棋盘 / 植物库 / 卡槽）">🌱<i>布阵</i></button>
+    <button class="v3ni" data-view="agent" title="Agent 工作台（一键接入 zcode / Claude Code / DeepSeek API …）">🤖<i>Agent</i></button>
+    <span class="v3sep"></span>
+    <button class="v3ni" data-panel="presets" title="世界预设（九套成品画像）">📦<i>预设</i></button>
+    <button class="v3ni" data-panel="order" title="遍历顺序（种植链）">🔢<i>顺序</i></button>
+    <button class="v3ni" data-panel="route" title="配队路由与计数模拟">🧭<i>路由</i></button>
+    <button class="v3ni" data-panel="boss" title="Boss 关链编辑">👑<i>Boss</i></button>
+    <button class="v3ni" data-panel="checks" title="pipeline / 日志检查链">🔍<i>检查</i></button>
+    <button class="v3ni" data-panel="save" title="存档槽位">💾<i>存档</i></button>
+    <button class="v3ni" data-panel="export2" title="导出 v2 / MPZ 导入">📤<i>导入导出</i></button>
+    <button class="v3ni" data-panel="server" title="服务模式（MPZ 文件清单）">🌐<i>服务</i></button>
+    <button class="v3ni" data-view="help" title="帮助 / 文档（用户说明集中阅读，F1）">📖<i>帮助</i></button>
+    <button class="v3ni" data-view="skin" title="换肤中心（11 款主题预览即点即换）">🎨<i>换肤</i></button>
+    <span class="v3gap"></span>
+    <button class="v3ni" data-view="settings" title="设置（主题 / Agent 客户端 / 工作区）">⚙️<i>设置</i></button>
+  </nav>
+
+  <!-- 中：视图区 + 右工具坞 -->
+  <main id="v3main">
+    <!-- 视图 1：布阵工作台（v1+v2 主体移入） -->
+    <section class="v3view on" id="v3view-formation"></section>
+
+    <!-- 视图 2：Agent 工作台（dsh 会话式：左任务列表 + 中消息流 + 底输入区） -->
+    <section class="v3view" id="v3view-agent">
+      <aside id="v3agSide">
+        <button id="v3agNew" class="v3btn-accent" title="新建 Agent 任务">＋ 新任务</button>
+        <div class="v3side-h" style="display:flex;align-items:center">任务<span id="v3agClear" title="清空全部任务记录" style="margin-left:auto;cursor:pointer;opacity:.5;font-size:10px;font-weight:normal">清空</span></div>
+        <div id="v3agRuns"></div>
+        <div class="v3side-h">客户端</div>
+        <div id="v3agClients"></div>
+        <div class="v3side-tip">「设置 ⚙️」可添加/编辑客户端：<br>CLI 型（zcode 内核 / agy / Claude Code / Codex…）<br>HTTP 型（DeepSeek / 智谱 / Kimi / Claude API…）</div>
+      </aside>
+      <div id="v3agMain">
+        <div id="v3agHead">
+          <span id="v3agTitle">新任务</span>
+          <span id="v3agMeta" class="v3muted"></span>
+          <span class="v3gap"></span>
+          <button id="v3agStop" class="v3btn-danger" style="display:none">■ 停止</button>
+          <button id="v3agCopy" title="复制完整任务包提示词（可粘贴到任意 Agent 客户端）">复制任务包</button>
+          <button id="v3agWs" title="打开本任务的工作目录（任务包 / 阵型 JSON 已写入其中，CLI Agent 可直接读文件）">打开工作目录</button>
+          <button id="v3agApply" title="把 Agent 的改动一键应用回画布：优先读工作目录的 阵型.json / pipeline_片段.json，其次提取回复中的 JSON（v2 阵型 / 官方通用框架 / pipeline 片段，可 Ctrl+Z 撤销）">📥 应用到布阵</button>
+        </div>
+        <div id="v3agStream">
+          <div id="v3agWelcome" class="v3msg agent">
+            <div class="v3msg-bubble">
+              <b>Agent 工作台</b> —— 把布阵交给智能体检查与设计。<br>
+              ① 底部选 <b>客户端</b>（首次用先到 设置 ⚙️ 里探测/填写）→ ② 选 <b>任务模板</b>（体检 / 顺序审查 / 路由审查 / Boss 审查 / 个性化设计 / 自由对话）→
+              ③ 勾选要附带的 <b>上下文</b> → ④ 发送。<br>
+              CLI 客户端（zcode / Claude Code 等）会在本任务<b>工作目录</b>里收到 任务包.md + 阵型 JSON，可直接读文件做针对性检查；
+              HTTP 客户端（DeepSeek API / Ollama）走流式对话。浏览器模式无 CLI 能力，可用「复制任务包」手动粘贴。
+            </div>
+          </div>
+        </div>
+        <div id="v3agComposer">
+          <div id="v3agCtx" class="collapsed">
+            <span class="v3ctx-t" id="v3agCtxToggle" title="展开/收起上下文勾选（勾选状态保留；新任务默认附上下文，续聊不重附）" style="cursor:pointer">附带上下文 ▸</span>
+            <label><input type="checkbox" id="v3cxFormation" checked> 阵型 JSON</label>
+            <label><input type="checkbox" id="v3cxPipeline" checked> pipeline 片段</label>
+            <label><input type="checkbox" id="v3cxOrder" checked> 种植顺序</label>
+            <label><input type="checkbox" id="v3cxRoute" checked> 路由参数</label>
+            <label><input type="checkbox" id="v3cxBoss"> Boss 链</label>
+            <label><input type="checkbox" id="v3cxChecks" checked> 检查报告</label>
+            <label><input type="checkbox" id="v3cxSpec" checked> MPZ 规范红线</label>
+          </div>
+          <div class="v3ag-row">
+            <select id="v3agClient" title="Agent 客户端"></select>
+            <select id="v3agTask" title="任务模板">
+              <option value="check">🔍 AI 体检</option>
+              <option value="order">🔢 顺序审查</option>
+              <option value="route">🧭 路由审查</option>
+              <option value="boss">👑 Boss 审查</option>
+              <option value="design">🎨 个性化设计</option>
+              <option value="free">💬 自由对话</option>
+            </select>
+            <textarea id="v3agInput" rows="1" placeholder="给智能体发消息…（Enter 发送，Shift+Enter 换行；自由对话/补充要求写这里）"></textarea>
+            <button id="v3agSend" class="v3btn-accent" title="发送（Enter）">↑</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 视图 3：设置 -->
+    <section class="v3view" id="v3view-settings">
+      <div class="v3set-scroll">
+        <div class="v3set-card">
+          <div class="v3set-h">🎨 外观</div>
+          <div class="v3set-row">
+            <label>主题</label>
+            <select id="v3setTheme">
+              <option value="light">浅色（默认）</option>
+              <option value="dark">深色（MAA 海军蓝）</option>
+            </select>
+            <span class="v3muted">更多主题（毛玻璃/渐变/自定义）点标题栏 🌞 按钮选择。</span>
+          </div>
+        </div>
+
+        <div class="v3set-card">
+          <div class="v3set-h">🤖 Agent 客户端</div>
+          <div id="v3setClients" class="v3set-table"></div>
+          <div class="v3set-row" style="margin-top:8px">
+            <select id="v3sePreset" style="min-width:220px" title="LinguaGacha 式模型预设：一键填充端点/模型/协议/温度"></select>
+            <button id="v3setDetect" class="v3btn">🔍 探测本机客户端</button>
+            <button id="v3setAdd" class="v3btn">＋ 添加客户端</button>
+          </div>
+          <div id="v3setEdit" style="display:none">
+            <div class="v3set-row"><label>名称</label><input id="v3seName" placeholder="如 我的 zcode"></div>
+            <div class="v3set-row"><label>类型</label>
+              <select id="v3seKind">
+                <option value="cli">CLI 命令行（zcode / claude / codex …）</option>
+                <option value="http">HTTP 接口（OpenAI 兼容 /v1/chat/completions）</option>
+              </select>
+            </div>
+            <div class="v3set-row" data-kind="cli"><label>命令</label><input id="v3seCmd" placeholder="如 zcode（PATH 内可直接写名字）"><button id="v3seProbe" class="v3btn">探测路径</button></div>
+            <div class="v3set-row" data-kind="cli"><label>参数</label><input id="v3seArgs" placeholder="如 -p（{prompt} 占位则走参数，否则走 stdin）"></div>
+            <div class="v3set-row" data-kind="http"><label>端点</label><input id="v3seEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions"></div>
+            <div class="v3set-row" data-kind="http"><label>模型</label><input id="v3seModel" placeholder="deepseek-chat"></div>
+            <div class="v3set-row" data-kind="http"><label>协议</label>
+              <select id="v3seFormat">
+                <option value="openai">OpenAI 兼容（/v1/chat/completions）</option>
+                <option value="anthropic">Anthropic（/v1/messages）</option>
+              </select>
+            </div>
+            <div class="v3set-row" data-kind="http"><label>温度</label><input id="v3seTemp" type="number" step="0.05" min="0" max="2" placeholder="如 0.95（留空走端点默认）" style="max-width:140px"></div>
+            <div class="v3set-row" data-kind="http"><label>思考强度</label>
+              <select id="v3seEffort" style="max-width:200px" title="OpenAI 兼容端点传 reasoning_effort。推理模型（omen/DeepSeek-R1 系）选「低」可大幅缩短等待；普通模型留空即可">
+                <option value="">默认（跟随模型自身行为）</option>
+                <option value="low">低（推理模型大幅提速）</option>
+                <option value="medium">中</option>
+                <option value="high">高</option>
+                <option value="max">最大</option>
+              </select>
+            </div>
+            <div class="v3set-row" data-kind="http"><label>额外参数</label><input id="v3seExtra" placeholder='JSON 对象，逐键合并进请求体，如 {"top_p":0.95}'></div>
+            <div class="v3set-row" data-kind="http"><label>ZCode 伪装</label>
+              <label class="v3set-chk" title="按实测 ZCode→网关报文复刻客户端身份：每段对话生成稳定 x-session-id（UUID），并带 ZCode 的 user-agent 与 x-zcode-* 身份头。OpenCode Go 文档称能识别 ZCode 原生会话头，伪装成 ZCode 即可保住提示词缓存、不必发 x-opencode-session。端点含 opencode / z.ai 时自动勾选。">
+                <input type="checkbox" id="v3seZcode"> 伪装 ZCode 客户端（x-session-id + ZCode UA）
+              </label>
+            </div>
+            <div class="v3set-row" data-kind="http"><label>User-Agent</label><input id="v3seUserAgent" placeholder="留空即用 ZCode 默认 UA（ZCode/3.11.2 …）；可改成任意客户端标识——仅桌面版生效，浏览器禁改 UA" style="max-width:460px"></div>
+            <div class="v3set-row" data-kind="http"><label>API Key</label><input id="v3seKey" type="password" placeholder="sk-…（只存本机 localStorage）"></div>
+            <div class="v3set-row"><button id="v3seSave" class="v3btn-accent">保存</button><button id="v3seCancel" class="v3btn">取消</button></div>
+          </div>
+          <div class="v3set-tip">推荐组合：① <b>zcode / agy / Claude Code 等 CLI</b>——任务包写入工作目录，Agent 能读文件、按 MPZ 工程规范做针对性体检
+            （zcode 会自动探测 ZCode 桌面端内核 <code>resources/glm/zcode.cjs</code> 并以 node 启动；zcode/agy 用「读 任务包.md」短指令驱动，
+            不受 Windows 32K 命令行限制）。② <b>DeepSeek API</b>——填 key 即用，流式输出；③ <b>ZCode 目录预设</b>——智谱维护的中国 LLM 双协议端点，一键填充。<br>
+            <b>确认实际模型</b>：claude 用 <code>-p --output-format json</code> 看 <code>modelUsage</code> 字段（可被 CC Switch 等改路由）；
+            agy 用 <code>agy models</code> 列表 + <code>--model</code> 指定；zcode 桌面端 TUI 内 <code>/model</code>，
+            headless 需 <code>~/.zcode/cli/config.json</code> 配 model provider；HTTP 客户端=你配置的 model 字段。</div>
+        </div>
+
+        <div class="v3set-card">
+          <div class="v3set-h">📂 工作区</div>
+          <div class="v3set-row"><label>Agent 工作区</label><span id="v3setWs" class="v3muted">（桌面版：应用数据目录/agent_ws；浏览器模式：下载目录手动管理）</span>
+            <button id="v3setWsOpen" class="v3btn">打开</button></div>
+          <div class="v3set-tip">每次 Agent 任务会生成 agent_ws/任务-<em>时间戳</em>/：任务包.md + 阵型.json + pipeline 片段.json 等上下文文件，CLI 客户端以该目录为工作目录启动。</div>
+        </div>
+
+        <div class="v3set-card">
+          <div class="v3set-h">ℹ️ 关于</div>
+          <div class="v3set-tip" id="v3setAbout"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 视图 4：帮助 / 文档（左目录栏 + 右正文；正文由 98_help.js 将 #helpBody 移入） -->
+    <section class="v3view" id="v3view-help">
+      <div class="v2help-wrap v3help-wrap">
+        <div class="v2help-toc" id="v3helpToc"></div>
+        <!-- #helpBody 挂载点 -->
+      </div>
+    </section>
+
+    <!-- 视图 5：换肤中心（卡片即点即换；弥散光预览） -->
+    <section class="v3view" id="v3view-skin">
+      <div style="padding:16px 22px 34px;">
+        <div class="v3skin-h">🎨 换肤中心</div>
+        <div class="v3skin-h" style="font-weight:500; font-size:12px; color:var(--v3-sub); margin-top:-6px;">
+          点击卡片即时应用 · 深色弥散与浅色弥散两套 colorScheme · 弥散光背景缓慢漂移（系统「减少动态效果」时静止）</div>
+        <label class="v3skin-row" style="margin:8px 0 14px;" title="左侧栏与顶部标题栏改为半透明毛玻璃，透出弥散光/壁纸（所有主题生效）">
+          <input type="checkbox" id="skShellTop"> 侧栏/标题栏跟随背景（毛玻璃）</label>
+        <div class="v3skin-grid" id="v3skinGrid"></div>
+
+        <!-- 自定义主题设置（选「自定义」卡片时显示） -->
+        <div id="v3skinCustom" style="display:none">
+          <div class="v3skin-h" style="margin-top:22px;">🛠 自定义主题设置</div>
+          <div class="v3skin-cfg">
+            <label class="v3skin-row"><input type="checkbox" id="skDark"> 暗色基底</label>
+            <label class="v3skin-row">强调色 <input type="color" id="skAccent" value="#4d6bfe"></label>
+            <label class="v3skin-row"><input type="checkbox" id="skGlass"> 毛玻璃卡片</label>
+            <label class="v3skin-row"><input type="checkbox" id="skBlob"> 弥散光背景</label>
+          </div>
+          <div class="v3skin-h" style="margin-top:16px; font-size:13px;">🖼 背景图片</div>
+          <div class="v3skin-cfg">
+            <div class="v3skin-row">
+              <button id="skWallPick" class="v3btn">选择图片…</button>
+              <input id="skWallUrl" placeholder="或粘贴图片 URL / 本地路径（如 E:\pic\bg.jpg 或 https://…）" style="flex:1; min-width:220px;">
+              <button id="skWallApply" class="v3btn">应用</button>
+              <button id="skWallClear" class="v3btn">清除壁纸</button>
+              <input type="file" id="skWallFile" accept="image/*" style="display:none">
+            </div>
+            <div class="v3skin-row">透明度 <input type="range" id="skWallOp" min="0" max="100" value="50">
+              模糊 <input type="range" id="skWallBlur" min="0" max="40" value="0">
+              <span id="skWallVal" class="v3muted" style="font-size:11px;"></span></div>
+            <div class="v3muted" style="font-size:11px;">小图可直接「选择图片…」（存本地配置）；大图建议粘路径/URL——桌面端本地路径会自动转成资源地址。壁纸层在弥散光之下，可叠加使用。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右：工具坞（v2 抽屉面板停靠化） -->
+    <aside id="v3dock">
+      <div id="v3dockH">
+        <span id="v3dockTitle">工具面板</span>
+        <button id="v3dockClose" title="收起（Esc）">✕</button>
+      </div>
+      <div id="v3dockBody"></div>
+    </aside>
+  </main>
+</div>
+
+<footer id="v3status">
+  <span id="v3stUndo" title="撤销/重做（Ctrl+Z / Ctrl+Y）">↩ ↪</span>
+  <span id="v3stSave" title="改动自动保存到本机存档">自动存档：—</span>
+  <span id="v3stCheck" title="最近一次检查链结果">检查：未运行</span>
+  <span class="v3gap"></span>
+  <span id="v3stAgent" title="Agent 桥状态">Agent：未接入</span>
+  <span id="v3stMode" title="运行形态">—</span>
+</footer>

@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"v3 主窗口默认能力：核心事件 + 标题栏拖拽区（窗口控制/文件/Agent 均走应用自定义命令，不需要额外 ACL）","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-start-dragging"]}}

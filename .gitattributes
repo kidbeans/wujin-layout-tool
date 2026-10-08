@@ -1,0 +1,5 @@
+# 逐字节等值文件：禁止行尾转换（CI 的 cmp 比对与 SHA256 校验依赖）
+index.html            -text
+src/web/*.html        -text
+checksums.sha256      -text
+*.exe                 binary

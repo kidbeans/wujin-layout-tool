@@ -1,0 +1,154 @@
+/* ================= 手机适配层（CSS） =================
+ * 由 tools/build_mobile_html.py 注入到 v4 单文件 HTML；桌面外观一字不动，只在窄屏/触屏下生效。
+ * 改动源在这里，别改产物文件（重跑打包脚本会覆盖）。
+ *
+ * 手机端设计（用户口径：棋盘最重要，其它做小、做成悬浮窗）：
+ *   棋盘   = 主舞台：单列铺满宽度，9 列一屏装下；纵向被夹住的历史问题一并解开
+ *            （#gridWrap flex 收缩 + .grid-scroll overflow-y:hidden 会把棋盘压成 22px 高）
+ *   悬浮窗 = 植物库(#palette) / 配队卡槽(#slots) / 工具栏(.toolbar) 收成底部抽屉，
+ *            由底部 FAB 开合；左栏「顺序/路由/Boss/检查/存档/导入导出…」沿用 v4 自带
+ *            工具坞 #v3dock，手机端把它从右侧 480px 栏改成底部浮层
+ *   放大   = FAB 的「🔍 放大」把格子切成 46px（棋盘可双向拖动），点「🔍 收起」回一屏
+ *
+ * 实测依据（361dp / 390px 档）：左图标栏 62px、.app-container 内边距、#gridWrap 内边距、
+ * #grid 列间距全吃在棋盘宽度上 → 按视口反算格子大小，9 列 + 行号列正好装满。
+ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overscroll-behavior-y: contain; }
+
+@media (max-width: 839px) {
+  :root {
+    --m-nav: 62px;                                   /* #v3rail 实测宽度 */
+    --m-pads: 34px;                                  /* app-container 8×2 + gridWrap 6×2 + 边线 2 */
+    --m-gaps: 20px;                                  /* 10 个列间距 × 2px */
+    --m-rl: 0.58;                                    /* 行号列宽 = cell × 该系数 */
+    --cell: clamp(24px, calc((100vw - var(--m-nav) - var(--m-pads) - var(--m-gaps)) / (9 + var(--m-rl))), 44px);
+    --rlabel: calc(var(--cell) * var(--m-rl));
+    --cfs: clamp(7.5px, calc(var(--cell) * 0.24), 10.5px);
+    --m-fab-h: 40px;                                 /* FAB 高度（底部预留要按它算） */
+    --m-foot: 24px;                                  /* 底部状态栏 */
+  }
+  html, body { max-width: 100%; overflow-x: hidden; }
+  body { padding: 8px 8px calc(var(--m-fab-h) + var(--m-foot) + 14px + env(safe-area-inset-bottom, 0px)); }
+
+  /* 收紧吃板宽的内边距与列间距（桌面断点仍用 v4 原值） */
+  .app-container { padding: 8px !important; }
+  #gridWrap { padding: 6px !important; }
+  #grid { gap: 2px !important; }
+
+  /* 顶栏吸顶 + 隐藏桌面窗口按钮 */
+  #v3tb { position: sticky; top: 0; z-index: 1400; padding-top: env(safe-area-inset-top, 0px); }
+  #v3tbSys { display: none !important; }
+
+  /* ---------- 棋盘当主舞台 ---------- */
+  .main { display: block !important; gap: 0 !important; max-height: none !important; }
+  #gridWrap {
+    order: 1 !important; width: 100% !important;
+    height: auto !important; max-height: none !important; flex: none !important;
+    margin: 0 !important;
+  }
+  /* 历史问题：.grid-scroll 被 flex 压成 22px 且 overflow-y:hidden → 棋盘被裁 */
+  .grid-scroll { height: auto !important; max-height: none !important; flex: none !important; overflow-y: visible !important; }
+  #gridWrap .ptitle span:nth-child(2) { display: none !important; }   /* 「拖动列头…」提示字，手机不看 */
+  #splitBar { margin-bottom: 4px !important; }
+
+  /* ---------- 右侧工具坞 → 底部浮层 ----------
+     注意 v4 自带规则 `#v3dock{position:absolute;right:0;top:0;bottom:0}`，
+     手机端必须把 top 一并改掉（top:0 + bottom 会让坞贴在屏幕顶部，且坞头 ✕ 会被吸顶栏
+     #v3tb(z-index:1400) 盖住，点不到 → 用户只能刷新页面） */
+  #v3dock {
+    position: fixed !important;
+    left: 6px; right: 6px;
+    top: auto !important;                            /* ← 关键：解除 v4 的 top:0 */
+    bottom: calc(var(--m-fab-h) + var(--m-foot) + 12px + env(safe-area-inset-bottom, 0px));
+    width: auto !important; min-width: 0 !important; flex: none !important;
+    max-height: 58vh; border-radius: 14px;
+    border: 1px solid var(--v3-border, rgba(255, 255, 255, .12));
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .6);
+    z-index: 1150 !important;
+  }
+  #v3dockH { flex: 0 0 44px !important; padding: 0 8px 0 14px !important; }
+  #v3dockClose { width: 36px !important; height: 36px !important; font-size: 16px !important; border-radius: 10px !important; }
+  #v3dockBody { overflow: auto !important; -webkit-overflow-scrolling: touch; }
+
+  /* ---------- 植物库 / 卡槽 / 工具栏 / 导出区 → 底部抽屉（默认收起） ---------- */
+  #palette, #slots, .toolbar, #exportBox {
+    position: fixed !important; left: 6px; right: 6px;
+    bottom: calc(var(--m-fab-h) + var(--m-foot) + 12px + env(safe-area-inset-bottom, 0px));
+    width: auto !important; max-height: 58vh; overflow: auto !important;
+    -webkit-overflow-scrolling: touch;
+    z-index: 1160 !important; display: none !important;
+    margin: 0 !important; border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .6);
+    padding: 10px 10px 12px !important;
+    overscroll-behavior: contain;
+  }
+  body.mpz-s-plants #palette { display: block !important; }
+  body.mpz-s-slots #slots { display: block !important; }
+  body.mpz-s-tools .toolbar { display: flex !important; flex-wrap: wrap; gap: 6px; }
+  body.mpz-s-out #exportBox { display: block !important; }
+  #exportBox textarea, #out { min-height: 34vh; }
+  /* 状态提示条压小（画笔提示仍要看得见） */
+  #status, .status { min-height: 30px !important; padding: 6px 10px !important; font-size: 12px !important; }
+
+  /* 抽屉打开时的遮罩（点一下收起） */
+  #mpzOverlay {
+    position: fixed; inset: 0; z-index: 1140; background: rgba(3, 6, 12, .45);
+    display: none;
+  }
+  body.mpz-s-open #mpzOverlay { display: block; }
+  body.v3dockopen #mpzOverlay { display: block; }    /* 工具坞打开时同样有遮罩，点空白即收起 */
+
+  /* ---------- 底部 FAB ---------- */
+  #mpzFab {
+    position: fixed; left: 6px; right: 6px;
+    bottom: calc(var(--m-foot) + 6px + env(safe-area-inset-bottom, 0px));
+    display: flex; gap: 6px; z-index: 1300;
+  }
+  #mpzFab button {
+    flex: 1 1 0; min-height: 36px; padding: 6px 2px; margin: 0;
+    font-size: 12px; border-radius: 10px; white-space: nowrap;
+  }
+  #mpzFab button.on { outline: 2px solid var(--accent-blue, #38bdf8); outline-offset: -2px; }
+
+  /* ---------- 放大模式（格子 46px，棋盘可拖动） ---------- */
+  body.mpz-zoom { --cell: 46px !important; --rlabel: 22px !important; --cfs: 11px !important; }
+  body.mpz-zoom .grid-scroll { max-height: 62vh; overflow: auto !important; }
+  body.mpz-zoom #grid { margin: 0 !important; }
+
+  /* ---------- 底部状态栏压小 ---------- */
+  #v3status { flex: 0 0 var(--m-foot) !important; height: var(--m-foot) !important;
+    font-size: 10px !important; gap: 8px !important; padding: 0 8px !important; }
+
+  .toolbar button, .palette-tabs .tab { min-height: 34px; }
+}
+
+@media (max-width: 430px) {
+  /* 361dp 档（用户手机：1080/2375、1264/2780 → 最小宽度 361dp）：再收左图标栏 / 列间距 / 行号列 */
+  :root {
+    --m-nav: 46px;
+    --m-gaps: 10px;
+    --m-rl: 0.45;
+    --cell: clamp(22px, calc((100vw - var(--m-nav) - var(--m-pads) - var(--m-gaps)) / (9 + var(--m-rl))), 40px);
+    --rlabel: calc(var(--cell) * var(--m-rl));
+    --cfs: clamp(7px, calc(var(--cell) * 0.26), 10.5px);
+  }
+  #grid { gap: 1px !important; }
+  #v3rail { width: 46px !important; flex: 0 0 46px !important; }
+  #v3rail .v3ni { width: auto !important; min-width: 0 !important; padding: 6px 3px !important; font-size: 10.5px !important; }
+  #v3rail .v3ni i { font-size: 16px !important; }
+  body { padding-left: 6px; padding-right: 6px; }
+  .header-title-group h1 { font-size: 15px; }
+  #mpzFab button { font-size: 11.5px; }
+}
+
+/* 触屏设备（手机/平板，含横屏）通用增强 */
+@media (pointer: coarse) {
+  button, .tab, .chip, .v2pill, select, label, .cell, .slot { touch-action: manipulation; }
+  button { min-height: 34px; padding: 7px 10px; }
+  .cell, .chip, .slot, .tab { -webkit-tap-highlight-color: rgba(79, 163, 255, .25); }
+  /* 长按格子 = 清空（由 JS 合成 contextmenu）；关掉 iOS 长按呼出菜单，免得抢事件 */
+  .cell { -webkit-touch-callout: none; }
+  /* 输入框字号 ≥16px 可避免 iOS 自动放大页面 */
+  input[type="text"], input[type="search"], input:not([type]), textarea, select { font-size: 16px; }
+}

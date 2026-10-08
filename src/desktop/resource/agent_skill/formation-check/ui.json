@@ -1,0 +1,6 @@
+{
+  "visible": true,
+  "order": 100,
+  "label": "🔍 AI 体检",
+  "defaults": { "context": ["formation", "pipeline", "order", "route", "boss", "checks"] }
+}

@@ -1,0 +1,6 @@
+{
+  "visible": true,
+  "order": 500,
+  "label": "🎨 个性化设计",
+  "defaults": { "context": ["formation"] }
+}

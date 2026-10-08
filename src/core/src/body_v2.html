@@ -1,0 +1,286 @@
+<!-- ================= v2 扩展 UI（工具条移动由 90_boot 完成；面板为右侧抽屉） ================= -->
+<!-- 原生壳伪标题栏 + 边缘缩放热区：仅 pywebview 无边框模式（95_maa.js 加 body.native-shell）显示；浏览器模式隐藏 -->
+<div id="v2titlebar">
+  <div id="v2tbDrag"><span class="v2tb-logo">🎴</span><span class="v2tb-title">无尽布阵小工具 v2</span></div>
+  <button id="v2tbMin" title="最小化">─</button>
+  <button id="v2tbMax" title="最大化">□</button>
+  <button id="v2tbClose" title="关闭">✕</button>
+</div>
+<div id="v2rz-n"  class="v2rz" data-edge="top"></div>
+<div id="v2rz-s"  class="v2rz" data-edge="bottom"></div>
+<div id="v2rz-e"  class="v2rz" data-edge="right"></div>
+<div id="v2rz-w"  class="v2rz" data-edge="left"></div>
+<div id="v2rz-ne" class="v2rz v2rz-c" data-edge="top_right"></div>
+<div id="v2rz-nw" class="v2rz v2rz-c" data-edge="top_left"></div>
+<div id="v2rz-se" class="v2rz v2rz-c" data-edge="bottom_right"></div>
+<div id="v2rz-sw" class="v2rz v2rz-c" data-edge="bottom_left"></div>
+
+<div id="v2bar" class="toolbar v2bar">
+  <button id="v2b-presets">📦 预设</button>
+  <button id="v2b-order">🔢 顺序</button>
+  <button id="v2b-route">🧭 路由</button>
+  <button id="v2b-boss">👑 Boss</button>
+  <button id="v2b-checks">🔍 检查</button>
+  <button id="v2b-save">💾 存档</button>
+  <button id="v2b-export2">📤 导出 v2</button>
+  <button id="v2b-server">🌐 服务</button>
+  <span class="v2sep"></span>
+  <button id="v2b-undo" title="Ctrl+Z">↩ 撤销</button>
+  <button id="v2b-redo" title="Ctrl+Y">↪ 重做</button>
+  <span class="v2sep"></span>
+  <button id="v2ThemeBar" title="切换到深色主题">🌙 深色</button>
+</div>
+
+<div id="v2Drawer">
+  <!-- 预设 -->
+  <div class="v2panel" id="v2p-presets">
+    <div class="v2p-h">📦 世界预设（九套成品画像）<button class="v2close" data-close="1">✕</button></div>
+    <div id="presetList"></div>
+    <div class="v2hint">预设含真实部署脚本提取的 阵型/卡槽/遍历顺序/路由参数/Boss链；载入后可在各面板微调再导出。生成器：tools/gen_presets.py（改 pipeline 后重跑即可更新预设）。</div>
+    <div class="v2p-h" style="margin-top:10px;">🏛️ 官方无尽任务画像（只读：预设模式 + 通用框架）</div>
+    <div id="officialList"></div>
+    <div class="v2hint">来自 MaaPVZ 官方 resource/（生成器 tools/gen_official.py）。官方预设=按世界分支的 pipeline+植物配置改写，通用框架=用户输入选项驱动——因此不做布阵预设，而是给结构画像；官方 pipeline 可直接拖进「检查」面板做多文件合并体检。</div>
+  </div>
+
+  <!-- 顺序 -->
+  <div class="v2panel" id="v2p-order">
+    <div class="v2p-h">🔢 遍历顺序（种植链）<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <select id="ordDeck"><option value="deck1">deck1（配队1）</option><option value="deck2">deck2（配队2）</option></select>
+      <button id="ordGen">从棋盘生成草案</button>
+      <button id="ordValidate">校验顺序</button>
+      <button id="ordGold" class="primary" title="金卡初始每种3次：推演只种前3个时，第一关每行是否仍有守阵主力（迫击炮类追踪直接视为安全）">🥇 金卡推演</button>
+      <label class="ordchk"><input type="checkbox" id="ordVis" checked> 棋盘链路可视化</label>
+      <span id="ordCount" class="v2muted"></span>
+    </div>
+    <div id="ordList" class="v2orderlist"></div>
+    <div class="v2row" id="ordAddBar">
+      <button data-add="plant">+种植</button><button data-add="wave">+点波</button><button data-add="interleave">+插缝结算</button>
+      <button data-add="sweep">+捡花</button><button data-add="slide">+滑阳光</button><button data-add="shovel">+铲除</button>
+      <button data-add="feed">+喂豆</button><button data-add="accel">+加速</button>
+    </div>
+    <div class="v2hint">顺序面板打开时：用植物画笔点格子=追加种植步（同格去重）；「检」=该步用 ColorMatch 金卡检测（失败走回退）。规则：O1覆盖 O2融合次序 O3时序 O4检测位 O5插缝 O6 deck2专属点波 O7捡花 O8节奏 O9金卡3次+行覆盖。<br>🥇 推演徽章：金=金卡步 · 绿=追踪安全 · 红=超3次失效（该格会标红）；行号 <b>绿✓</b>=有主力 · <b>黄⚠</b>=仅追踪 · <b>红✗</b>=无主力。列表悬停可在棋盘上高亮对应格。</div>
+    <textarea id="ordReport" class="v2report" readonly placeholder="点「校验顺序」输出 O1~O9 报告；点「🥇 金卡推演」输出完整推演（用量/行覆盖/失效步）"></textarea>
+  </div>
+
+  <!-- 路由 -->
+  <div class="v2panel" id="v2p-route">
+    <div class="v2p-h">🧭 配队路由与计数模拟<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <label>模式 <select id="rtMode">
+        <option value="tail">尾数分流（复兴/童话）</option>
+        <option value="phase">阶段分流（海盗）</option>
+        <option value="none">无计数（埃及/西部单卡组）</option>
+      </select></label>
+    </div>
+    <div class="v2grid2">
+      <label data-rtmode="tail" data-tip="尾数命中时切配队2（deck2），逗号分隔，如 3,8。仅「尾数分流」模式生效；会随计步参数下发 agent">deck2尾数 (tail.d2) <input id="rtD2Tails" value="3,8"></label>
+      <label data-rtmode="tail" data-tip="尾数命中时走 Boss 链（配队1boss），如 5,0；会随计步参数下发 agent">Boss尾数 (tail.boss) <input id="rtBossTails" value="5,0"></label>
+      <label data-rtmode="phase" data-tip="「阶段分流（海盗）」专用：指定哪些关切 deck2，如 2,12">deck2指定关 (deck2Levels) <input id="rtDeck2Lv" value="2,12"></label>
+      <label data-rtmode="phase" data-tip="「阶段分流（海盗）」：前 N 个 Boss 关直接喂豆，之后叠电大再喂">Boss直接喂前N关 (bossEarlyFeed) <input id="rtBossEarly" type="number" value="20"></label>
+      <label data-rtmode="phase" data-tip="「阶段分流（海盗）」：到达该关进入挂机期（抛花+喂豆+补种+快结算）">挂机起始关 (farmFrom) <input id="rtFarmFrom" type="number" value="21"></label>
+      <label data-rtmode="all" data-tip="计数起点（从第 X 关开始打，尾数 5/0 是 Boss 关）。填了会整体覆盖计步参数，route_node / front30_feed 已自动带上">启动关卡数 (start_level) <input id="rtStart" type="number" value="1"></label>
+      <label data-rtmode="tail" data-tip="开荒期：前 N 关尾数命中 deck2 尾数也不切（留在 deck1）（复兴=10）">前N关不切deck2 (deck1_first) <input id="rtDeck1First" type="number" placeholder="复兴=10"></label>
+      <label data-rtmode="tail" data-tip="前 N 关小关波太短：不点波，先识别结算、未命中才拖豆开大（童话=10；功夫=30）">前N关先等结算 (front10) <input id="rtFront10" type="number" placeholder="童话=10"></label>
+      <label data-rtmode="tail" data-tip="等结算循环里识别结算未命中时，把能量豆拖到该格开大。格式 列-行（如 2-3）；留空＝默认 1-3">等结算拖豆格 (front10_feed) <input id="rtFront10Feed" placeholder="如 2-3"></label>
+      <label data-rtmode="tail" data-tip="前 N 关小关速刷：布阵打完喂豆开大→狂点波→等结算（复兴/童话=30）。填 0 则不做前 N 关 override">前N关速刷 (front30) <input id="rtFront30" type="number" placeholder="复兴/童话=30"></label>
+      <label data-rtmode="tail" data-tip="速刷喂豆落点，格式 列-行（如 1-3）；留空＝默认节点 给豆1_2，填格子会自动归一成节点名">速刷喂豆格 (front30_feed) <input id="rtFront30Feed" placeholder="如 1-3"></label>
+      <label data-rtmode="tail" data-tip="前 N 关只在尾数 3 切 deck2（尾数 8 不切）（童话=20）">前N关仅×3切deck2 (deck2_tail3_first) <input id="rtTail3First" type="number" placeholder="童话=20"></label>
+      <label data-rtmode="tail" data-tip="超过 N 关后跳过蓓蕾补种段，直接滑阳光（童话=50）">N关后不补蓓蕾 (beilei_stop) <input id="rtBeileiStop" type="number" placeholder="童话=50"></label>
+      <label data-rtmode="tail" data-tip="第 N 关起普关进入补白萝卜循环（agent bailuo_from；白萝卜落格/槽位取自 deck1 顺序里的白萝卜步；留空=关闭。火龙v2=60）">N关起补白萝卜 (bailuo_from) <input id="rtBailuoFrom" type="number" placeholder="火龙v2=60"></label>
+      <label data-rtmode="tail" data-tip="生成「关内点波」任务选项并定默认档；导出时 override 只指向实际存在的点波节点。留空=不生成该选项，维持点波5/点波1交替现状">关内点波默认档 (wave_mode) <select id="rtWaveMode"><option value="">不生成选项</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
+      <label data-rtmode="tail" data-tip="Boss 喂豆目标（前N关，deck1_first>0 时生效）：填 pipeline 节点名（如 ty_boss_喂豆5_2）；留空＝复兴约定 1-3。节点不存在时导出会按 Boss 喂豆格自动创建">Boss喂豆前N (boss_feed_early) <input id="rtBossFeedEarly" placeholder="留空=1-3"></label>
+      <label data-rtmode="tail" data-tip="Boss 喂豆目标（后续 Boss 关）：填节点名，通常是 Boss 链里已有的循环喂豆节点（如 ty_boss_喂豆5_3）；留空＝复兴约定 2-3">Boss喂豆后续 (boss_feed_late) <input id="rtBossFeedLate" placeholder="留空=2-3"></label>
+    </div>
+    <div class="v2row">
+      <label class="ordchk" data-tip="进关「点波_初始」后把花卡槽的卡滑到抛花格产豆（deck1）；导出 task 自带「小关是否抛花」开关与每朵花行列坐标输入，格号可到 MPZ 界面改"><input type="checkbox" id="rtThrowOn"> 小关抛花（deck1）</label>
+      <label data-tip="抛花用的卡在卡槽的第几格（能量花通常在槽1）">花卡槽 <input id="rtThrowSlot" type="number" value="1" min="1" max="16" style="width:52px"></label>
+      <label data-tip="抛花落点，格式 列-行，逗号分隔，最多 4 格（如 7-1,7-2）">抛花格 <input id="rtThrowCells" value="7-1,7-2" placeholder="列-行,逗号分隔,≤4格" size="16"></label>
+    </div>
+    <div class="v2row">
+      <span class="v2muted">已验证参数：</span>
+      <span id="rtPresetBar">
+        <button data-rp="复兴">复兴</button>
+        <button data-rp="桑葚">桑葚</button>
+        <button data-rp="童话">童话</button>
+        <button data-rp="海盗">海盗</button>
+        <button data-rp="西部/埃及(单卡组)">单卡组</button>
+      </span>
+    </div>
+    <div class="v2row">
+      <label>从 <input id="rtFrom" type="number" value="1" style="width:60px"></label>
+      <label>到 <input id="rtTo" type="number" value="149" style="width:60px"></label>
+      <button id="rtSelfTest">规则自检</button>
+    </div>
+    <div id="rtTailMap" class="v2row"></div>
+    <div id="rtStats" class="v2hint" style="line-height:1.7;"></div>
+    <canvas id="rtStrip" width="760" height="34" style="width:100%"></canvas>
+    <div id="rtSimBody" class="v2simwrap"></div>
+    <div class="v2row">
+      <label>单关详解 <input id="rtDetailLv" type="number" value="13" style="width:60px"></label>
+      <button id="rtDetailBtn">解释判定</button>
+      <label class="v2muted">小关均时<input id="rtAvgN" type="number" value="55" style="width:52px">s</label>
+      <label class="v2muted">Boss均时<input id="rtAvgB" type="number" value="50" style="width:52px">s</label>
+    </div>
+    <div id="rtEstimate" class="v2hint"></div>
+    <textarea id="rtDetail" class="v2report" readonly placeholder="点「解释判定」输出该关的完整判定链"></textarea>
+    <textarea id="rtIssues" class="v2report" readonly placeholder="R1~R6 配置校验"></textarea>
+    <textarea id="rtPreview" class="v2report" readonly placeholder="fx_counter 参数与红线提示"></textarea>
+    <textarea id="rtSelfTestOut" class="v2report" readonly placeholder="点「规则自检」跑 15 条测试向量"></textarea>
+  </div>
+
+  <!-- Boss -->
+  <div class="v2panel" id="v2p-boss">
+    <div class="v2p-h">👑 Boss 关链编辑<button class="v2close" data-close="1">✕</button></div>
+    <div id="bossOps" class="v2orderlist"></div>
+    <div class="v2row" id="bossAddBar">
+      <button data-add="stack">+叠种</button><button data-add="feed">+喂豆</button>
+      <button data-add="accel">+加速</button><button data-add="flower">+能量花</button>
+    </div>
+    <div class="v2row">
+      <label class="ordchk"><input type="checkbox" id="bossFeedSelect"> 生成喂豆位置 select（45格）</label>
+      <label class="ordchk"><input type="checkbox" id="bossDebugCard" checked> 生成 boss关选卡界面开始（调试）</label>
+    </div>
+    <div class="v2hint">范式参考：叠电大=叠×2轮→(能量花)→加速→循环喂豆（复兴/西部）；喂豆开大=喂豆→加速→喂豆→循环（童话，末步勾循环）。识别boss关→神器补给骨架由导出自动补齐。规则：B1目标格 B2循环收尾 B5节奏 B6血厚教训。</div>
+    <textarea id="bossReport" class="v2report" readonly placeholder="点「校验Boss」输出 B1~B6 报告"></textarea>
+    <div class="v2row"><button id="bossValidate">校验Boss</button></div>
+  </div>
+
+  <!-- 检查 -->
+  <div class="v2panel" id="v2p-checks">
+    <div class="v2p-h">🔍 pipeline / task / interface 检查链 + 日志时间线<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <label class="v2filebtn">选 pipeline JSON（可多选合并）<input type="file" id="chkPipe" accept=".json,.jsonc,.txt" multiple></label>
+      <span id="chkPipeName" class="v2muted">未选择</span>
+    </div>
+    <div class="v2row">
+      <label class="v2filebtn">选 task JSON（可选）<input type="file" id="chkTask" accept=".json,.txt"></label>
+      <span id="chkTaskName" class="v2muted">未选择</span>
+      <label class="v2filebtn">interface.json（可选）<input type="file" id="chkIface" accept=".json,.txt"></label>
+      <span id="chkIfaceName" class="v2muted">未选择</span>
+    </div>
+    <div class="v2row">
+      <label class="v2filebtn">agent 日志（fx/haidao_counter）<input type="file" id="chkLogAgent" accept=".log,.txt" multiple></label>
+      <span id="chkLogAgentName" class="v2muted">未选择</span>
+    </div>
+    <div class="v2row">
+      <label class="v2filebtn">maafw 日志（可多选拼接）<input type="file" id="chkLogMaafw" accept=".log,.txt" multiple></label>
+      <span id="chkLogMaafwName" class="v2muted">未选择</span>
+    </div>
+    <div class="v2row"><label>前缀（留空自动识别）<input id="chkPrefix" placeholder="如 fx_ / th_wj_"></label>
+      <button id="chkGo" class="primary">开始检查</button></div>
+    <div class="v2hint">规则：S1断链 S2悬空 S3孤岛 S4检测回退 S5禁max_hit S6长等待 S8deck2隔离 S9/S17点波四元组 S10重置到1 S11入口→初始化 S12未定义锚点 S13坐标越界 S14卡槽9~16别名 S15喂豆循环 S16回环配套 S18点波target一致 S19 boss色值 S20 OCR完整性 S21 Swipe完整 S22延时 T1~T4 task红线 T5参数白名单 T6 select兜底 T7 interface挂载 V1画像 V2同名冲突。多选 pipeline 时自动合并成一张图（官方整包可一次拖入），选 2 个文件可出 V3 节点级 diff。</div>
+    <textarea id="chkReport" class="v2report" style="min-height:240px" readonly placeholder="检查报告（静态检查 / V3 diff / 日志时间线）"></textarea>
+  </div>
+
+  <!-- 存档 -->
+  <div class="v2panel" id="v2p-save">
+    <div class="v2p-h">💾 存档槽位（整包：棋盘+卡槽+顺序+路由+Boss）<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <input id="svName" placeholder="存档名，如 复兴无尽" style="flex:1">
+      <button id="svSave" class="primary">保存/覆盖</button>
+    </div>
+    <div class="v2row">
+      <select id="svPick" style="flex:1"></select>
+      <button id="svLoad">载入</button>
+      <button id="svDel">删除</button>
+    </div>
+    <div class="v2row">
+      <button id="svExportAll">导出全部(JSON)</button>
+      <button id="svImportAll">导入全部</button>
+    </div>
+    <textarea id="svIO" class="v2report" placeholder="导出全部的 JSON 显示在这里；也可粘贴进来点导入"></textarea>
+    <div class="v2hint">数据存浏览器 localStorage；换电脑/换浏览器请用「导出全部」带走。</div>
+  </div>
+
+  <!-- 导出 -->
+  <div class="v2panel" id="v2p-export2">
+    <div class="v2p-h">📤 导出 v2<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row"><label>节点前缀 <input id="v2Prefix" value="wj_" style="width:110px"></label><label>任务名 <input id="v2TaskName" placeholder="留空=世界无尽(v2生成)" style="width:150px" title="自定义 interface.json 里的任务名；留空则自动按世界命名"></label></div>
+    <div class="v2row">
+      <button id="ex2Json">导出 JSON v2</button>
+      <button id="ex2Txt">导出 txt v2</button>
+      <button id="ex2Pipe" class="primary">生成 pipeline 片段</button>
+      <button id="ex2Frame" title="官方通用框架（custom 前期 + fw 后期）选项集：MaaPvz 可视化编辑器可直接导入">📤 通用框架 JSON</button>
+    </div>
+    <div class="v2row">
+      <button id="ex2ImportJson">应用粘贴的 JSON v2</button>
+      <button id="ex2FrameImp" title="把官方通用框架导出的单 JSON（选项集）解析回画布">📥 解析通用框架 JSON</button>
+      <button id="ex2Copy">复制</button>
+      <button id="ex2Download">下载 .json</button>
+      <button id="ex2Deploy" title="把当前画布一键部署进 MPZ：写 pipeline/task 片段 + 注册 interface.json + agent 计数器检查（幂等，改前自动备份）。需桌面版，且「🌐 服务」面板已设 MPZ 根目录">🚀 部署到 MPZ</button>
+    </div>
+    <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」；导入时先粘贴到本框再点解析）"></textarea>
+    <div class="v2p-h" style="margin-top:10px;">📥 MPZ pipeline 导入（YS_*.json / Endless_*.json，可多选）</div>
+    <div class="v2row">
+      <label class="v2filebtn">选 pipeline JSON（可多选）<input type="file" id="impPipe" accept=".json,.jsonc,.txt" multiple></label>
+      <span id="impPipeName" class="v2muted">未选择</span>
+    </div>
+    <div class="v2row">
+      <button id="impAnalyze">解析（先看报告）</button>
+      <button id="impApply" class="primary" disabled>应用到画布</button>
+    </div>
+    <textarea id="impReport" class="v2report" readonly placeholder="导入识别报告：各链步数 / 植物名 / 路由模式 / 警告；点「应用到画布」才覆盖（可撤销）"></textarea>
+    <div class="v2hint">走链规则与 tools/gen_presets.py 同源：判定节点→布阵链→金卡检测/扫动/喂豆/铲除/点波；deck 归属按 d1_/d2_ 标记或 deck2 判定链 BFS；路由参数取自计步 custom_action_param（检测到 haidao_计步分流 → 相位模式按海盗默认 2/12/20/21）。未知植物名（如 Deck2种植）按槽位表兜底并提示补名。</div>
+    <div class="v2hint">pipeline 片段含：入口/计数/配队/识别/补给骨架 + deck1/deck2 种植链 + Boss 链 + 点波家族；task 片段含 5 选项（初始化/监控/启动关卡数/全自动循环/boss调试）+ 可选喂豆位置 select。坐标系 720 短边，配队坐标为复兴/童话布局。</div>
+  </div>
+
+  <!-- 服务模式（webui.py 本机服务；file:// 打开时显示引导） -->
+  <div class="v2panel" id="v2p-server">
+    <div class="v2p-h">🌐 服务模式（python webui.py · 本机 127.0.0.1）<button class="v2close" data-close="1">✕</button></div>
+    <div id="srvStatus" class="v2hint">正在探测服务……</div>
+    <div class="v2row" id="srvMpzRow" style="display:none">
+      <label>MPZ 根目录 <input id="srvMpz" placeholder="E:/app/MaaPVZ-win-x86_64" style="width:260px"></label>
+      <button id="srvMpzPick" class="v2btn">📁 浏览…</button>
+      <button id="srvMpzGo">重新扫描</button>
+      <span class="v2muted">桌面原生直读，无需任何服务</span>
+    </div>
+    <div class="v2row" id="srvWebRow">
+      <label>服务地址 <input id="srvBase" placeholder="http://127.0.0.1:8767（可改端口）" style="width:230px"></label>
+      <button id="srvBaseGo">连接/重试</button>
+      <span class="v2muted">浏览器模式需先另行启动 <code>python webui.py</code>（独立进程）</span>
+    </div>
+    <div id="srvBody" style="display:none">
+      <div class="v2row"><span class="v2muted">MPZ 根：</span><span id="srvRoot" class="v2muted"></span></div>
+      <div class="v2p-h" style="margin-top:8px;">📁 pipeline（点击载入检查面板）</div>
+      <div id="srvPipeList" class="v2filelist"></div>
+      <div class="v2p-h" style="margin-top:8px;">📁 task / interface / agent</div>
+      <div id="srvTaskList" class="v2filelist"></div>
+      <div class="v2p-h" style="margin-top:8px;">📁 日志（载入日志时间线）</div>
+      <div id="srvLogList" class="v2filelist"></div>
+      <div class="v2row" style="margin-top:10px;">
+        <button id="srvLoadChecks" class="primary">载入勾选文件 → 检查面板</button>
+        <button id="srvImport">导入勾选 pipeline → 画布</button>
+      </div>
+      <div class="v2row">
+        <button id="srvGenPresets">再生成预设（gen_presets + gen_official）</button>
+        <span id="srvGenOut" class="v2muted"></span>
+      </div>
+      <div class="v2hint">勾选多个 pipeline（含官方 resource 整包）后可合并体检；「再生成预设」完成后需刷新页面加载新数据。启动：python webui.py（或 python launch.py 开原生窗口）。</div>
+    </div>
+
+  <!-- 帮助手册（v2：固定左栏面板；#helpBody 由 98_help.js 在启动时移入。v3 为独立视图） -->
+  <div class="v2panel" id="v2p-help">
+    <div class="v2p-h">📖 帮助手册<button class="v2close" data-close="1">✕</button></div>
+  </div>
+</div>
+</div>
+<!-- ================= 左侧图标导航（代理现有 v2b-* 按钮，零功能重写；两主题常驻，深色下为 MAA 风格配色） ================= -->
+<nav id="v2side">
+  <div class="vs-logo">🎴</div>
+  <button class="vsi" data-act="home"    title="主界面（收起面板）">🎴<i>主界面</i></button>
+  <button class="vsi" data-act="presets" title="世界预设">📦<i>预设</i></button>
+  <button class="vsi" data-act="order"   title="顺序链">🔢<i>顺序</i></button>
+  <button class="vsi" data-act="route"   title="路由面板">🧭<i>路由</i></button>
+  <button class="vsi" data-act="boss"    title="Boss 配置">👑<i>Boss</i></button>
+  <button class="vsi" data-act="checks"  title="一致性检查">🔍<i>检查</i></button>
+  <button class="vsi" data-act="save"    title="存档管理">💾<i>存档</i></button>
+  <button class="vsi" data-act="export2" title="导出 v2">📤<i>导出</i></button>
+  <button class="vsi" data-act="server"  title="服务面板">🌐<i>服务</i></button>
+  <button class="vsi" data-act="help"    title="帮助手册（用户说明集中）">📖<i>帮助</i></button>
+  <span class="vss"></span>
+  <button class="vsi" data-act="undo" title="撤销 (Ctrl+Z)">↩<i>撤销</i></button>
+  <button class="vsi" data-act="redo" title="重做 (Ctrl+Y)">↪<i>重做</i></button>
+  <span class="vsi-gap" style="flex:1"></span>
+  <button class="vsi" id="v2ThemeBtn" data-act="theme" title="切换深/浅主题">🌙<i>深色</i></button>
+</nav>

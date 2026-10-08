@@ -1,0 +1,191 @@
+<!-- ================= 用户手册（帮助面板内嵌文档；构建时并入，勿加 <html> 外壳） =================
+     2026-09-06 重构：导入导出扩成「全流程」重点章（格式辨识/四种导入/七步出脚本/两种部署/常见坑）；
+     全页重点分层（.imp 重要框 / .warn 警示框 / ol.steps 步骤 / .path 路径 / .btnref 按钮牌） -->
+<div id="helpBody" class="v2help-body">
+
+<div class="imp"><b>📖 读法：</b>只想快点出阵看<a href="#h-start">「快速上手」</a>；<b>要把阵型变成能跑的 MPZ 脚本</b>，直接看<a href="#h-io">「导入导出全流程」</a>（本章可照抄步骤）；其余章节按功能区查阅。<kbd>F1</kbd> 随时开关本手册，左上目录可跳转。</div>
+
+<h2 id="h-start">🚀 快速上手<span class="h2tag">3 分钟出阵</span></h2>
+<ol class="steps">
+  <li>懒人起步：左栏 <span class="btnref">📦 预设</span> → <b>世界预设（九套成品画像）</b>一键载入已验证脚本（复兴/童话/西部/埃及/桑葚/海盗/龙芋/功夫/功夫纯火龙v2，含阵型/卡槽/顺序/路由/Boss/抛花），载入后微调即可导出。</li>
+  <li>在左侧<b>植物库</b>点选植物 → 点棋盘格子放置（也可直接拖）；拖到<b>卡槽</b>即配队（卡槽现在带植物头像，一眼可认）。</li>
+  <li>顶部工具栏点 <span class="btnref">🔢 顺序</span> →「生成草案」一键生成种植链（瓷砖格会自动在链尾铺瓷砖萝卜；金卡主力超 3 格时前 3 格按未覆盖行优先排序，O9 更容易过）；<span class="btnref">🔍 检查</span> 看 O1~O9 体检（0 error 再往下走）。</li>
+  <li>点左栏 <span class="btnref">📤 导入导出</span> →「生成 pipeline 片段」拿走脚本，或先「导出 JSON v2」存底稿——<b>完整上线步骤见<a href="#h-io">导入导出全流程</a></b>。</li>
+</ol>
+
+<h2 id="h-board">🌱 棋盘操作</h2>
+<ul>
+  <li><b>放置/擦除</b>：点选画笔后点格子；右键清空格子/卡槽；右键植物名=从库中删除。</li>
+  <li><b>互换</b>：格子↔格子拖拽互换；拖<b>列头</b>=整列互换；拖<b>行号</b>=整行互换。</li>
+  <li><b>复制画笔</b>：空白画笔（点棋盘空白处取消选择）时点格子=复制该格组合，再点其他格连续粘贴。</li>
+  <li><b>编辑</b>：双击格子改主植物名（输入 <code>-</code> 清空）。</li>
+  <li><b>尺寸</b>：右下「列数/行数 + 应用尺寸」（1~9 列、1~5 行）。</li>
+  <li><b>瓷砖</b>：工具组「放置/移除瓷砖」，独立于植物、不参与复制；导入时用 <code>[瓷]</code> 标记。</li>
+  <li><b>动作</b>：分棋盘专用 抛花/抛蕾/喂豆/铲除/delay，点格子在原组合后追加（可叠加，例：<code>大守卫菇+喂豆+delay500+铲除</code>）。</li>
+  <li><b>小关抛花</b>：路由面板勾选「小关抛花」并填 花卡槽+抛花格（如 <code>7-1,7-2</code>）后，导出会在 deck1「点波_初始」后自动插入抛花步，task 自带「小关是否抛花」开关与每朵花行列坐标输入（西部同构，格号可到 MPZ 界面改）。</li>
+  <li><b>特效开关</b>：工具栏「特效」关闭后仅保留瓷砖/芦荟提示；<b>分阵型</b>开关显示 总阵型/前期/后期 三个棋盘（可「校验一致性」）。</li>
+</ul>
+
+<h2 id="h-stack">🌿 叠种与融合</h2>
+<ul>
+  <li><b>藤蔓</b>（毒藤/南瓜头/豆藤/小守卫菇）叠在主植物上，显示如 <code>桑葚(毒藤)</code>；一格最多一种藤蔓。</li>
+  <li><b>融合</b>（原豌/电豌/火豌/冰豌/毒豌）只叠在「大哥」上，棋盘显示 <code>原大/电大/火大/冰大/毒大</code>，导出仍为完整 <code>大哥+材料</code>。</li>
+  <li>导入时自动识别组合写法：<code>原大=大哥+原豌</code>、<code>原碗→原豌</code> 纠错、<code>-</code>/空=空格。</li>
+</ul>
+
+<h2 id="h-slots">🃏 卡槽与配队</h2>
+<ul>
+  <li>卡槽 <b>1~8 = 配队1</b>；点「配队2」展开卡槽 <b>9~16</b>（面板已带植物头像图）。</li>
+  <li>槽位归属决定路由与检查：<b>deck1 步只能用卡槽 1~8，deck2 步只能用 9~16</b>（违例会被 O10 拦下，见<a href="#h-io-pit">常见坑</a>）。</li>
+</ul>
+
+<h2 id="h-order">🔢 顺序链与🥇金卡推演<span class="h2tag">O9 是出脚本前的必过项</span></h2>
+<ul>
+  <li><b>生成草案</b>：按棋盘+卡槽一键生成种植链（融合对相邻、按槽分组、插缝结算自动插入）；拖拽可微调。</li>
+  <li><b>画笔追加</b>：顺序面板打开时，用植物画笔点格子=追加种植步（同格去重）。</li>
+  <li><b>手动加步</b>：加步栏「+种植」可临时插入任意卡槽/格子的种植步（调试用，不必在棋盘上）；所有加步自动插到链尾点波<b>之前</b>——追加到点波之后是孤儿步、永不执行。位置用拖拽或 ↑↓ 调整，行内可改格子/卡槽/pre/post。</li>
+  <li><b>检</b>：该步挂 ColorMatch 金卡检测（失败走回退），一般从第 2 个融合格开始挂。</li>
+  <li><b>校验规则</b>：O1覆盖 O2融合次序 O3时序 O4检测位 O5插缝 O6 deck2专属点波 O7捡花 O8节奏 <b>O9金卡3次+行覆盖</b> <b>O10卡槽归属</b>。</li>
+</ul>
+<h3 id="h-order-gold">🥇 金卡推演（O9）</h3>
+<p>金卡（橙色品质）<b>初始每种只有 3 次</b>。推演只按前 3 次计算（第 4 次起失效），检查<b>第一关开始时每一行是否至少有一个守阵主力</b>：大哥(含x大)/洋芋/桑葚/药师/暗物质火龙果（单行）等算主力；气流、珊瑚等辅助不算；军炮/迫击炮类所在行直接视为安全。</p>
+<div class="imp"><b>判读：</b>「<b>超初始 3 次</b>」标记是 <b>info 不是错误</b>——同种第 4 次以后的种植是给后续关卡/铲补留的通用位，第一关不生效属预期；只有「融合格超次大哥缺检」和「行无守阵主力」才是必须修的 error。</div>
+<h3 id="h-order-vis">🔗 链路可视化（与棋盘结合）</h3>
+<ul>
+  <li>顺序面板打开时棋盘叠加步数徽章：<b>金=金卡步 · 绿=追踪安全 · 红=超3次失效</b>；行号 <b>绿✓有主力 / 黄⚠仅追踪 / 红✗无主力</b>。</li>
+  <li>顺序列表悬停任一步，棋盘对应格高亮；「棋盘链路可视化」勾选框可关。</li>
+</ul>
+
+<h2 id="h-route">🧭 配队路由与计数模拟</h2>
+<ul>
+  <li><b>模式</b>：尾数分流（复兴/童话/龙芋）/ 阶段分流（海盗）/ 无计数（埃及/西部单卡组）。</li>
+  <li>deck2尾数、Boss尾数、front10/30、喂豆格等参数均有「已验证预设」一键填充；「规则自检」跑测试向量。</li>
+  <li><b>N关起补白萝卜 (bailuo_from)</b>：第 N 关起普关进入「重种白萝卜」循环（agent 改写点波路由，火龙v2=60，防后期吸阵破阵）；白萝卜落格/槽位自动取自 deck1 顺序里的白萝卜步，留空=关闭。</li>
+  <li><b>关内点波默认档 (wave_mode)</b>：非空时导出的 task 会带「关内点波」三档选项（不点波=只等结算最稳 / 默认=交替 / 狂点=突发连点），所选档为默认；留空=不生成该选项，维持旧行为。</li>
+  <li>「模拟」按关卡序列逐关判定分流，可视化计数条与单关判定链；≥bailuo_from 的普关会标注「走补白萝卜循环」。</li>
+</ul>
+
+<h2 id="h-boss">👑 Boss 关链编辑</h2>
+<ul>
+  <li>范式：叠电大=叠×2轮→(能量花)→加速→循环喂豆（复兴/西部）；喂豆开大=喂豆→加速→喂豆→循环（童话，末步勾循环）。</li>
+  <li>识别boss关→神器补给骨架由导出自动补齐；可生成喂豆位置 select（45格）；B1~B7 一键校验（B7 会拦「Boss 关用 deck2 卡槽」的叠种）。</li>
+</ul>
+
+<h2 id="h-io">📥📤 导入导出全流程<span class="h2tag">重点章 · 从画布到能跑的脚本</span></h2>
+
+<h3 id="h-io-fmt">5.1 先分清三种文件（混用必失败）</h3>
+<table>
+  <tr><th>文件</th><th>长什么样</th><th>干什么用</th><th>正确入口</th></tr>
+  <tr><td><b>v2 阵型 JSON</b>（源底稿）</td><td>纯 JSON，开头 <code>{"version":2,"meta":…</code>，含 boards/slots/order/route/boss</td><td>阵型的<b>完整存档</b>，改阵型全靠它回灌</td><td><span class="btnref">应用粘贴的 JSON v2</span></td></tr>
+  <tr><td><b>存档槽位整包</b></td><td>JSON，若干具名槽位（棋盘+卡槽+顺序+路由+Boss 整包）</td><td>多套阵型打包带走/换机</td><td>存档面板 粘贴→<span class="btnref">导入全部</span></td></tr>
+  <tr><td><b>pipeline 片段</b></td><td>大文本：体检注释 + pipeline 节点 JSON + task 片段 <b>三段拼在一起</b></td><td><b>部署用成品</b>（给 MPZ 的最终形态）</td><td>拆开后部署（见 5.3/5.4）；<b>不能整份直接导入</b></td></tr>
+</table>
+<div class="warn"><b>⚠ 最常见错误：</b>把 pipeline 片段粘进「应用粘贴的 JSON v2」（它不是 version:2 格式），或把存档整包当 v2 JSON 导入——都会报错。<b>先看文件开头长什么样，再选入口。</b></div>
+
+<h3 id="h-io-in">5.2 导入：四种途径</h3>
+<p><b>A. 手里有 v2 阵型 JSON</b>（最常用，工具自己的源格式）：</p>
+<ol class="steps">
+  <li>左栏 <span class="btnref">📤 导入导出</span>，把 JSON <b>整段</b>粘进大文本框。</li>
+  <li>点 <span class="btnref">应用粘贴的 JSON v2</span> ——棋盘/卡槽/顺序/路由/Boss 全部还原（可撤销）。</li>
+</ol>
+<p><b>B. 手里是存档槽位整包</b>：</p>
+<ol class="steps">
+  <li>左栏 <span class="btnref">💾 存档</span> 面板，整包粘进 IO 框。</li>
+  <li>点 <span class="btnref">导入全部</span> → 列表出现各槽位 → 点要用的槽「载入」到画布。</li>
+</ol>
+<p><b>C. 手里是已部署的 MPZ pipeline</b>（YS_*.json / Endless_*.json 纯 JSON 文件，可多选合并）：</p>
+<ol class="steps">
+  <li>导入导出面板下半区 <span class="btnref">选 pipeline JSON（可多选）</span>。</li>
+  <li>点 <span class="btnref">解析（先看报告）</span> ——走链规则还原出 步数/植物名/路由/警告，<b>先读报告</b>。</li>
+  <li>没问题再点 <span class="btnref">应用到画布</span>（可撤销）。</li>
+</ol>
+<p><b>D. v4 桌面版：Agent 改完的输出</b>——Agent 工作台里点 <span class="btnref">📥 应用到布阵</span>，自动从回复中提取 v2 JSON/片段应用（优先取最新一轮完整文档）。</p>
+
+<h3 id="h-io-out">5.3 导出：从画布到能跑的 MPZ 脚本（照抄 7 步）</h3>
+<ol class="steps">
+  <li><b>配齐五件套</b>：棋盘 + 卡槽（配队2要开）+ 顺序链（deck1/deck2）+ 路由 + Boss 链。跑 <span class="btnref">🔍 检查</span> 与 <span class="btnref">🥇 金卡推演</span>，<b>O/B 全部 0 error</b>（O9 的「超次」info 不拦）。</li>
+  <li><b>存源底稿</b>：点 <span class="btnref">导出 JSON v2</span> → <span class="btnref">下载 .json</span>（桌面版弹原生另存为）。<b>这步必做</b>：以后改阵型、换机、Agent 修改，全靠这份 v2 源回灌。</li>
+  <li><b>定前缀和任务名</b>：面板顶部「节点前缀」填本套脚本独用的前缀（如 <code>fx_</code>、<code>ty_</code>——<b>与 MPZ 里已部署的脚本不重名</b>）；「任务名」可自定义（写进 interface.json 的任务名，留空自动「世界无尽(v2生成)」，会记忆）。</li>
+  <li><b>生成片段</b>：点 <span class="btnref">生成 pipeline 片段</span>。得到三段式文本，<b>分界标记直接写在文本里</b>：①头注释（体检结论，error 必须清零再部署）→ 见「<code>↓↓② pipeline 节点 JSON</code>」标记即为第②段起点 → 见「<code>↓↓③ task 片段</code>」标记即为第③段（option+task）起点。用 <span class="btnref">复制</span> 或 <span class="btnref">下载 .json</span> 取走；不拆也没关系——下一步可以一键部署。</li>
+  <li><b>一键部署（推荐）</b>：点 <span class="btnref">🚀 部署到 MPZ</span>，工具自动做齐：体检 error 门（未清零会拦下并列清单）→ 实时生成并写入 <span class="path">resource_self/pipeline/Endless/YS_前缀.json</span> 与 <span class="path">resource_self/task/前缀_wj.json</span> → interface.json 注册（resource「自制无尽」+ import 片段 + task 条目，幂等不重复）→ agent 计数器检查修补（main.py 自动补 import；fx_counter.py 缺失时用内置源码直接写入，换电脑也能自愈）。所有被覆盖文件先备份为 <code>*.bak.时间戳</code>；逐步报告显示在导出框。前提：v4 桌面版 + 「🌐 服务」面板里 MPZ 根目录正确（校验前置：根不对时一个文件都不会写，并提示去服务面板重设）。</li>
+  <li><b>重启 MPZ</b>（MFAAvalonia）重载资源；任务列表<b>资源切到「自制无尽」</b>才能看到自制无尽任务。</li>
+  <li><b>首跑清单</b>：「初始化卡槽和草坪位置」=是；「启动时关卡数」填当前关（中途加入必填）；开「监控窗口」看实时关卡数；有检步的留意首跑识别（见 5.5 坑位）。</li>
+</ol>
+
+<h3 id="h-io-dep">5.4 部署细节与还原</h3>
+<ul>
+  <li><b>内置一键是幂等的</b>：同一画布反复点不会重复注册；<b>官方 interface.json 大更新后，打开各阵型画布逐个点一次「🚀 部署到 MPZ」即可全部还原</b>（agent/main.py 的计数器 import 也会自动补回）。</li>
+  <li><b>手动拆装</b>（学原理/离线机器）：②段存成 <span class="path">resource_self/pipeline/Endless/YS_名字.json</span>；③段的 option 合并进 <span class="path">resource_self/task/前缀_wj.json</span>；interface.json 三处——<b>resource[]</b> 加「自制无尽」{path:[./resource, ./resource_self]}、<b>import[]</b> 加片段路径、<b>task[]</b> 加条目（name/entry/option/resource=["自制无尽"]）。改完必须仍是<b>严格 JSON</b>（无注释/尾逗号）。</li>
+  <li><b>简介不用手写</b>：③ task 片段的 <code>description</code> 已按现网「卡槽 配队1[…] 配队2[…]｜注意…」格式生成（卡槽表+路由/Boss/抛花摘要），注册 task[] 时原样抄进 <code>description</code> 即可，与任务列表文案天然对齐；JSON v2 源里也存了一份（<code>meta.intro</code>）。</li>
+  <li><b>部署后校验</b>：<span class="btnref">🔍 检查</span> 面板选刚部署的文件，S1 断链应=0；任务列表资源切「自制无尽」应能看到任务。</li>
+  <li><b>回滚</b>：所有被覆盖文件都有同目录 <code>*.bak.时间戳</code> 副本，改回文件名即回滚。</li>
+</ul>
+
+<h3 id="h-io-pit">5.5 常见坑（都踩过）</h3>
+<div class="warn"><b>⚠ 三种格式混用：</b>见 5.1 表——按文件开头特征选入口。</div>
+<div class="warn"><b>⚠ 片段不是纯 JSON：</b>三段拼在一起的片段<b>不能整份</b>喂给「MPZ pipeline 导入」或直接部署（解析失败）。要回改画布请用 v2 源走 A 途径；要部署就按 5.3 第 5 步拆开。</div>
+<div class="warn"><b>⚠ 前缀冲突：</b>同一 MPZ 内每套脚本前缀必须独立（fx_/th_/ty_…），撞名节点会互相覆盖。</div>
+<div class="warn"><b>⚠ 卡槽归属：</b>deck1 步引用卡槽 9~16（或 deck2 用 1~8）= 进关后摸到的是另一配队的卡、<b>静默种错</b>（O10 拦截）。</div>
+<div class="warn"><b>⚠ 检位实测：</b>「检」的金卡检测条坐标按官方槽位探针推算，<b>卡槽3 是实测校准值</b>，其他槽位（O10b 会提示）首次上机先实测一次。</div>
+<div class="warn"><b>⚠ agent 共用：</b>计数器 agent 是所有自制无尽共用的，<b>双任务不要同时跑</b>。</div>
+
+<h2 id="h-io-legacy">5.6 旧「导入阵型」文本格式（棋盘快搬）</h2>
+<p>「导入阵型」弹窗粘贴任意文本自动还原棋盘+卡槽（适合从聊天记录快速搬阵型）：</p>
+<table>
+  <tr><th>格式</th><th>示例</th></tr>
+  <tr><td>表格文本</td><td>路1: 大哥+原豌  桑葚(毒藤) …（列1 列2… 表头可选）</td></tr>
+  <tr><td>紧凑格式</td><td><code>9x5 布阵: 大哥+原豌,桑葚(毒藤),…|-,- 卡槽: 1:能量花 …</code></td></tr>
+  <tr><td>逗号分隔</td><td>路1: 大哥+原豌,桑葚(毒藤),…</td></tr>
+  <tr><td>逐行卡槽</td><td>卡槽1:能量花 / 1:能量花</td></tr>
+  <tr><td>瓷砖标记</td><td>大哥+原豌[瓷] / 【瓷砖】 / 单独「瓷」</td></tr>
+</table>
+
+<h2 id="h-checks">🔍 检查链 + 日志时间线</h2>
+<ul>
+  <li>选 pipeline JSON（可多选合并成一张图）、task/interface、agent 与 maafw 日志 →「开始检查」。</li>
+  <li>静态规则 S1~S22 / T1~T7 / V1~V2（断链、悬空、max_hit 禁用、坐标越界、卡槽9~16别名、点波四元组、boss色值、OCR 完整性等）。</li>
+  <li>多选两份 pipeline 可出节点级 diff；agent 日志生成时间线（喂豆/铲除/检测事件对齐）。</li>
+</ul>
+
+<h2 id="h-save">💾 存档</h2>
+<ul>
+  <li>整包存档（棋盘+卡槽+顺序+路由+Boss）存浏览器 localStorage；换机请「导出全部(JSON)」带走，回来走 5.2-B 导入。</li>
+  <li>v4 桌面版状态栏显示自动存档时间；<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd> 撤销重做（深度 100）。</li>
+</ul>
+
+<h2 id="h-server">🌐 服务模式</h2>
+<p>桌面版（v4）原生直读 MPZ 根（面板里「MPZ 根目录 + 📁浏览…」），列出 pipeline/task/interface/日志，勾选后载入检查面板或直接导入画布；浏览器模式先另起 <code>python webui.py</code>。「再生成预设」重跑 gen_presets + gen_official。</p>
+
+<h2 id="h-agent">🤖 Agent 工作台（v4 桌面版）</h2>
+<ul>
+  <li>内置技能包（manifest + SKILL.md 懒加载）把布阵/检查/红线规则喂给 agent；<code>@文件</code> 引用上下文；支持续聊多轮（自动压缩上下文）。</li>
+  <li>模型来源：内置 CLI 客户端（zcode / Claude Code / 反重力）或 OpenAI / Anthropic 协议 API（含思考强度/额外参数）。</li>
+  <li>对话即工作流：让 agent 检查当前阵型、改顺序链，然后 <span class="btnref">📥 应用到布阵</span> 回灌画布（见 5.2-D）。</li>
+  <li>「一键任务包」导出 <code>任务包.md + skills/</code> 给任意 CLI agent 执行完整改造。</li>
+</ul>
+
+<h2 id="h-theme">🎨 主题与外观</h2>
+<ul>
+  <li>工具栏「🎨 主题」（v4 在标题栏）快速切换；<b>v4 左 rail「🎨 换肤」打开换肤中心</b>，11 款主题卡片即点即换（浅色/DSH纸白/深色/毛玻璃/极光/暮霞/品牌蓝/翠绿/绯红/墨青/自定义）。</li>
+  <li>自定义：暗色基底 + 强调色 + 毛玻璃，即时生效、自动记忆。</li>
+</ul>
+
+<h2 id="h-keys">⌨️ 快捷键</h2>
+<table>
+  <tr><th>键</th><th>作用</th></tr>
+  <tr><td><kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Y</kbd></td><td>撤销 / 重做</td></tr>
+  <tr><td><kbd>F1</kbd></td><td>打开 / 关闭本手册</td></tr>
+  <tr><td><kbd>Esc</kbd></td><td>关闭面板（v4 另收起右坞）</td></tr>
+  <tr><td><kbd>Ctrl+K</kbd> / <kbd>Ctrl+1/2/3</kbd>（v4）</td><td>Agent 工作台 / 切换视图</td></tr>
+</table>
+
+<h2 id="h-faq">❓ 常见问题</h2>
+<ul>
+  <li><b>金卡3次是什么？</b>无尽开局金卡（橙色植物）每种只有 3 次种植次数，超出种不下；O9 据此检查开局布阵是否成立。</li>
+  <li><b>为什么「原大」提示橙色而「原豌」是蓝色？</b>叠在大哥上的融合体是金卡本体；材料品质只影响材料种植次数。</li>
+  <li><b>数据存在哪？</b>浏览器 localStorage（v2/v3 通用键）；重要阵型用存档导出或 v2 JSON 带走。</li>
+  <li><b>桌面版和浏览器版差异？</b>桌面版多 Agent 工作台、原生另存为、原生 MPZ 直读、完成通知；棋盘功能完全同源。</li>
+  <li><b>导出后点「下载 .json」弹打开？</b>已修复为另存为（2026-09-06），如遇旧版请更新桌面壳。</li>
+</ul>
+
+</div>
