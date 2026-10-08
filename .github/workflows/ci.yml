@@ -1,0 +1,33 @@
+name: 校验（手机版重建 + 发布件校验值）
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: 从源码重建手机版单文件
+        run: |
+          python tools/build_mobile_html.py             --src "src/web/无尽布阵工具.html"             --css src/mobile/mobile_layer.css             --js src/mobile/mobile_layer.js             --out "$RUNNER_TEMP/index_built.html"
+
+      - name: 与仓库根 index.html 比对
+        run: |
+          if cmp -s "$RUNNER_TEMP/index_built.html" index.html; then
+            echo "✓ index.html 与 src/ 源码重建结果逐字节一致"
+          else
+            echo "::error::index.html 与源码重建结果不一致：请重跑打包器并提交（python tools/build_mobile_html.py --src src/web/无尽布阵工具.html --css src/mobile/mobile_layer.css --js src/mobile/mobile_layer.js --out index.html）"
+            exit 1
+          fi
+
+      - name: 核对已发布文件 SHA256
+        run: sha256sum -c checksums.sha256

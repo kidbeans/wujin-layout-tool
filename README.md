@@ -71,8 +71,9 @@ node tools/_mobile_check.mjs mobile  http://127.0.0.1:8765/index.html 361 780   
 node tools/_mobile_check.mjs desktop http://127.0.0.1:8765/index.html 1280 800  # 桌面档不回归 6 项
 ```
 
-**发布前自检**：把上面三条命令跑一遍（重建比对 + 校验值）。仓库根的 `index.html` 是**构建产物**，
-改源码后必须重跑打包器并提交，否则线上页面会与源码脱节。
+**CI（GitHub Actions，`.github/workflows/ci.yml`）**：每次推送到 `main` / 提 PR 时自动
+①用 `src/` 重建 `index.html` 并逐字节比对、②核对 `checksums.sha256`。
+所以改源码后必须重跑打包器并提交产物，否则流水线会红——本地自检就是上面那三条命令。
 
 ## 手机网页版要点
 
