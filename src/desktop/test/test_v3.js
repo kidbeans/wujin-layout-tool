@@ -16,6 +16,7 @@ const ROOT = path.join(__dirname, '..');
 const V2ROOT = (function(){
   const cands = [
     path.join(path.dirname(ROOT), '无尽布阵工具v2'),            // 旧布局：source/无尽布阵工具v2
+    path.join(ROOT, '..', '..', '..', '布阵工具', '无尽布阵工具v2'),  // 仓库布局
     path.join(ROOT, '..', '..', '..', '无尽布阵工具v2'),        // v4 布局：布阵工具/无尽布阵工具v2
     path.join(path.dirname(path.dirname(path.dirname(ROOT))), '无尽布阵工具v2')  // 快照布局兜底
   ];

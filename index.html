@@ -3008,7 +3008,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
 <div id="v2Drawer">
   <!-- 预设 -->
   <div class="v2panel" id="v2p-presets">
-    <div class="v2p-h">📦 世界预设（十五套成品画像）<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2p-h">📦 世界预设（九套成品画像）<button class="v2close" data-close="1">✕</button></div>
     <div id="presetList"></div>
     <div class="v2hint">预设含真实部署脚本提取的 阵型/卡槽/遍历顺序/路由参数/Boss链；载入后可在各面板微调再导出。生成器：tools/gen_presets.py（改 pipeline 后重跑即可更新预设）。</div>
     <div class="v2p-h" style="margin-top:10px;">🏛️ 官方无尽任务画像（只读：预设模式 + 通用框架）</div>
@@ -3055,6 +3055,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <label data-rtmode="phase" data-tip="「阶段分流（海盗）」：到达该关进入挂机期（抛花+喂豆+补种+快结算）">挂机起始关 (farmFrom) <input id="rtFarmFrom" type="number" value="21"></label>
       <label data-rtmode="all" data-tip="计数起点（从第 X 关开始打，尾数 5/0 是 Boss 关）。填了会整体覆盖计步参数，route_node / front30_feed 已自动带上">启动关卡数 (start_level) <input id="rtStart" type="number" value="1"></label>
       <label data-rtmode="tail" data-tip="开荒期：前 N 关尾数命中 deck2 尾数也不切（留在 deck1）（复兴=10）">前N关不切deck2 (deck1_first) <input id="rtDeck1First" type="number" placeholder="复兴=10"></label>
+      <label data-rtmode="tail phase" data-tip="激进省时（需 agent≥2026-10-09）：①开始游戏 post→0；②上一关与本关卡组相同时跳过 配队+选卡×2 直达开始游戏（会话首关仍完整切卡组）。中途人工在选卡界面改过卡组请关闭。冰河实测 ~4min/轮">激进省时模式 <input id="rtFastMode" type="checkbox"></label>
       <label data-rtmode="tail" data-tip="前 N 关小关波太短：不点波，先识别结算、未命中才拖豆开大（童话=10；功夫=30）">前N关先等结算 (front10) <input id="rtFront10" type="number" placeholder="童话=10"></label>
       <label data-rtmode="tail" data-tip="等结算循环里识别结算未命中时，把能量豆拖到该格开大。格式 列-行（如 2-3）；留空＝默认 1-3">等结算拖豆格 (front10_feed) <input id="rtFront10Feed" placeholder="如 2-3"></label>
       <label data-rtmode="tail" data-tip="前 N 关小关速刷：布阵打完喂豆开大→狂点波→等结算（复兴/童话=30）。填 0 则不做前 N 关 override">前N关速刷 (front30) <input id="rtFront30" type="number" placeholder="复兴/童话=30"></label>
@@ -3268,7 +3269,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
 
 <h2 id="h-start">🚀 快速上手<span class="h2tag">3 分钟出阵</span></h2>
 <ol class="steps">
-  <li>懒人起步：左栏 <span class="btnref">📦 预设</span> → <b>世界预设（十五套成品画像）</b>一键载入已验证脚本（复兴/桑葚/童话/埃及/西部/海盗/龙芋/功夫/功夫纯火龙v2/未来/黑暗/黑暗纯火龙v2/沙滩火龙/沙滩桑葚/冰河，含阵型/卡槽/顺序/路由/Boss/抛花），载入后微调即可导出。</li>
+  <li>懒人起步：左栏 <span class="btnref">📦 预设</span> → <b>世界预设（九套成品画像）</b>一键载入已验证脚本（复兴/童话/西部/埃及/桑葚/海盗/龙芋/功夫/功夫纯火龙v2，含阵型/卡槽/顺序/路由/Boss/抛花），载入后微调即可导出。</li>
   <li>在左侧<b>植物库</b>点选植物 → 点棋盘格子放置（也可直接拖）；拖到<b>卡槽</b>即配队（卡槽现在带植物头像，一眼可认）。</li>
   <li>顶部工具栏点 <span class="btnref">🔢 顺序</span> →「生成草案」一键生成种植链（瓷砖格会自动在链尾铺瓷砖萝卜；金卡主力超 3 格时前 3 格按未覆盖行优先排序，O9 更容易过）；<span class="btnref">🔍 检查</span> 看 O1~O9 体检（0 error 再往下走）。</li>
   <li>点左栏 <span class="btnref">📤 导入导出</span> →「生成 pipeline 片段」拿走脚本，或先「导出 JSON v2」存底稿——<b>完整上线步骤见<a href="#h-io">导入导出全流程</a></b>。</li>
@@ -3479,7 +3480,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
     <button class="v3ni" data-view="formation" title="布阵工作台（棋盘 / 植物库 / 卡槽）">🌱<i>布阵</i></button>
     <button class="v3ni" data-view="agent" title="Agent 工作台（一键接入 zcode / Claude Code / DeepSeek API …）">🤖<i>Agent</i></button>
     <span class="v3sep"></span>
-    <button class="v3ni" data-panel="presets" title="世界预设（十五套成品画像）">📦<i>预设</i></button>
+    <button class="v3ni" data-panel="presets" title="世界预设（九套成品画像）">📦<i>预设</i></button>
     <button class="v3ni" data-panel="order" title="遍历顺序（种植链）">🔢<i>顺序</i></button>
     <button class="v3ni" data-panel="route" title="配队路由与计数模拟">🧭<i>路由</i></button>
     <button class="v3ni" data-panel="boss" title="Boss 关链编辑">👑<i>Boss</i></button>
@@ -5625,7 +5626,7 @@ function v2Default(){
       mode: 'tail',                       /* tail | phase | none */
       tail:  { d2: [3, 8], boss: [5, 0] },
       phase: { deck2Levels: [2, 12], bossEarlyFeed: 20, farmFrom: 21 },
-      params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0,
+      params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, fast_mode: 0,
                 front30_feed: '', deck2_tail3_first: 0, beilei_stop: 0,
                 boss_feed_early: '', boss_feed_late: '',
                 bailuo_from: 0, wave_mode: '' }
@@ -5890,6 +5891,7 @@ function v2RouteIssues(rt, ctx){
     if (p.start_level % 10 === 5 || p.start_level % 10 === 0) out.push(['R5', 'info', '启动关卡尾数为 Boss 关：首关即 Boss，建议配合「boss关选卡界面开始」']);
   }
   if (rt.mode === 'none' && (p.deck1_first > 0 || p.front30 > 0 || p.deck2_tail3_first > 0)) out.push(['R6', 'warn', '单卡组（无计数）模式不需要前N关参数']);
+  if (rt.mode === 'none' && p.fast_mode) out.push(['R6', 'warn', '单卡组（无计数）模式没有切卡组动作，激进省时模式无效（请取消勾选）']);
   if (rt.mode === 'none' && !ctx.bossReady) out.push(['R2', 'error', '单卡组同样会遇到 Boss 关（尾数5/0），Boss 链为空会在 Boss 关失败（请到 Boss 面板配置）']);
   if (rt.mode === 'none' && ctx.subSlotsOn) out.push(['R6', 'info', '单卡组模式开启配队2不会产生路由（如需请改尾数分流）']);
   return out;
@@ -5914,6 +5916,8 @@ function v2RouteSelfTest(){
     ['复兴 L20→boss(尾数0)', v2RouteLevel(fx, 20).target === 'boss'],
     ['复兴 L15 boss 喂2-3',   v2RouteLevel(fx, 15).notes.join().indexOf('2-3') > -1],
     ['复兴 L28 d2 速刷', v2RouteLevel(fx, 28).target === 'd2' && v2RouteLevel(fx, 28).notes.join().indexOf('front30') > -1],
+    ['fast_mode→skip_same_deck', v2RouteParamsExtra({ deck1_first: 20, fast_mode: 1 }, 'x_').join(',').indexOf('"skip_same_deck": true') > -1],
+    ['fast_mode关→无skip键', v2RouteParamsExtra({ deck1_first: 20 }, 'x_').join(',').indexOf('skip_same_deck') === -1],
     ['桑葚 L8→普(deck1_first)', v2RouteLevel(sz, 8).target === '普'],
     ['桑葚 L13→d2', v2RouteLevel(sz, 13).target === 'd2'],
     ['童话 L13→d2', v2RouteLevel(th, 13).target === 'd2'],
@@ -6021,6 +6025,7 @@ function v2ReadRouteUI(){
   rc.phase.bossEarlyFeed = ri('rtBossEarly'); rc.phase.farmFrom = ri('rtFarmFrom') || 21;
   p_set('start_level', ri('rtStart') || 1);
   p_set('deck1_first', ri('rtDeck1First'));
+  p_set('fast_mode', ((q('rtFastMode') || {}).checked) ? 1 : 0);
   p_set('front10', ri('rtFront10'));
   rc.params.front10_feed = q('rtFront10Feed').trim();   /* 等结算未命中时拖豆的格子(如 2-3) */
   p_set('front30', ri('rtFront30'));
@@ -6050,6 +6055,7 @@ function v2WriteRouteUI(){
   q('rtFarmFrom').value = rc.phase.farmFrom || 21;
   q('rtStart').value = rc.params.start_level || 1;
   q('rtDeck1First').value = rc.params.deck1_first || '';
+  if (q('rtFastMode')) q('rtFastMode').checked = !!rc.params.fast_mode;
   q('rtFront10').value = rc.params.front10 || '';
   q('rtFront10Feed').value = rc.params.front10_feed || '';
   q('rtFront30').value = rc.params.front30 || '';
@@ -7104,7 +7110,8 @@ function v2BossIssues(){
   });
   /* B2 循环喂豆必须在末步且靠识别结算打断 */
   var loops = ops.map(function(o, i){ return o.t === 'feed' && o.loop ? i : -1; }).filter(function(i){ return i >= 0; });
-  if (!loops.length) out.push(['B2', 'error', '没有勾选「循环」的喂豆步（Boss 需循环喂豆 + 识别结算打断）']);
+  var feeds = ops.filter(function(o){ return o.t === 'feed'; });
+  if (feeds.length && !loops.length) out.push(['B2', 'error', '有喂豆步但未勾选「循环」（Boss 需循环喂豆 + 识别结算打断）；全链无喂豆（如沙滩火龙只点加速）不适用本条']);
   loops.forEach(function(i){
     if (i !== ops.length - 1) out.push(['B2', 'warn', '第 ' + (i + 1) + ' 步循环喂豆后面还有操作（循环步应放链尾）']);
   });
@@ -15868,16 +15875,25 @@ var WJP_PRESETS = {
     "大哥",
     "芦荟",
     "原豌",
-    "暗物质火龙果",
-    "瓷砖萝卜",
+    "气流水仙花",
+    "洋芋",
     "火豌"
    ],
-   "deck2": []
+   "deck2": [
+    "能量花",
+    "阳光蓓蕾",
+    "大哥",
+    "原豌",
+    "洋芋",
+    "南瓜头",
+    "暗物质火龙果",
+    "瓷砖萝卜"
+   ]
   },
   "board": {
    "cols": 9,
    "rows": 5,
-   "compact": "9x5 布阵: 珊瑚,大哥+原豌,芦荟,暗物质火龙果,暗物质火龙果,暗物质火龙果,-,能量花,-|珊瑚,大哥+原豌,暗物质火龙果,暗物质火龙果,芦荟,暗物质火龙果,-,能量花,-|珊瑚,大哥+原豌,暗物质火龙果,暗物质火龙果,暗物质火龙果[瓷],大哥+火豌[瓷],-,-,-|珊瑚,大哥+原豌,芦荟,暗物质火龙果,暗物质火龙果[瓷],暗物质火龙果,-,-,-|珊瑚,大哥+原豌,暗物质火龙果,暗物质火龙果,芦荟,暗物质火龙果,-,-,-"
+   "compact": "9x5 布阵: 珊瑚,大哥+原豌,芦荟,洋芋,气流水仙花,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌[瓷],洋芋,气流水仙花,芦荟,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌[瓷],洋芋,气流水仙花,暗物质火龙果,大哥(南瓜头)+火豌[瓷],-,能量花,能量花|珊瑚,大哥+原豌,芦荟,气流水仙花,洋芋,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌,气流水仙花,洋芋,芦荟,暗物质火龙果(南瓜头),-,-,-"
   },
   "order": {
    "deck1": [
@@ -15888,7 +15904,7 @@ var WJP_PRESETS = {
     {
      "t": "plant",
      "name": "抛花1",
-     "cell": "8-1",
+     "cell": "8-3",
      "slot": 1,
      "pre": 100,
      "post": 100
@@ -15896,7 +15912,7 @@ var WJP_PRESETS = {
     {
      "t": "plant",
      "name": "抛花2",
-     "cell": "8-2",
+     "cell": "9-3",
      "slot": 1,
      "pre": 100,
      "post": 100
@@ -16076,10 +16092,6 @@ var WJP_PRESETS = {
      "post": 100
     },
     {
-     "t": "interleave",
-     "name": "识别结算"
-    },
-    {
      "t": "plant",
      "name": "芦荟5_5",
      "cell": "5-5",
@@ -16089,31 +16101,7 @@ var WJP_PRESETS = {
     },
     {
      "t": "plant",
-     "name": "暗物质火龙果",
-     "cell": "4-4",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果3_5",
-     "cell": "3-5",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果4_1",
-     "cell": "4-1",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果5_1",
+     "name": "气流水仙花",
      "cell": "5-1",
      "slot": 6,
      "pre": 0,
@@ -16121,51 +16109,15 @@ var WJP_PRESETS = {
     },
     {
      "t": "plant",
-     "name": "暗物质火龙果6_1",
-     "cell": "6-1",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果3_2",
-     "cell": "3-2",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果4_2",
+     "name": "气流水仙花4_2",
      "cell": "4-2",
      "slot": 6,
      "pre": 0,
      "post": 100
     },
     {
-     "t": "interleave",
-     "name": "识别结算"
-    },
-    {
      "t": "plant",
-     "name": "暗物质火龙果6_2",
-     "cell": "6-2",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果3_3",
-     "cell": "3-3",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果4_3",
+     "name": "气流水仙花4_3",
      "cell": "4-3",
      "slot": 6,
      "pre": 0,
@@ -16173,68 +16125,56 @@ var WJP_PRESETS = {
     },
     {
      "t": "plant",
-     "name": "暗物质火龙果5_3",
-     "cell": "5-3",
+     "name": "气流水仙花4_4",
+     "cell": "4-4",
      "slot": 6,
      "pre": 0,
      "post": 100
     },
     {
      "t": "plant",
-     "name": "暗物质火龙果5_4",
+     "name": "气流水仙花3_5",
+     "cell": "3-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋",
      "cell": "5-4",
-     "slot": 6,
+     "slot": 7,
      "pre": 0,
      "post": 100
     },
     {
      "t": "plant",
-     "name": "暗物质火龙果6_4",
-     "cell": "6-4",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果4_5",
+     "name": "洋芋4_5",
      "cell": "4-5",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "plant",
-     "name": "暗物质火龙果6_5",
-     "cell": "6-5",
-     "slot": 6,
-     "pre": 0,
-     "post": 100
-    },
-    {
-     "t": "interleave",
-     "name": "识别结算"
-    },
-    {
-     "t": "plant",
-     "name": "瓷砖萝卜",
-     "cell": "5-3",
      "slot": 7,
      "pre": 0,
      "post": 100
     },
     {
      "t": "plant",
-     "name": "瓷砖萝卜6_3",
-     "cell": "6-3",
+     "name": "洋芋4_1",
+     "cell": "4-1",
      "slot": 7,
      "pre": 0,
      "post": 100
     },
     {
      "t": "plant",
-     "name": "瓷砖萝卜5_4",
-     "cell": "5-4",
+     "name": "洋芋3_2",
+     "cell": "3-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_3",
+     "cell": "3-3",
      "slot": 7,
      "pre": 0,
      "post": 100
@@ -16244,7 +16184,120 @@ var WJP_PRESETS = {
      "name": "点波5"
     }
    ],
-   "deck2": []
+   "deck2": [
+    {
+     "t": "wave",
+     "name": "点波_初始_d2"
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "6-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_2",
+     "cell": "6-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果5_3",
+     "cell": "5-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_4",
+     "cell": "6-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_5",
+     "cell": "6-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜",
+     "cell": "2-2",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜2_3",
+     "cell": "2-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜6_3",
+     "cell": "6-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头",
+     "cell": "6-1",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_2",
+     "cell": "6-2",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_3",
+     "cell": "6-3",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_4",
+     "cell": "6-4",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_5",
+     "cell": "6-5",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5_d2"
+    }
+   ]
   },
   "boss": {
    "feedSelect": true,
@@ -16255,27 +16308,81 @@ var WJP_PRESETS = {
      "post": 300
     },
     {
+     "t": "stack",
+     "name": "boss_叠种5_1",
+     "cell": "5-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_2",
+     "cell": "2-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_3",
+     "cell": "2-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_2_2",
+     "cell": "2-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_3_2",
+     "cell": "2-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
      "t": "feed",
      "name": "boss_喂豆6_3",
      "cell": "6-3",
      "pre": 100,
-     "post": 3000,
+     "post": 2500,
      "loop": true
     }
    ],
    "feedCell": "6-3"
   },
-  "route": {},
-  "routeMode": "none",
+  "route": {
+   "start_level": 1,
+   "deck1_first": 20,
+   "d2_tails": [
+    3
+   ],
+   "boss_tails": [
+    5,
+    0
+   ],
+   "boss_feed_early": "bh_boss_叠种5_1",
+   "boss_feed_late": "bh_boss_叠种5_1",
+   "skip_same_deck": true,
+   "wave_mode": "不点波"
+  },
+  "routeMode": "tail",
   "throw": {
    "on": true,
    "slot": 1,
    "cells": [
-    "8-1",
-    "8-2"
+    "8-3",
+    "9-3"
    ]
   },
-  "n_nodes": 70
+  "n_nodes": 103
  }
 };
 
@@ -22408,6 +22515,12 @@ function v2ApplyPreset(key){
   var rp = v2Clone(P.route || {});
   var defp = v2Default().route.params;
   V2.route.params = v2DeepMerge(v2Clone(defp), rp);
+  /* 预设 route.params 里携带的尾数表/跳切键映射回 UI 字段（2026-10-09 v4.0.9：
+     d2_tails/boss_tails 属 tail 面板、skip_same_deck 属 fast_mode，导出只认这两处） */
+  var rp2 = V2.route.params;
+  if (rp2.d2_tails){ V2.route.tail.d2 = rp2.d2_tails; delete rp2.d2_tails; }
+  if (rp2.boss_tails){ V2.route.tail.boss = rp2.boss_tails; delete rp2.boss_tails; }
+  if (rp2.skip_same_deck){ rp2.fast_mode = 1; delete rp2.skip_same_deck; }
   V2.route.mode = P.routeMode || ((P.slots.deck2 || []).length ? 'tail' : 'none');
   if (V2.route.mode === 'phase' && P.routePhase) V2.route.phase = v2Clone(P.routePhase);
   V2.boss.ops = v2Clone((P.boss && P.boss.ops) || []);
@@ -22611,6 +22724,7 @@ function v2ExportTxt(){
   if (r.mode === 'tail'){
     var pp = [];
     if (r.params.deck1_first) pp.push('deck1_first=' + r.params.deck1_first);
+    if (r.params.fast_mode) pp.push('激进省时(fast_mode)');
     if (r.params.front10) pp.push('front10=' + r.params.front10 + (r.params.front10_feed ? '(拖豆' + r.params.front10_feed + ')' : ''));
     if (r.params.front30) pp.push('front30=' + r.params.front30 + (r.params.front30_feed ? '(feed ' + r.params.front30_feed + ')' : ''));
     if (r.params.deck2_tail3_first) pp.push('deck2_tail3_first=' + r.params.deck2_tail3_first);
@@ -22658,6 +22772,7 @@ function v2CellAnchor(cell){
 function v2RouteParamsExtra(pp, p){
   var extra = [];
   if (pp.deck1_first) extra.push('"deck1_first": ' + pp.deck1_first);
+  if (pp.fast_mode) extra.push('"skip_same_deck": true');   /* 激进省时(P5)：agent 需 2026-10-09+；旧 agent 忽略此键=安全降级 */
   if (pp.front10) extra.push('"front10": ' + pp.front10);
   if (pp.front30) extra.push('"front30": ' + pp.front30);
   if (pp.deck2_tail3_first) extra.push('"deck2_tail3_first": ' + pp.deck2_tail3_first);
@@ -22927,23 +23042,24 @@ function v2BuildPipeline(){
     N(p + '计步_boss_start', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false, "absolute": true}', next: [p + 'boss_识别开始'] });
     if (d2head) N(p + '判断进入关内_deck2', { recognition: 'ColorMatch', roi: [467, 669, 27, 27], method: 4,
       lower: [148, 213, 8], upper: [168, 233, 28], timeout: -1, action: 'Click', target: V2_ACCEL_TAP, next: [d2head] });
+    var fastPost = ((rt.params || {}).fast_mode ? 0 : 1000);   /* 激进省时(P4)：开始游戏 post→0；判断入关本就 ColorMatch timeout:-1 轮询等加载 */
     function lineup(kind, deckTarget, startTarget){
       N(p + '配队1' + kind, { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队1' + kind + '_选卡'] });
       N(p + '配队1' + kind + '_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1' + kind + '_选卡_2'] });
       N(p + '配队1' + kind + '_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏' + kind] });
-      N(p + '开始游戏' + kind, { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [startTarget] });
+      N(p + '开始游戏' + kind, { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [startTarget] });
     }
     lineup('普', null, p + '判断是否进入关内');
     if (d2head){
       N(p + '配队2d2', { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队2d2_选卡'] });
       N(p + '配队2d2_选卡', { recognition: 'DirectHit', action: 'Click', target: [199, 443], pre_delay: 0, post_delay: 500, next: [p + '配队2d2_选卡_2'] });
       N(p + '配队2d2_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [199, 443], pre_delay: 0, post_delay: 500, next: [p + '开始游戏d2'] });
-      N(p + '开始游戏d2', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [p + '判断进入关内_deck2'] });
+      N(p + '开始游戏d2', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + '判断进入关内_deck2'] });
     }
     N(p + '配队1boss', { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队1boss_选卡'] });
     N(p + '配队1boss_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1boss_选卡_2'] });
     N(p + '配队1boss_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏boss'] });
-    N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [p + 'boss_判断是否进入关内'] });
+    N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + 'boss_判断是否进入关内'] });
   }
   /* ---- 计数器 override 支撑节点（fx_counter 按路由参数改写这些节点的 next，目标必须存在；
    *      2026-09-08 龙芋教训：front30 速刷指向不存在的 给豆1_2，第2关 bad next 38ms 失败） ---- */
@@ -23063,7 +23179,7 @@ function v2BuildPipeline(){
   N(p + '神器补给_获得确认', { recognition: 'OCR', expected: ['获得以下能力'], roi: [420, 120, 440, 80],
     threshold: 0.7, action: 'Click', target: [640, 615], post_delay: 500,
     next: [p + 'boss_补给等选卡', p + 'boss_判断是否进入关内'] });
-  N(p + '计步_补给', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false}',
+  N(p + '计步_补给', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false' + ((rt.params || {}).fast_mode ? ', "route_node": "' + p + '尾数路由", "skip_same_deck": true' : '') + '}',
     next: [p + '神器补给_获得确认', p + 'boss_补给等选卡', p + 'boss_判断是否进入关内'] });
   N(p + 'boss_补给等选卡', { recognition: 'OCR', expected: ['开始战斗'], roi: [1060, 647, 201, 59], threshold: 0.75,
     action: 'DoNothing', timeout: -1, next: rt.mode === 'none' ? [p + 'boss_识别开始'] : [p + '配队1boss'] });
@@ -23117,7 +23233,7 @@ function v2BuildTask(built){
     /* Boss 关计数的 计步_补给 也要跟 {关卡} 对齐：只覆盖 计步/计步_boss_start/重置计数 时，
        「初始化卡槽和草坪位置」=否 且首关恰是 Boss 关 → 计步_补给 走 level=None→1 分支，
        计数从 1 重起，之后尾数分流全部错位（火龙 v2 实测教训，原 regen 手工补丁转正） */
-    ovCount[p + '计步_补给'] = { custom_action_param: '{"start_level": {关卡}, "route": false}' };
+    ovCount[p + '计步_补给'] = { custom_action_param: '{"start_level": {关卡}, "route": false' + (pp.fast_mode ? ', "route_node": "' + p + '尾数路由", "skip_same_deck": true' : '') + '}' };
     option[p + '启动时关卡数'] = {
       type: 'input', label: '启动时关卡数',
       description: '计数起点，尾数5/0是Boss关；从第1关开始可留空',
@@ -23349,6 +23465,7 @@ function v2TaskIntro(){
     notes.push('阶段分流 deck2@' + JSON.stringify(r.phase.deck2Levels || []));
   }
   if (pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
+  if (pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
   if (pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
   if (pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
   if (pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');
@@ -24789,7 +24906,7 @@ function v2DeployMpz(){
  * 一键部署时若 MPZ 的 agent/fx_counter.py 缺失则由此写入——工具不再依赖备份区外部文件（跨机可用）。
  * ================= */
 "use strict";
-var V2_AGENT_FX_PY = "\"\"\"\\\nMPZ \u81ea\u5236\u65e0\u5c3d \u00b7 agent \u5173\u5361\u8ba1\u6570\u5668\n=================================\n\u4e3a MPZ(MFAAvalonia) \u7684 agent \u673a\u5236\u6ce8\u518c custom action, \u4f9b\u5404\u4e16\u754c\u65e0\u5c3d pipeline \u8c03\u7528:\n\n  fx_counter        \u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u5173\u5361\u6570 +1, \u5e76\u6309\u5c3e\u6570\u6539\u5199 <prefix>\u5c3e\u6570\u8def\u7531 \u7684 next\n                    (\u9ed8\u8ba4 \u5c3e\u6570 3/8 -> \u914d\u961f2d2, 5/0 -> \u914d\u961f1boss, \u5176\u4f59 -> \u914d\u961f1\u666e;\n                     d2_tails/boss_tails \u53ef\u7531 pipeline \u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d)\n  fx_counter_reset  \u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6: \u628a\u8ba1\u6570\u5668\u91cd\u7f6e\u4e3a start_level-1,\n                    \u4f7f\u4e0b\u4e00\u6b21 fx_counter \u8ba1\u6570\u540e\u7b49\u4e8e start_level\n  fx_monitor_switch \u76d1\u63a7\u7a97\u53e3\u5f00\u5173\n\n\u5173\u5361\u6570\u5728 agent \u8fdb\u7a0b\u5185\u7d2f\u8ba1(\u6a21\u5757\u7ea7\u53d8\u91cf)\u3002agent \u8fdb\u7a0b\u5728 MPZ \u4efb\u52a1\u4f1a\u8bdd\u671f\u95f4\u6301\u7eed\u5b58\u6d3b,\n\u8fdb\u7a0b\u9000\u51fa(\u4efb\u52a1\u7ed3\u675f)\u540e\u81ea\u52a8\u6e05\u96f6, \u4e0b\u6b21\u4efb\u52a1\u4ece custom_action_param.start_level \u91cd\u65b0\u5f00\u59cb\u3002\n\n\u5c3e\u6570\u8def\u7531\u53c2\u6570\u5316 (2026-09-10):\n  \u8ba1\u6b65\u8282\u70b9 custom_action_param \u53ef\u5e26 \"d2_tails\": [3,8] / \"boss_tails\": [5,0],\n  \u4e0d\u4f20\u65f6\u56de\u843d\u9ed8\u8ba4, \u8001\u811a\u672c(\u590d\u5174/\u7ae5\u8bdd/\u6d77\u76d7)\u884c\u4e3a\u5b8c\u5168\u4e0d\u53d8\u3002\n\n\u4f9d\u8d56: pip install maafw  (\u4e0e MPZ \u7684 MaaFramework \u540c\u6e90 Python \u7ed1\u5b9a)\n\"\"\"\n\nimport datetime\nimport json\nimport os\nimport time\n\nfrom maa.agent.agent_server import AgentServer\nfrom maa.custom_action import CustomAction\nfrom maa.context import Context\n\n# \u5b9e\u65f6\u76d1\u63a7\u7a97\u53e3(\u53ef\u9009: \u65e0 tkinter \u73af\u5883\u65f6\u9759\u9ed8\u8df3\u8fc7)\ntry:\n    import fx_monitor\nexcept Exception:\n    fx_monitor = None\n\n# \u6a21\u5757\u7ea7\u8ba1\u6570\u72b6\u6001 (None = \u672a\u521d\u59cb\u5316)\n_state = {\"level\": None}\n# \u4e0a\u4e00\u5173\u8ba1\u6b65\u65f6\u523b(\u8ba1\u7b97\u6bcf\u5173\u8017\u65f6)\n_last_step = None\n# \u76d1\u63a7\u7a97\u53e3\u603b\u5f00\u5173: \u7531 fx_monitor_switch \u52a8\u4f5c\u63a7\u5236, \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173\u95ed\u4e0d\u5f39\u7a97\n_monitor_enabled = True\n\n# \u5173\u5361\u53d8\u5316\u65e5\u5fd7: \u540c\u65f6 print(\u88ab MFAAvalonia \u6355\u83b7\u5230\u754c\u9762\u65e5\u5fd7) \u548c\u5199\u6587\u4ef6(\u53cc\u4fdd\u9669)\n_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"debug\")\n_LOG_PATH = os.path.join(_LOG_DIR, \"fx_counter.log\")\n\n\ndef _log(msg: str):\n    # \u6bcf\u884c\u5e26\u65f6\u95f4\u6233(\u6587\u4ef6+\u754c\u9762\u65e5\u5fd7), \u4fbf\u4e8e\u6309\u5173\u5361\u7edf\u8ba1\u8017\u65f6\n    line = f\"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\"\n    print(line)\n    try:\n        os.makedirs(_LOG_DIR, exist_ok=True)\n        with open(_LOG_PATH, \"a\", encoding=\"utf-8\") as f:\n            f.write(line + \"\\n\")\n    except OSError:\n        pass\n    # \u540c\u6b65\u5230\u76d1\u63a7\u7a97\u53e3(\u4f20\u539f\u59cb msg, \u76d1\u63a7\u6b63\u5219\u89e3\u6790 \u7b2cX\u5173/-> \u4e0d\u53d7\u65f6\u95f4\u6233\u5f71\u54cd)\n    if fx_monitor is not None and _monitor_enabled:\n        try:\n            fx_monitor.notify(msg)\n        except Exception:\n            pass\n\n\ndef _parse_param(custom_action_param: str) -> dict:\n    \"\"\"\n    \u4ece pipeline \u8282\u70b9 custom_action_param \u89e3\u6790\u53c2\u6570\u3002\n    \u517c\u5bb9\u4e24\u79cd\u7f16\u7801(\u5b9e\u6d4b):\n      1) \u5355\u5c42: {\"start_level\": 103}            (\u76f4\u63a5\u5199\u8fdb pipeline \u7684\u9ed8\u8ba4\u503c)\n      2) \u53cc\u5c42: \"{\\\\\"start_level\\\\\": 103}\"       (MPZ input override \u5e8f\u5217\u5316\u540e,\n                \u5916\u5c42\u88ab\u5305\u6210 JSON \u5b57\u7b26\u4e32\u5b57\u9762\u91cf, \u9700\u8981\u89e3\u4e24\u5c42)\n    \"\"\"\n    try:\n        p = json.loads(custom_action_param or \"{}\")\n        if isinstance(p, dict):\n            return p\n        if isinstance(p, str):\n            p2 = json.loads(p)\n            if isinstance(p2, dict):\n                return p2\n        return {}\n    except (ValueError, TypeError):\n        return {}\n\n\ndef _parse_start_level(custom_action_param: str) -> int:\n    return int(_parse_param(custom_action_param).get(\"start_level\", 1))\n\n\ndef _parse_tails(v, default):\n    \"\"\"\u628a param \u91cc\u7684\u5c3e\u6570\u5217\u8868\u89c4\u6574\u6210 0~9 \u7684 int tuple; \u7f3a\u5931/\u975e\u6cd5\u56de\u843d default\u3002\n    \u652f\u6301 [3,8] \u4e0e \"3,8\"/\"3 8\"/\"3\uff0c8\" \u4e24\u79cd\u5199\u6cd5(\u5de5\u5177\u5bfc\u51fa\u4e3a\u6570\u7ec4)\u3002\"\"\"\n    if v is None:\n        return default\n    if isinstance(v, str):\n        v = [x for x in v.replace(\"\uff0c\", \",\").replace(\" \", \",\").split(\",\") if x != \"\"]\n    if not isinstance(v, (list, tuple)):\n        return default\n    try:\n        out = tuple(int(x) % 10 for x in v)\n    except (TypeError, ValueError):\n        return default\n    return out or default\n\n\ndef _route_by_tail(level: int, prefix: str, deck1_first: int = 0, deck2_tail3_first: int = 0,\n                   d2_tails=(3, 8), boss_tails=(5, 0)) -> str:\n    \"\"\"\u6309\u5173\u5361\u5c3e\u6570\u8fd4\u56de\u76ee\u6807 pipeline \u8282\u70b9\u540d(\u7528 prefix \u62fc\u5168\u540d)\n    d2_tails/boss_tails: \u7531\u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u7f3a\u7701 3/8 \u5207 deck2\u30015/0 \u8d70 Boss\n        (2026-09-10 \u6253\u901a\u5de5\u5177\u8def\u7531\u9762\u677f: \u754c\u9762\u586b\u7684\u5c3e\u6570\u771f\u6b63\u751f\u6548; \u4e0d\u4f20\u5219\u56de\u843d\u9ed8\u8ba4)\n    deck1_first>0 \u65f6: \u524d deck1_first \u5173 \u5c3e\u6570 \u2208 d2_tails \u4e0d\u5207 deck2, \u6539\u8d70 deck1 \u914d\u961f\n    (\u5f00\u8352\u671f deck1 \u6210\u578b\u4f18\u5148; \u6d0b\u828b/\u6851\u845a\u811a\u672c\u7528)\n    deck2_tail3_first>0 \u65f6: \u524d N \u5173\u53ea\u5728 d2_tails \u7684\u9996\u4e2a\u5c3e\u6570\u5207 deck2(\u5176\u4f59 d2 \u5c3e\u6570\u6539\u8d70 deck1)\n    (\u7ae5\u8bdd\u7528: \u524d20\u5173\u53ea\u5728 3/13 \u5207 deck2, 8/18 \u4e0d\u5207)\"\"\"\n    tail = level % 10\n    d2 = tuple(d2_tails) if d2_tails else (3, 8)\n    bt = tuple(boss_tails) if boss_tails else (5, 0)\n    first_d2 = d2[0] if d2 else 3\n    if deck1_first and level <= deck1_first and tail in d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if deck2_tail3_first and level <= deck2_tail3_first and tail in d2 and tail != first_d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if tail in d2:\n        return f\"{prefix}\u914d\u961f2d2\"\n    if tail in bt:\n        return f\"{prefix}\u914d\u961f1boss\"\n    return f\"{prefix}\u914d\u961f1\u666e\"\n\n\n@AgentServer.custom_action(\"fx_counter\")\nclass FxCounter(CustomAction):\n    \"\"\"\u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u8ba1\u6570 +1; route=true \u6309\u5c3e\u6570\u8def\u7531, route=false \u4ec5\u8ba1\u6570(\u5e03\u9635\u6bb5)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _last_step\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        route = bool(param.get(\"route\", True))\n        absolute = bool(param.get(\"absolute\", False))\n        deck1_first = int(param.get(\"deck1_first\", 0))   # \u524dN\u5173\u4e0d\u5207deck2(\u5c3e\u6570\u547d\u4e2dd2_tails\u6539\u8d70deck1)\n        deck2_tail3_first = int(param.get(\"deck2_tail3_first\", 0))  # \u524dN\u5173\u53ea\u5728d2\u9996\u4e2a\u5c3e\u6570\u5207deck2\n        # \u5c3e\u6570\u5206\u6d41\u8868(\u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d; \u7f3a\u7701 3/8\u2192deck2, 5/0\u2192Boss)\n        d2_tails = _parse_tails(param.get(\"d2_tails\"), (3, 8))\n        boss_tails = _parse_tails(param.get(\"boss_tails\"), (5, 0))\n        # \u8def\u7531\u8282\u70b9\u5168\u540d(\u5982 fx_\u5c3e\u6570\u8def\u7531 / th_wj_\u5c3e\u6570\u8def\u7531), \u7531 pipeline \u4f20, \u524d\u7f00\u636e\u6b64\u63a8\u5bfc\n        # \u4e0d\u540c\u811a\u672c\u524d\u7f00\u4e0d\u540c(\u590d\u5174 fx_ / \u7ae5\u8bdd th_wj_), \u4e0d\u80fd\u786c\u7f16\u7801\u590d\u5174\u524d\u7f00!\n        route_node = param.get(\"route_node\", \"fx_\u5c3e\u6570\u8def\u7531\")\n        prefix = route_node.rsplit(\"_\", 1)[0] + \"_\"\n\n        if absolute:\n            # \u7edd\u5bf9\u5bf9\u9f50: \u65e0\u89c6\u5f53\u524d level, \u76f4\u63a5\u8bbe\u4e3a start(\u5e03\u9635\u6bb5/\u4eceboss\u76f4\u5f00\u7528, \u514d\u75ab reset \u6c61\u67d3)\n            _state[\"level\"] = start\n        elif _state[\"level\"] is None:\n            _state[\"level\"] = start\n        else:\n            _state[\"level\"] += 1\n\n        # \u6bcf\u5173\u8017\u65f6(\u8ddd\u4e0a\u6b21\u8ba1\u6b65; \u5faa\u73af\u5237\u65b0\u8de8\u5173\u65f6\u542b\u5237\u65b0/\u9009\u5361\u65f6\u95f4)\n        now = time.monotonic()\n        elapsed = \"\"\n        if _last_step is not None:\n            elapsed = f\" (\u95f4\u9694{now - _last_step:.1f}s)\"\n        _last_step = now\n\n        if route:\n            target = _route_by_tail(_state[\"level\"], prefix, deck1_first, deck2_tail3_first,\n                                    d2_tails, boss_tails)\n            note = \"\"\n            if deck1_first and _state[\"level\"] <= deck1_first and _state[\"level\"] % 10 in d2_tails:\n                note = \" [\u524dN\u5173\u4e0d\u5207deck2]\"\n            if (deck2_tail3_first and _state[\"level\"] <= deck2_tail3_first\n                    and _state[\"level\"] % 10 in d2_tails\n                    and _state[\"level\"] % 10 != (d2_tails[0] if d2_tails else 3)):\n                note = \" [\u524dN\u5173\u975e\u9996\u4e2ad2\u5c3e\u6570\u4e0d\u5207deck2]\"\n            context.override_next(route_node, [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5c3e\u6570{_state['level'] % 10}) -> {target}{elapsed}{note}\")\n        else:\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5e03\u9635\u8ba1\u6b65, \u4e0d\u8def\u7531){elapsed}\")\n\n        # Boss \u5173\u5582\u8c46\u76ee\u6807: \u524d deck1_first \u5173\u6ca1\u6709 deck2 \u7684\u5fc3\u53f6\u5170/\u74f7\u7816,\n        # \u70b9\u52a0\u901f \u540e\u6539\u5582 1-3 \u7535\u5927(\u6bcf3s); \u4e4b\u540e\u6062\u590d\u5582 2-3 \u5fc3\u53f6\u5170(\u6bcf1s)\n        if deck1_first and _state[\"level\"] % 10 in boss_tails:\n            # Boss \u5582\u8c46\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\uff08boss_feed_early/boss_feed_late\uff0c\u5b8c\u6574\u8282\u70b9\u540d\uff09\uff1b\n            # \u9ed8\u8ba4\u6cbf\u7528\u590d\u5174\u7ea6\u5b9a\uff1a\u524dN\u5173\u55821-3\u7535\u5927(d1)\uff0c\u4e4b\u540e\u55822-3\u5fc3\u53f6\u5170\n            feed_early = param.get(\"boss_feed_early\", \"\") or f\"{prefix}boss_\u5582\u8c461_3_d1\"\n            feed_late = param.get(\"boss_feed_late\", \"\") or f\"{prefix}boss_\u5582\u8c462_3\"\n            feed = feed_early if _state[\"level\"] <= deck1_first else feed_late\n            context.override_next(f\"{prefix}boss_\u70b9\u52a0\u901f\", [feed])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u5582\u8c46 -> {feed}\")\n\n        # Boss \u5173\u5f00\u5c40\u53e0\u79cd\u95e8\u63a7: \u9759\u6001\u94fe \u5224\u65ad\u5165\u5173 \u2192 \u5582\u8c46 \u2192 \u70b9\u52a0\u901f \u2192 \u5faa\u73af\u5582\u8c46\n        # boss_stack_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e Boss \u5f00\u5c40\u5148\u53e0\u79cd\uff08\u5982\u590d\u5174\u300c\u53e0\u7535\u5927\u300d= \u7535\u8c4c\u53e0\u5230\u539f\u5927\u683c\uff09\uff0c\n        # \u672a\u8fbe\u5219\u8df3\u8fc7\u53e0\u79cd\u76f4\u8fbe\u5582\u8c46\uff08\u540c\u9759\u6001\u94fe\uff09\u3002\u5165\u53e3/\u8df3\u8fc7\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\u3002\n        boss_stack_from = int(param.get(\"boss_stack_from\", 0))\n        if boss_stack_from and _state[\"level\"] % 10 in boss_tails:\n            entry = param.get(\"boss_stack_entry\", \"\") or f\"{prefix}boss_\u53e0\u7535\u59272_3\"\n            skip = param.get(\"boss_stack_skip\", \"\") or f\"{prefix}boss_\u5582\u8c466_3\"\n            target = entry if _state[\"level\"] > boss_stack_from else skip\n            context.override_next(f\"{prefix}boss_\u5224\u65ad\u662f\u5426\u8fdb\u5165\u5173\u5185\", [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u53e0\u79cd -> {target}\"\n                 + (\"\" if _state[\"level\"] > boss_stack_from else \" [\u524dN\u5173\u8df3\u8fc7\u53e0\u79cd]\"))\n\n        # \u524d front30 \u5173\u5c0f\u5173: \u5e03\u9635\u4e00\u8f6e\u540e \u7ed9\u8c46\u5f00\u5927 \u2192 \u72c2\u70b9\u4e0b\u4e00\u6ce25s \u2192 \u8bc6\u522b\u7ed3\u7b97\n        front30 = int(param.get(\"front30\", 0))\n        # \u524d front10 \u5173\u5c0f\u5173: \u6ce2\u5f88\u77ed, \u4e0d\u72c2\u70b9\u6ce2; \u7b49\u7ed3\u7b97\u5faa\u73af\u91cc\u5148\u8bc6\u522b\u7ed3\u7b97\u3001\u672a\u547d\u4e2d\u624d\u62d6\u8c46\u5f00\u5927\n        front10 = int(param.get(\"front10\", 0))\n        # \u901f\u5237\u5582\u8c46\u76ee\u6807\u8282\u70b9: \u9ed8\u8ba4\u63a8\u5bfc {prefix}\u7ed9\u8c461_2(\u590d\u5174), \u7ae5\u8bdd\u663e\u5f0f\u4f20 th_wj_\u7ed9\u8c461_3\n        # (\u7ae5\u8bdd\u5927\u54e5\u4ece\u4e0b\u5f80\u4e0a\u79cd, 1-2/1-1 \u91d1\u5361\u68c0\u6d4b\u53ef\u80fd\u8df3\u8fc7, 1-3 \u524d\u671f\u5fc5\u6709)\n        front30_feed = param.get(\"front30_feed\", \"\") or f\"{prefix}\u7ed9\u8c461_2\"\n        if front30 and _state[\"level\"] % 10 not in boss_tails:\n            if front10 and _state[\"level\"] <= front10:\n                wave_next = [f\"{prefix}\u524d10_\u7b49\u7ed3\u7b97\"]  # \u5148\u8bc6\u522b\u7ed3\u7b97, \u672a\u547d\u4e2d\u624d\u62d6\u8c46(\u4e0d\u70b9\u6ce2)\n            elif _state[\"level\"] <= front30:\n                wave_next = [front30_feed]\n            else:\n                wave_next = [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                             f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce21\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", wave_next)\n            d2_next = wave_next if _state[\"level\"] <= front30 else \\\n                [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                 f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce25_d2\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25_d2\", d2_next)\n\n        # \u540e\u671f\u8865\u767d\u841d\u535c\uff082026-09-12\uff09\uff1a\u7985\u6756\u50f5\u5c38\u4f1a\u628a\u9635\u578b\u5411\u53f3\u6574\u4f53\u5438\u4e00\u683c\uff0c\u767d\u841d\u535c\u4e00\u8f6e\u53ea\u79cd\u4e00\u6b21\u6709\u7834\u9635\u98ce\u9669\u3002\n        # \u8ba1\u6b65\u53c2\u6570 bailuo_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e deck1 \u666e\u5173\u5728\u5e03\u5b8c\u4e00\u8f6e\u9635\u540e\u8fdb\u5165 \u8865\u767d \u5faa\u73af\n        # \uff08\u6162\u901f\u91cd\u79cd\u767d\u841d\u535c \u2192 \u7b49\u5f85 \u2192 \u56de\u73af\uff1b\u7b49\u5f85\u8282\u70b9\u81ea\u5e26 \u8bc6\u522b\u7ed3\u7b97/\u8bc6\u522b\u5f00\u59cb\u6218\u6597/\u8bc6\u522bboss\u5173 \u515c\u5e95\uff09\u3002\n        # \u4e0d\u4f20=\u5173\u95ed\uff0c\u5176\u4ed6\u4e16\u754c\u811a\u672c\u4e0d\u53d7\u5f71\u54cd\uff1bdeck2 \u5173\u5e26\u4e0d\u4e86\u767d\u841d\u535c\u5361\uff0c\u4e0d\u8fdb\u5faa\u73af\u3002\n        bailuo_from = int(param.get(\"bailuo_from\", 0))\n        if bailuo_from and _state[\"level\"] >= bailuo_from \\\n                and _state[\"level\"] % 10 not in boss_tails and _state[\"level\"] % 10 not in d2_tails:\n            bl = param.get(\"bailuo_node\", \"\") or f\"{prefix}\u8865\u767d1\"\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", [bl])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 \u540e\u671f\u8865\u767d\u841d\u535c -> {bl}\")\n\n        # \u84d3\u857e\u505c\u6b62\u8865\u79cd: \u524d beilei_stop \u5173\u8865\u79cd 8-1~8-4, \u4e4b\u540e\u8df3\u8fc7\u6574\u4e2a\u84d3\u857e\u79cd\u690d\u6bb5\u76f4\u63a5\u6ed1\u9633\u5149\n        # (override \u84d3\u857e\u6bb5\u5165\u53e3 \u80c6\u5c0f\u83c75_4\u2014\u2014\u53ea override \u84d3\u857e8_1 \u7684\u8bdd 8_1 \u4ecd\u4f1a\u6bcf\u8f6e\u8bd5\u79cd!\n        #  \u5df2\u79cd\u7684\u84d3\u857e\u7ee7\u7eed\u4ea7\u9633\u5149, \u88ab\u6253\u6b7b\u4e0d\u8865; \u7ae5\u8bdd\u7528 50, \u590d\u5174\u4e0d\u4f20\u4e0d\u751f\u6548)\n        beilei_stop = int(param.get(\"beilei_stop\", 0))\n        if beilei_stop and _state[\"level\"] > beilei_stop:\n            context.override_next(f\"{prefix}d1_\u80c6\u5c0f\u83c75_4\",\n                                  [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u84d3\u857e\u6ed18\u5217_1\"])\n\n        # Boss \u5582\u8c46\u94fe: \u7ae5\u8bdd\u5df2\u5168\u90e8\u9ed8\u8ba4\"\u51485-3\u518d7-4\u5faa\u73af\"(pipeline \u9759\u6001\u94fe, \u89c1 #43),\n        # \u4e0d\u518d\u9700\u8981 boss53_first/boss2_max \u5206\u6bb5 override\u2014\u2014\u5386\u53f2\u5206\u6bb5(boss53=20/boss2_max=60)\n        # \u5df2\u4e8e 2026-08-14 \u5220\u9664(boss_loop/boss53/boss_unify \u8865\u4e01\u4e0d\u53ef\u91cd\u8dd1)\n        return True\n\n\n@AgentServer.custom_action(\"fx_counter_reset\")\nclass FxCounterReset(CustomAction):\n    \"\"\"\u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6\u91cd\u7f6e\u8ba1\u6570: level = start_level - 1, \u4e0b\u4e00\u6b21 fx_counter +1 \u540e = start_level\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        force = bool(param.get(\"force\", False))\n        # \u8bca\u65ad: \u6253\u5370\u6536\u5230\u7684\u539f\u59cb custom_action_param, \u786e\u8ba4 input \u662f\u5426\u751f\u6548\n        _log(f\"[fx_counter_reset] \u539f\u59cbparam={argv.custom_action_param!r}\")\n        if force or _state[\"level\"] is None or _state[\"level\"] != start - 1:\n            _state[\"level\"] = start - 1\n            _log(f\"[fx_counter_reset] level={start - 1} (next count -> {start})\")\n        else:\n            _log(f\"[fx_counter_reset] \u8df3\u8fc7(\u5df2\u662f start_level-1={start - 1})\")\n        return True\n\n\n@AgentServer.custom_action(\"fx_monitor_switch\")\nclass FxMonitorSwitch(CustomAction):\n    \"\"\"\u76d1\u63a7\u7a97\u53e3\u5f00\u5173: \u6d4b\u8bd5\u671f\u5f00(true, \u5f39\u7a97\u5b9e\u65f6\u663e\u793a\u5173\u5361\u6570), \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173(false, \u4e0d\u518d\u5f39\u7a97)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _monitor_enabled\n        param = _parse_param(argv.custom_action_param)\n        _monitor_enabled = bool(param.get(\"enabled\", True))\n        _log(f\"[fx_monitor_switch] enabled={_monitor_enabled}\")\n        return True\n";
+var V2_AGENT_FX_PY = "\"\"\"\\\nMPZ \u81ea\u5236\u65e0\u5c3d \u00b7 agent \u5173\u5361\u8ba1\u6570\u5668\n=================================\n\u4e3a MPZ(MFAAvalonia) \u7684 agent \u673a\u5236\u6ce8\u518c custom action, \u4f9b\u5404\u4e16\u754c\u65e0\u5c3d pipeline \u8c03\u7528:\n\n  fx_counter        \u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u5173\u5361\u6570 +1, \u5e76\u6309\u5c3e\u6570\u6539\u5199 <prefix>\u5c3e\u6570\u8def\u7531 \u7684 next\n                    (\u9ed8\u8ba4 \u5c3e\u6570 3/8 -> \u914d\u961f2d2, 5/0 -> \u914d\u961f1boss, \u5176\u4f59 -> \u914d\u961f1\u666e;\n                     d2_tails/boss_tails \u53ef\u7531 pipeline \u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d)\n  fx_counter_reset  \u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6: \u628a\u8ba1\u6570\u5668\u91cd\u7f6e\u4e3a start_level-1,\n                    \u4f7f\u4e0b\u4e00\u6b21 fx_counter \u8ba1\u6570\u540e\u7b49\u4e8e start_level\n  fx_monitor_switch \u76d1\u63a7\u7a97\u53e3\u5f00\u5173\n\n\u5173\u5361\u6570\u5728 agent \u8fdb\u7a0b\u5185\u7d2f\u8ba1(\u6a21\u5757\u7ea7\u53d8\u91cf)\u3002agent \u8fdb\u7a0b\u5728 MPZ \u4efb\u52a1\u4f1a\u8bdd\u671f\u95f4\u6301\u7eed\u5b58\u6d3b,\n\u8fdb\u7a0b\u9000\u51fa(\u4efb\u52a1\u7ed3\u675f)\u540e\u81ea\u52a8\u6e05\u96f6, \u4e0b\u6b21\u4efb\u52a1\u4ece custom_action_param.start_level \u91cd\u65b0\u5f00\u59cb\u3002\n\n\u5c3e\u6570\u8def\u7531\u53c2\u6570\u5316 (2026-09-10):\n  \u8ba1\u6b65\u8282\u70b9 custom_action_param \u53ef\u5e26 \"d2_tails\": [3,8] / \"boss_tails\": [5,0],\n  \u4e0d\u4f20\u65f6\u56de\u843d\u9ed8\u8ba4, \u8001\u811a\u672c(\u590d\u5174/\u7ae5\u8bdd/\u6d77\u76d7)\u884c\u4e3a\u5b8c\u5168\u4e0d\u53d8\u3002\n\n\u4f9d\u8d56: pip install maafw  (\u4e0e MPZ \u7684 MaaFramework \u540c\u6e90 Python \u7ed1\u5b9a)\n\"\"\"\n\nimport datetime\nimport json\nimport os\nimport time\n\nfrom maa.agent.agent_server import AgentServer\nfrom maa.custom_action import CustomAction\nfrom maa.context import Context\n\n# \u5b9e\u65f6\u76d1\u63a7\u7a97\u53e3(\u53ef\u9009: \u65e0 tkinter \u73af\u5883\u65f6\u9759\u9ed8\u8df3\u8fc7)\ntry:\n    import fx_monitor\nexcept Exception:\n    fx_monitor = None\n\n# \u6a21\u5757\u7ea7\u8ba1\u6570\u72b6\u6001 (None = \u672a\u521d\u59cb\u5316)\n# prev_deck: \u4e0a\u4e00\u5173\u5b9e\u9645\u9009\u7528\u7684\u5361\u7ec4\uff0c\u4f9b skip_same_deck \u8df3\u5207\uff1breset \u65f6\u6e05\u7a7a\n_state = {\"level\": None, \"prev_deck\": None}\n# \u4e0a\u4e00\u5173\u8ba1\u6b65\u65f6\u523b(\u8ba1\u7b97\u6bcf\u5173\u8017\u65f6)\n_last_step = None\n# \u76d1\u63a7\u7a97\u53e3\u603b\u5f00\u5173: \u7531 fx_monitor_switch \u52a8\u4f5c\u63a7\u5236, \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173\u95ed\u4e0d\u5f39\u7a97\n_monitor_enabled = True\n\n# \u5173\u5361\u53d8\u5316\u65e5\u5fd7: \u540c\u65f6 print(\u88ab MFAAvalonia \u6355\u83b7\u5230\u754c\u9762\u65e5\u5fd7) \u548c\u5199\u6587\u4ef6(\u53cc\u4fdd\u9669)\n_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"debug\")\n_LOG_PATH = os.path.join(_LOG_DIR, \"fx_counter.log\")\n\n\ndef _log(msg: str):\n    # \u6bcf\u884c\u5e26\u65f6\u95f4\u6233(\u6587\u4ef6+\u754c\u9762\u65e5\u5fd7), \u4fbf\u4e8e\u6309\u5173\u5361\u7edf\u8ba1\u8017\u65f6\n    line = f\"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\"\n    print(line)\n    try:\n        os.makedirs(_LOG_DIR, exist_ok=True)\n        with open(_LOG_PATH, \"a\", encoding=\"utf-8\") as f:\n            f.write(line + \"\\n\")\n    except OSError:\n        pass\n    # \u540c\u6b65\u5230\u76d1\u63a7\u7a97\u53e3(\u4f20\u539f\u59cb msg, \u76d1\u63a7\u6b63\u5219\u89e3\u6790 \u7b2cX\u5173/-> \u4e0d\u53d7\u65f6\u95f4\u6233\u5f71\u54cd)\n    if fx_monitor is not None and _monitor_enabled:\n        try:\n            fx_monitor.notify(msg)\n        except Exception:\n            pass\n\n\ndef _parse_param(custom_action_param: str) -> dict:\n    \"\"\"\n    \u4ece pipeline \u8282\u70b9 custom_action_param \u89e3\u6790\u53c2\u6570\u3002\n    \u517c\u5bb9\u4e24\u79cd\u7f16\u7801(\u5b9e\u6d4b):\n      1) \u5355\u5c42: {\"start_level\": 103}            (\u76f4\u63a5\u5199\u8fdb pipeline \u7684\u9ed8\u8ba4\u503c)\n      2) \u53cc\u5c42: \"{\\\\\"start_level\\\\\": 103}\"       (MPZ input override \u5e8f\u5217\u5316\u540e,\n                \u5916\u5c42\u88ab\u5305\u6210 JSON \u5b57\u7b26\u4e32\u5b57\u9762\u91cf, \u9700\u8981\u89e3\u4e24\u5c42)\n    \"\"\"\n    try:\n        p = json.loads(custom_action_param or \"{}\")\n        if isinstance(p, dict):\n            return p\n        if isinstance(p, str):\n            p2 = json.loads(p)\n            if isinstance(p2, dict):\n                return p2\n        return {}\n    except (ValueError, TypeError):\n        return {}\n\n\ndef _parse_start_level(custom_action_param: str) -> int:\n    return int(_parse_param(custom_action_param).get(\"start_level\", 1))\n\n\ndef _parse_tails(v, default):\n    \"\"\"\u628a param \u91cc\u7684\u5c3e\u6570\u5217\u8868\u89c4\u6574\u6210 0~9 \u7684 int tuple; \u7f3a\u5931/\u975e\u6cd5\u56de\u843d default\u3002\n    \u652f\u6301 [3,8] \u4e0e \"3,8\"/\"3 8\"/\"3\uff0c8\" \u4e24\u79cd\u5199\u6cd5(\u5de5\u5177\u5bfc\u51fa\u4e3a\u6570\u7ec4)\u3002\"\"\"\n    if v is None:\n        return default\n    if isinstance(v, str):\n        v = [x for x in v.replace(\"\uff0c\", \",\").replace(\" \", \",\").split(\",\") if x != \"\"]\n    if not isinstance(v, (list, tuple)):\n        return default\n    try:\n        out = tuple(int(x) % 10 for x in v)\n    except (TypeError, ValueError):\n        return default\n    return out or default\n\n\ndef _route_by_tail(level: int, prefix: str, deck1_first: int = 0, deck2_tail3_first: int = 0,\n                   d2_tails=(3, 8), boss_tails=(5, 0)) -> str:\n    \"\"\"\u6309\u5173\u5361\u5c3e\u6570\u8fd4\u56de\u76ee\u6807 pipeline \u8282\u70b9\u540d(\u7528 prefix \u62fc\u5168\u540d)\n    d2_tails/boss_tails: \u7531\u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u7f3a\u7701 3/8 \u5207 deck2\u30015/0 \u8d70 Boss\n        (2026-09-10 \u6253\u901a\u5de5\u5177\u8def\u7531\u9762\u677f: \u754c\u9762\u586b\u7684\u5c3e\u6570\u771f\u6b63\u751f\u6548; \u4e0d\u4f20\u5219\u56de\u843d\u9ed8\u8ba4)\n    deck1_first>0 \u65f6: \u524d deck1_first \u5173 \u5c3e\u6570 \u2208 d2_tails \u4e0d\u5207 deck2, \u6539\u8d70 deck1 \u914d\u961f\n    (\u5f00\u8352\u671f deck1 \u6210\u578b\u4f18\u5148; \u6d0b\u828b/\u6851\u845a\u811a\u672c\u7528)\n    deck2_tail3_first>0 \u65f6: \u524d N \u5173\u53ea\u5728 d2_tails \u7684\u9996\u4e2a\u5c3e\u6570\u5207 deck2(\u5176\u4f59 d2 \u5c3e\u6570\u6539\u8d70 deck1)\n    (\u7ae5\u8bdd\u7528: \u524d20\u5173\u53ea\u5728 3/13 \u5207 deck2, 8/18 \u4e0d\u5207)\"\"\"\n    tail = level % 10\n    d2 = tuple(d2_tails) if d2_tails else (3, 8)\n    bt = tuple(boss_tails) if boss_tails else (5, 0)\n    first_d2 = d2[0] if d2 else 3\n    if deck1_first and level <= deck1_first and tail in d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if deck2_tail3_first and level <= deck2_tail3_first and tail in d2 and tail != first_d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if tail in d2:\n        return f\"{prefix}\u914d\u961f2d2\"\n    if tail in bt:\n        return f\"{prefix}\u914d\u961f1boss\"\n    return f\"{prefix}\u914d\u961f1\u666e\"\n\n\n@AgentServer.custom_action(\"fx_counter\")\nclass FxCounter(CustomAction):\n    \"\"\"\u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u8ba1\u6570 +1; route=true \u6309\u5c3e\u6570\u8def\u7531, route=false \u4ec5\u8ba1\u6570(\u5e03\u9635\u6bb5)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _last_step\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        route = bool(param.get(\"route\", True))\n        absolute = bool(param.get(\"absolute\", False))\n        deck1_first = int(param.get(\"deck1_first\", 0))   # \u524dN\u5173\u4e0d\u5207deck2(\u5c3e\u6570\u547d\u4e2dd2_tails\u6539\u8d70deck1)\n        deck2_tail3_first = int(param.get(\"deck2_tail3_first\", 0))  # \u524dN\u5173\u53ea\u5728d2\u9996\u4e2a\u5c3e\u6570\u5207deck2\n        # \u5c3e\u6570\u5206\u6d41\u8868(\u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d; \u7f3a\u7701 3/8\u2192deck2, 5/0\u2192Boss)\n        d2_tails = _parse_tails(param.get(\"d2_tails\"), (3, 8))\n        boss_tails = _parse_tails(param.get(\"boss_tails\"), (5, 0))\n        # \u540c\u5361\u7ec4\u8df3\u5207(2026-10-09 P5): \u4e0a\u4e00\u5173\u4e0e\u672c\u5173\u5361\u7ec4\u76f8\u540c \u2192 \u8def\u7531\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fX\uff0c\u8df3\u8fc7 \u914d\u961f+\u9009\u5361\u00d72\u3002\n        # \u9ed8\u8ba4 false(\u5176\u5b83\u4e16\u754c\u96f6\u5f71\u54cd)\uff1b\u4f1a\u8bdd\u7b2c\u4e00\u5173 prev_deck=None \u5fc5\u8d70\u5b8c\u6574\u94fe\uff1b\u4e2d\u9014\u624b\u64cd\u9009\u5361\u754c\u9762\u9700\u5173\u95ed\u672c\u5f00\u5173\n        skip_sd = bool(param.get(\"skip_same_deck\", False))\n        # \u8def\u7531\u8282\u70b9\u5168\u540d(\u5982 fx_\u5c3e\u6570\u8def\u7531 / th_wj_\u5c3e\u6570\u8def\u7531), \u7531 pipeline \u4f20, \u524d\u7f00\u636e\u6b64\u63a8\u5bfc\n        # \u4e0d\u540c\u811a\u672c\u524d\u7f00\u4e0d\u540c(\u590d\u5174 fx_ / \u7ae5\u8bdd th_wj_), \u4e0d\u80fd\u786c\u7f16\u7801\u590d\u5174\u524d\u7f00!\n        route_node = param.get(\"route_node\", \"fx_\u5c3e\u6570\u8def\u7531\")\n        prefix = route_node.rsplit(\"_\", 1)[0] + \"_\"\n\n        if absolute:\n            # \u7edd\u5bf9\u5bf9\u9f50: \u65e0\u89c6\u5f53\u524d level, \u76f4\u63a5\u8bbe\u4e3a start(\u5e03\u9635\u6bb5/\u4eceboss\u76f4\u5f00\u7528, \u514d\u75ab reset \u6c61\u67d3)\n            _state[\"level\"] = start\n        elif _state[\"level\"] is None:\n            _state[\"level\"] = start\n        else:\n            _state[\"level\"] += 1\n\n        # \u6bcf\u5173\u8017\u65f6(\u8ddd\u4e0a\u6b21\u8ba1\u6b65; \u5faa\u73af\u5237\u65b0\u8de8\u5173\u65f6\u542b\u5237\u65b0/\u9009\u5361\u65f6\u95f4)\n        now = time.monotonic()\n        elapsed = \"\"\n        if _last_step is not None:\n            elapsed = f\" (\u95f4\u9694{now - _last_step:.1f}s)\"\n        _last_step = now\n\n        if route:\n            target = _route_by_tail(_state[\"level\"], prefix, deck1_first, deck2_tail3_first,\n                                    d2_tails, boss_tails)\n            note = \"\"\n            if deck1_first and _state[\"level\"] <= deck1_first and _state[\"level\"] % 10 in d2_tails:\n                note = \" [\u524dN\u5173\u4e0d\u5207deck2]\"\n            if (deck2_tail3_first and _state[\"level\"] <= deck2_tail3_first\n                    and _state[\"level\"] % 10 in d2_tails\n                    and _state[\"level\"] % 10 != (d2_tails[0] if d2_tails else 3)):\n                note = \" [\u524dN\u5173\u975e\u9996\u4e2ad2\u5c3e\u6570\u4e0d\u5207deck2]\"\n            deck = 'deck2' if target.endswith('\u914d\u961f2d2') else 'deck1'\n            if skip_sd and _state.get(\"prev_deck\") == deck:\n                target = prefix + (\"\u5f00\u59cb\u6e38\u620f\u666e\" if deck == 'deck1' else \"\u5f00\u59cb\u6e38\u620fd2\")\n                note += \" [\u540c\u5361\u7ec4\u8df3\u5207]\"\n            _state[\"prev_deck\"] = deck\n            context.override_next(route_node, [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5c3e\u6570{_state['level'] % 10}) -> {target}{elapsed}{note}\")\n        else:\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5e03\u9635\u8ba1\u6b65, \u4e0d\u8def\u7531){elapsed}\")\n            # \u8865\u7ed9\u6bb5(\u8ba1\u6b65_\u8865\u7ed9, route:false \u4e14\u663e\u5f0f\u5e26 route_node)\u7684 Boss \u8df3\u5207:\n            # Boss \u5173\u524d\u4e00\u5173\u5fc5\u662f\u5c3e\u65704/9=deck1\uff0cprev_deck \u4e3a deck1 \u65f6\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fboss\n            if skip_sd and param.get(\"route_node\") and _state.get(\"prev_deck\") == 'deck1':\n                context.override_next(prefix + \"boss_\u8865\u7ed9\u7b49\u9009\u5361\", [prefix + \"\u5f00\u59cb\u6e38\u620fboss\"])\n                _log(f\"[fx_counter] \u8865\u7ed9\u6bb5 Boss\u8df3\u5207 -> {prefix}\u5f00\u59cb\u6e38\u620fboss\")\n\n        # Boss \u5173\u5582\u8c46\u76ee\u6807: \u524d deck1_first \u5173\u6ca1\u6709 deck2 \u7684\u5fc3\u53f6\u5170/\u74f7\u7816,\n        # \u70b9\u52a0\u901f \u540e\u6539\u5582 1-3 \u7535\u5927(\u6bcf3s); \u4e4b\u540e\u6062\u590d\u5582 2-3 \u5fc3\u53f6\u5170(\u6bcf1s)\n        if deck1_first and _state[\"level\"] % 10 in boss_tails:\n            # Boss \u5582\u8c46\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\uff08boss_feed_early/boss_feed_late\uff0c\u5b8c\u6574\u8282\u70b9\u540d\uff09\uff1b\n            # \u9ed8\u8ba4\u6cbf\u7528\u590d\u5174\u7ea6\u5b9a\uff1a\u524dN\u5173\u55821-3\u7535\u5927(d1)\uff0c\u4e4b\u540e\u55822-3\u5fc3\u53f6\u5170\n            feed_early = param.get(\"boss_feed_early\", \"\") or f\"{prefix}boss_\u5582\u8c461_3_d1\"\n            feed_late = param.get(\"boss_feed_late\", \"\") or f\"{prefix}boss_\u5582\u8c462_3\"\n            feed = feed_early if _state[\"level\"] <= deck1_first else feed_late\n            context.override_next(f\"{prefix}boss_\u70b9\u52a0\u901f\", [feed])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u5582\u8c46 -> {feed}\")\n\n        # Boss \u5173\u5f00\u5c40\u53e0\u79cd\u95e8\u63a7: \u9759\u6001\u94fe \u5224\u65ad\u5165\u5173 \u2192 \u5582\u8c46 \u2192 \u70b9\u52a0\u901f \u2192 \u5faa\u73af\u5582\u8c46\n        # boss_stack_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e Boss \u5f00\u5c40\u5148\u53e0\u79cd\uff08\u5982\u590d\u5174\u300c\u53e0\u7535\u5927\u300d= \u7535\u8c4c\u53e0\u5230\u539f\u5927\u683c\uff09\uff0c\n        # \u672a\u8fbe\u5219\u8df3\u8fc7\u53e0\u79cd\u76f4\u8fbe\u5582\u8c46\uff08\u540c\u9759\u6001\u94fe\uff09\u3002\u5165\u53e3/\u8df3\u8fc7\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\u3002\n        boss_stack_from = int(param.get(\"boss_stack_from\", 0))\n        if boss_stack_from and _state[\"level\"] % 10 in boss_tails:\n            entry = param.get(\"boss_stack_entry\", \"\") or f\"{prefix}boss_\u53e0\u7535\u59272_3\"\n            skip = param.get(\"boss_stack_skip\", \"\") or f\"{prefix}boss_\u5582\u8c466_3\"\n            target = entry if _state[\"level\"] > boss_stack_from else skip\n            context.override_next(f\"{prefix}boss_\u5224\u65ad\u662f\u5426\u8fdb\u5165\u5173\u5185\", [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u53e0\u79cd -> {target}\"\n                 + (\"\" if _state[\"level\"] > boss_stack_from else \" [\u524dN\u5173\u8df3\u8fc7\u53e0\u79cd]\"))\n\n        # \u524d front30 \u5173\u5c0f\u5173: \u5e03\u9635\u4e00\u8f6e\u540e \u7ed9\u8c46\u5f00\u5927 \u2192 \u72c2\u70b9\u4e0b\u4e00\u6ce25s \u2192 \u8bc6\u522b\u7ed3\u7b97\n        front30 = int(param.get(\"front30\", 0))\n        # \u524d front10 \u5173\u5c0f\u5173: \u6ce2\u5f88\u77ed, \u4e0d\u72c2\u70b9\u6ce2; \u7b49\u7ed3\u7b97\u5faa\u73af\u91cc\u5148\u8bc6\u522b\u7ed3\u7b97\u3001\u672a\u547d\u4e2d\u624d\u62d6\u8c46\u5f00\u5927\n        front10 = int(param.get(\"front10\", 0))\n        # \u901f\u5237\u5582\u8c46\u76ee\u6807\u8282\u70b9: \u9ed8\u8ba4\u63a8\u5bfc {prefix}\u7ed9\u8c461_2(\u590d\u5174), \u7ae5\u8bdd\u663e\u5f0f\u4f20 th_wj_\u7ed9\u8c461_3\n        # (\u7ae5\u8bdd\u5927\u54e5\u4ece\u4e0b\u5f80\u4e0a\u79cd, 1-2/1-1 \u91d1\u5361\u68c0\u6d4b\u53ef\u80fd\u8df3\u8fc7, 1-3 \u524d\u671f\u5fc5\u6709)\n        front30_feed = param.get(\"front30_feed\", \"\") or f\"{prefix}\u7ed9\u8c461_2\"\n        if front30 and _state[\"level\"] % 10 not in boss_tails:\n            if front10 and _state[\"level\"] <= front10:\n                wave_next = [f\"{prefix}\u524d10_\u7b49\u7ed3\u7b97\"]  # \u5148\u8bc6\u522b\u7ed3\u7b97, \u672a\u547d\u4e2d\u624d\u62d6\u8c46(\u4e0d\u70b9\u6ce2)\n            elif _state[\"level\"] <= front30:\n                wave_next = [front30_feed]\n            else:\n                wave_next = [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                             f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce21\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", wave_next)\n            d2_next = wave_next if _state[\"level\"] <= front30 else \\\n                [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                 f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce25_d2\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25_d2\", d2_next)\n\n        # \u540e\u671f\u8865\u767d\u841d\u535c\uff082026-09-12\uff09\uff1a\u7985\u6756\u50f5\u5c38\u4f1a\u628a\u9635\u578b\u5411\u53f3\u6574\u4f53\u5438\u4e00\u683c\uff0c\u767d\u841d\u535c\u4e00\u8f6e\u53ea\u79cd\u4e00\u6b21\u6709\u7834\u9635\u98ce\u9669\u3002\n        # \u8ba1\u6b65\u53c2\u6570 bailuo_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e deck1 \u666e\u5173\u5728\u5e03\u5b8c\u4e00\u8f6e\u9635\u540e\u8fdb\u5165 \u8865\u767d \u5faa\u73af\n        # \uff08\u6162\u901f\u91cd\u79cd\u767d\u841d\u535c \u2192 \u7b49\u5f85 \u2192 \u56de\u73af\uff1b\u7b49\u5f85\u8282\u70b9\u81ea\u5e26 \u8bc6\u522b\u7ed3\u7b97/\u8bc6\u522b\u5f00\u59cb\u6218\u6597/\u8bc6\u522bboss\u5173 \u515c\u5e95\uff09\u3002\n        # \u4e0d\u4f20=\u5173\u95ed\uff0c\u5176\u4ed6\u4e16\u754c\u811a\u672c\u4e0d\u53d7\u5f71\u54cd\uff1bdeck2 \u5173\u5e26\u4e0d\u4e86\u767d\u841d\u535c\u5361\uff0c\u4e0d\u8fdb\u5faa\u73af\u3002\n        bailuo_from = int(param.get(\"bailuo_from\", 0))\n        if bailuo_from and _state[\"level\"] >= bailuo_from \\\n                and _state[\"level\"] % 10 not in boss_tails and _state[\"level\"] % 10 not in d2_tails:\n            bl = param.get(\"bailuo_node\", \"\") or f\"{prefix}\u8865\u767d1\"\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", [bl])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 \u540e\u671f\u8865\u767d\u841d\u535c -> {bl}\")\n\n        # \u84d3\u857e\u505c\u6b62\u8865\u79cd: \u524d beilei_stop \u5173\u8865\u79cd 8-1~8-4, \u4e4b\u540e\u8df3\u8fc7\u6574\u4e2a\u84d3\u857e\u79cd\u690d\u6bb5\u76f4\u63a5\u6ed1\u9633\u5149\n        # (override \u84d3\u857e\u6bb5\u5165\u53e3 \u80c6\u5c0f\u83c75_4\u2014\u2014\u53ea override \u84d3\u857e8_1 \u7684\u8bdd 8_1 \u4ecd\u4f1a\u6bcf\u8f6e\u8bd5\u79cd!\n        #  \u5df2\u79cd\u7684\u84d3\u857e\u7ee7\u7eed\u4ea7\u9633\u5149, \u88ab\u6253\u6b7b\u4e0d\u8865; \u7ae5\u8bdd\u7528 50, \u590d\u5174\u4e0d\u4f20\u4e0d\u751f\u6548)\n        beilei_stop = int(param.get(\"beilei_stop\", 0))\n        if beilei_stop and _state[\"level\"] > beilei_stop:\n            context.override_next(f\"{prefix}d1_\u80c6\u5c0f\u83c75_4\",\n                                  [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u84d3\u857e\u6ed18\u5217_1\"])\n\n        # Boss \u5582\u8c46\u94fe: \u7ae5\u8bdd\u5df2\u5168\u90e8\u9ed8\u8ba4\"\u51485-3\u518d7-4\u5faa\u73af\"(pipeline \u9759\u6001\u94fe, \u89c1 #43),\n        # \u4e0d\u518d\u9700\u8981 boss53_first/boss2_max \u5206\u6bb5 override\u2014\u2014\u5386\u53f2\u5206\u6bb5(boss53=20/boss2_max=60)\n        # \u5df2\u4e8e 2026-08-14 \u5220\u9664(boss_loop/boss53/boss_unify \u8865\u4e01\u4e0d\u53ef\u91cd\u8dd1)\n        return True\n\n\n@AgentServer.custom_action(\"fx_counter_reset\")\nclass FxCounterReset(CustomAction):\n    \"\"\"\u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6\u91cd\u7f6e\u8ba1\u6570: level = start_level - 1, \u4e0b\u4e00\u6b21 fx_counter +1 \u540e = start_level\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        force = bool(param.get(\"force\", False))\n        # \u8bca\u65ad: \u6253\u5370\u6536\u5230\u7684\u539f\u59cb custom_action_param, \u786e\u8ba4 input \u662f\u5426\u751f\u6548\n        _log(f\"[fx_counter_reset] \u539f\u59cbparam={argv.custom_action_param!r}\")\n        _state[\"prev_deck\"] = None   # \u65b0\u4e00\u8f6e/\u5faa\u73af\u91cd\u542f: \u7b2c\u4e00\u5173\u5fc5\u8d70\u5b8c\u6574\u5207\u5361\u7ec4\u94fe(P5)\n        if force or _state[\"level\"] is None or _state[\"level\"] != start - 1:\n            _state[\"level\"] = start - 1\n            _log(f\"[fx_counter_reset] level={start - 1} (next count -> {start})\")\n        else:\n            _log(f\"[fx_counter_reset] \u8df3\u8fc7(\u5df2\u662f start_level-1={start - 1})\")\n        return True\n\n\n@AgentServer.custom_action(\"fx_monitor_switch\")\nclass FxMonitorSwitch(CustomAction):\n    \"\"\"\u76d1\u63a7\u7a97\u53e3\u5f00\u5173: \u6d4b\u8bd5\u671f\u5f00(true, \u5f39\u7a97\u5b9e\u65f6\u663e\u793a\u5173\u5361\u6570), \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173(false, \u4e0d\u518d\u5f39\u7a97)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _monitor_enabled\n        param = _parse_param(argv.custom_action_param)\n        _monitor_enabled = bool(param.get(\"enabled\", True))\n        _log(f\"[fx_monitor_switch] enabled={_monitor_enabled}\")\n        return True\n";
 
 /* ================= 内置 fx 监控窗口源码（agent/fx_monitor.py） =================
  * 由 fx_counter import，随任务实时弹窗显示关卡数/尾数路由/最近日志。
@@ -27052,7 +27169,7 @@ var V3Agent = {
       V3Bridge.appInfo().then(function (info){
         if (info && info.wsRoot){ self.st.wsRoot = info.wsRoot; self.save(); self.renderSettings(); }
         var about = self.el('v3setAbout');
-        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.0.8') + '）· Tauri 2 桌面壳 · '
+        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.0.9') + '）· Tauri 2 桌面壳 · '
           + '技能库：resource/agent_skill/（用户可在 %APPDATA%/com.mpz.wujinbz.v3beta/agent_ws 同级自建技能目录参考）；'
           + '数据存本机 WebView localStorage（不随程序传播）。';
       });

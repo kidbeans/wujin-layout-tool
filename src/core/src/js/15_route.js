@@ -69,6 +69,7 @@ function v2RouteIssues(rt, ctx){
     if (p.start_level % 10 === 5 || p.start_level % 10 === 0) out.push(['R5', 'info', '启动关卡尾数为 Boss 关：首关即 Boss，建议配合「boss关选卡界面开始」']);
   }
   if (rt.mode === 'none' && (p.deck1_first > 0 || p.front30 > 0 || p.deck2_tail3_first > 0)) out.push(['R6', 'warn', '单卡组（无计数）模式不需要前N关参数']);
+  if (rt.mode === 'none' && p.fast_mode) out.push(['R6', 'warn', '单卡组（无计数）模式没有切卡组动作，激进省时模式无效（请取消勾选）']);
   if (rt.mode === 'none' && !ctx.bossReady) out.push(['R2', 'error', '单卡组同样会遇到 Boss 关（尾数5/0），Boss 链为空会在 Boss 关失败（请到 Boss 面板配置）']);
   if (rt.mode === 'none' && ctx.subSlotsOn) out.push(['R6', 'info', '单卡组模式开启配队2不会产生路由（如需请改尾数分流）']);
   return out;
@@ -93,6 +94,8 @@ function v2RouteSelfTest(){
     ['复兴 L20→boss(尾数0)', v2RouteLevel(fx, 20).target === 'boss'],
     ['复兴 L15 boss 喂2-3',   v2RouteLevel(fx, 15).notes.join().indexOf('2-3') > -1],
     ['复兴 L28 d2 速刷', v2RouteLevel(fx, 28).target === 'd2' && v2RouteLevel(fx, 28).notes.join().indexOf('front30') > -1],
+    ['fast_mode→skip_same_deck', v2RouteParamsExtra({ deck1_first: 20, fast_mode: 1 }, 'x_').join(',').indexOf('"skip_same_deck": true') > -1],
+    ['fast_mode关→无skip键', v2RouteParamsExtra({ deck1_first: 20 }, 'x_').join(',').indexOf('skip_same_deck') === -1],
     ['桑葚 L8→普(deck1_first)', v2RouteLevel(sz, 8).target === '普'],
     ['桑葚 L13→d2', v2RouteLevel(sz, 13).target === 'd2'],
     ['童话 L13→d2', v2RouteLevel(th, 13).target === 'd2'],
@@ -200,6 +203,7 @@ function v2ReadRouteUI(){
   rc.phase.bossEarlyFeed = ri('rtBossEarly'); rc.phase.farmFrom = ri('rtFarmFrom') || 21;
   p_set('start_level', ri('rtStart') || 1);
   p_set('deck1_first', ri('rtDeck1First'));
+  p_set('fast_mode', ((q('rtFastMode') || {}).checked) ? 1 : 0);
   p_set('front10', ri('rtFront10'));
   rc.params.front10_feed = q('rtFront10Feed').trim();   /* 等结算未命中时拖豆的格子(如 2-3) */
   p_set('front30', ri('rtFront30'));
@@ -229,6 +233,7 @@ function v2WriteRouteUI(){
   q('rtFarmFrom').value = rc.phase.farmFrom || 21;
   q('rtStart').value = rc.params.start_level || 1;
   q('rtDeck1First').value = rc.params.deck1_first || '';
+  if (q('rtFastMode')) q('rtFastMode').checked = !!rc.params.fast_mode;
   q('rtFront10').value = rc.params.front10 || '';
   q('rtFront10Feed').value = rc.params.front10_feed || '';
   q('rtFront30').value = rc.params.front30 || '';

@@ -81,6 +81,7 @@
       <label data-rtmode="phase" data-tip="「阶段分流（海盗）」：到达该关进入挂机期（抛花+喂豆+补种+快结算）">挂机起始关 (farmFrom) <input id="rtFarmFrom" type="number" value="21"></label>
       <label data-rtmode="all" data-tip="计数起点（从第 X 关开始打，尾数 5/0 是 Boss 关）。填了会整体覆盖计步参数，route_node / front30_feed 已自动带上">启动关卡数 (start_level) <input id="rtStart" type="number" value="1"></label>
       <label data-rtmode="tail" data-tip="开荒期：前 N 关尾数命中 deck2 尾数也不切（留在 deck1）（复兴=10）">前N关不切deck2 (deck1_first) <input id="rtDeck1First" type="number" placeholder="复兴=10"></label>
+      <label data-rtmode="tail phase" data-tip="激进省时（需 agent≥2026-10-09）：①开始游戏 post→0；②上一关与本关卡组相同时跳过 配队+选卡×2 直达开始游戏（会话首关仍完整切卡组）。中途人工在选卡界面改过卡组请关闭。冰河实测 ~4min/轮">激进省时模式 <input id="rtFastMode" type="checkbox"></label>
       <label data-rtmode="tail" data-tip="前 N 关小关波太短：不点波，先识别结算、未命中才拖豆开大（童话=10；功夫=30）">前N关先等结算 (front10) <input id="rtFront10" type="number" placeholder="童话=10"></label>
       <label data-rtmode="tail" data-tip="等结算循环里识别结算未命中时，把能量豆拖到该格开大。格式 列-行（如 2-3）；留空＝默认 1-3">等结算拖豆格 (front10_feed) <input id="rtFront10Feed" placeholder="如 2-3"></label>
       <label data-rtmode="tail" data-tip="前 N 关小关速刷：布阵打完喂豆开大→狂点波→等结算（复兴/童话=30）。填 0 则不做前 N 关 override">前N关速刷 (front30) <input id="rtFront30" type="number" placeholder="复兴/童话=30"></label>

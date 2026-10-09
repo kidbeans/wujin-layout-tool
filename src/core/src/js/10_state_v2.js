@@ -15,7 +15,7 @@ function v2Default(){
       mode: 'tail',                       /* tail | phase | none */
       tail:  { d2: [3, 8], boss: [5, 0] },
       phase: { deck2Levels: [2, 12], bossEarlyFeed: 20, farmFrom: 21 },
-      params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0,
+      params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, fast_mode: 0,
                 front30_feed: '', deck2_tail3_first: 0, beilei_stop: 0,
                 boss_feed_early: '', boss_feed_late: '',
                 bailuo_from: 0, wave_mode: '' }

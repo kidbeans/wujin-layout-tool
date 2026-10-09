@@ -106,7 +106,8 @@ function v2BossIssues(){
   });
   /* B2 循环喂豆必须在末步且靠识别结算打断 */
   var loops = ops.map(function(o, i){ return o.t === 'feed' && o.loop ? i : -1; }).filter(function(i){ return i >= 0; });
-  if (!loops.length) out.push(['B2', 'error', '没有勾选「循环」的喂豆步（Boss 需循环喂豆 + 识别结算打断）']);
+  var feeds = ops.filter(function(o){ return o.t === 'feed'; });
+  if (feeds.length && !loops.length) out.push(['B2', 'error', '有喂豆步但未勾选「循环」（Boss 需循环喂豆 + 识别结算打断）；全链无喂豆（如沙滩火龙只点加速）不适用本条']);
   loops.forEach(function(i){
     if (i !== ops.length - 1) out.push(['B2', 'warn', '第 ' + (i + 1) + ' 步循环喂豆后面还有操作（循环步应放链尾）']);
   });

@@ -12,6 +12,7 @@ const ROOT = path.join(__dirname, '..');
 const V2ROOT = (function(){
   const cands = [
     path.resolve(ROOT, '..', '无尽布阵工具v2'),                 // 旧布局：source/无尽布阵工具v2
+    path.resolve(ROOT, '..', '..', '..', '布阵工具', '无尽布阵工具v2'),      // 仓库布局：backup_mpz_scripts/布阵工具
     path.resolve(ROOT, '..', '..', '..', '无尽布阵工具v2')      // v4 布局：布阵工具/无尽布阵工具v2
   ];
   for (let i = 0; i < cands.length; i++)

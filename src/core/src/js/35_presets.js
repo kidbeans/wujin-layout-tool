@@ -35,6 +35,12 @@ function v2ApplyPreset(key){
   var rp = v2Clone(P.route || {});
   var defp = v2Default().route.params;
   V2.route.params = v2DeepMerge(v2Clone(defp), rp);
+  /* 预设 route.params 里携带的尾数表/跳切键映射回 UI 字段（2026-10-09 v4.0.9：
+     d2_tails/boss_tails 属 tail 面板、skip_same_deck 属 fast_mode，导出只认这两处） */
+  var rp2 = V2.route.params;
+  if (rp2.d2_tails){ V2.route.tail.d2 = rp2.d2_tails; delete rp2.d2_tails; }
+  if (rp2.boss_tails){ V2.route.tail.boss = rp2.boss_tails; delete rp2.boss_tails; }
+  if (rp2.skip_same_deck){ rp2.fast_mode = 1; delete rp2.skip_same_deck; }
   V2.route.mode = P.routeMode || ((P.slots.deck2 || []).length ? 'tail' : 'none');
   if (V2.route.mode === 'phase' && P.routePhase) V2.route.phase = v2Clone(P.routePhase);
   V2.boss.ops = v2Clone((P.boss && P.boss.ops) || []);

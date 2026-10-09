@@ -79,6 +79,7 @@ function v2ExportTxt(){
   if (r.mode === 'tail'){
     var pp = [];
     if (r.params.deck1_first) pp.push('deck1_first=' + r.params.deck1_first);
+    if (r.params.fast_mode) pp.push('激进省时(fast_mode)');
     if (r.params.front10) pp.push('front10=' + r.params.front10 + (r.params.front10_feed ? '(拖豆' + r.params.front10_feed + ')' : ''));
     if (r.params.front30) pp.push('front30=' + r.params.front30 + (r.params.front30_feed ? '(feed ' + r.params.front30_feed + ')' : ''));
     if (r.params.deck2_tail3_first) pp.push('deck2_tail3_first=' + r.params.deck2_tail3_first);
@@ -126,6 +127,7 @@ function v2CellAnchor(cell){
 function v2RouteParamsExtra(pp, p){
   var extra = [];
   if (pp.deck1_first) extra.push('"deck1_first": ' + pp.deck1_first);
+  if (pp.fast_mode) extra.push('"skip_same_deck": true');   /* 激进省时(P5)：agent 需 2026-10-09+；旧 agent 忽略此键=安全降级 */
   if (pp.front10) extra.push('"front10": ' + pp.front10);
   if (pp.front30) extra.push('"front30": ' + pp.front30);
   if (pp.deck2_tail3_first) extra.push('"deck2_tail3_first": ' + pp.deck2_tail3_first);
@@ -395,23 +397,24 @@ function v2BuildPipeline(){
     N(p + '计步_boss_start', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false, "absolute": true}', next: [p + 'boss_识别开始'] });
     if (d2head) N(p + '判断进入关内_deck2', { recognition: 'ColorMatch', roi: [467, 669, 27, 27], method: 4,
       lower: [148, 213, 8], upper: [168, 233, 28], timeout: -1, action: 'Click', target: V2_ACCEL_TAP, next: [d2head] });
+    var fastPost = ((rt.params || {}).fast_mode ? 0 : 1000);   /* 激进省时(P4)：开始游戏 post→0；判断入关本就 ColorMatch timeout:-1 轮询等加载 */
     function lineup(kind, deckTarget, startTarget){
       N(p + '配队1' + kind, { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队1' + kind + '_选卡'] });
       N(p + '配队1' + kind + '_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1' + kind + '_选卡_2'] });
       N(p + '配队1' + kind + '_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏' + kind] });
-      N(p + '开始游戏' + kind, { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [startTarget] });
+      N(p + '开始游戏' + kind, { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [startTarget] });
     }
     lineup('普', null, p + '判断是否进入关内');
     if (d2head){
       N(p + '配队2d2', { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队2d2_选卡'] });
       N(p + '配队2d2_选卡', { recognition: 'DirectHit', action: 'Click', target: [199, 443], pre_delay: 0, post_delay: 500, next: [p + '配队2d2_选卡_2'] });
       N(p + '配队2d2_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [199, 443], pre_delay: 0, post_delay: 500, next: [p + '开始游戏d2'] });
-      N(p + '开始游戏d2', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [p + '判断进入关内_deck2'] });
+      N(p + '开始游戏d2', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + '判断进入关内_deck2'] });
     }
     N(p + '配队1boss', { recognition: 'DirectHit', action: 'Click', target: [766, 395], pre_delay: 0, post_delay: 1000, next: [p + '配队1boss_选卡'] });
     N(p + '配队1boss_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1boss_选卡_2'] });
     N(p + '配队1boss_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏boss'] });
-    N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: 1000, next: [p + 'boss_判断是否进入关内'] });
+    N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + 'boss_判断是否进入关内'] });
   }
   /* ---- 计数器 override 支撑节点（fx_counter 按路由参数改写这些节点的 next，目标必须存在；
    *      2026-09-08 龙芋教训：front30 速刷指向不存在的 给豆1_2，第2关 bad next 38ms 失败） ---- */
@@ -531,7 +534,7 @@ function v2BuildPipeline(){
   N(p + '神器补给_获得确认', { recognition: 'OCR', expected: ['获得以下能力'], roi: [420, 120, 440, 80],
     threshold: 0.7, action: 'Click', target: [640, 615], post_delay: 500,
     next: [p + 'boss_补给等选卡', p + 'boss_判断是否进入关内'] });
-  N(p + '计步_补给', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false}',
+  N(p + '计步_补给', { action: 'Custom', custom_action: 'fx_counter', custom_action_param: '{"start_level": 1, "route": false' + ((rt.params || {}).fast_mode ? ', "route_node": "' + p + '尾数路由", "skip_same_deck": true' : '') + '}',
     next: [p + '神器补给_获得确认', p + 'boss_补给等选卡', p + 'boss_判断是否进入关内'] });
   N(p + 'boss_补给等选卡', { recognition: 'OCR', expected: ['开始战斗'], roi: [1060, 647, 201, 59], threshold: 0.75,
     action: 'DoNothing', timeout: -1, next: rt.mode === 'none' ? [p + 'boss_识别开始'] : [p + '配队1boss'] });
@@ -585,7 +588,7 @@ function v2BuildTask(built){
     /* Boss 关计数的 计步_补给 也要跟 {关卡} 对齐：只覆盖 计步/计步_boss_start/重置计数 时，
        「初始化卡槽和草坪位置」=否 且首关恰是 Boss 关 → 计步_补给 走 level=None→1 分支，
        计数从 1 重起，之后尾数分流全部错位（火龙 v2 实测教训，原 regen 手工补丁转正） */
-    ovCount[p + '计步_补给'] = { custom_action_param: '{"start_level": {关卡}, "route": false}' };
+    ovCount[p + '计步_补给'] = { custom_action_param: '{"start_level": {关卡}, "route": false' + (pp.fast_mode ? ', "route_node": "' + p + '尾数路由", "skip_same_deck": true' : '') + '}' };
     option[p + '启动时关卡数'] = {
       type: 'input', label: '启动时关卡数',
       description: '计数起点，尾数5/0是Boss关；从第1关开始可留空',
@@ -817,6 +820,7 @@ function v2TaskIntro(){
     notes.push('阶段分流 deck2@' + JSON.stringify(r.phase.deck2Levels || []));
   }
   if (pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
+  if (pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
   if (pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
   if (pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
   if (pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');

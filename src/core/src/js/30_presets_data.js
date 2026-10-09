@@ -1,4 +1,4 @@
-/* 自动生成：tools/gen_presets.py —— 九套世界预设（阵型/卡槽/顺序/路由/Boss ops/小关抛花）。勿手改，改请改生成器 */
+/* 自动生成：tools/gen_presets.py —— 十五套世界预设（2026-10-08 翻新：补未来/黑暗/黑暗纯火龙/沙滩火龙/沙滩桑葚/冰河）（阵型/卡槽/顺序/路由/Boss ops/小关抛花）。勿手改，改请改生成器 */
 var WJP_PRESETS = {
  "fuxing": {
   "label": "复兴",
@@ -5974,5 +5974,3276 @@ var WJP_PRESETS = {
    ]
   },
   "n_nodes": 134
+ },
+ "weilai": {
+  "label": "未来",
+  "prefix": "wl_",
+  "entry": "wl_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "气流水仙花",
+    "大哥",
+    "钢地刺",
+    "原豌",
+    "暗物质火龙果",
+    "洋芋",
+    "珊瑚"
+   ],
+   "deck2": [
+    "能量花",
+    "阳光蓓蕾",
+    "大哥",
+    "芦荟",
+    "原豌",
+    "暗物质火龙果",
+    "南瓜头",
+    "瓷砖萝卜"
+   ]
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 珊瑚(南瓜头),大哥(南瓜头)+原豌,芦荟(南瓜头),暗物质火龙果,气流水仙花(南瓜头),洋芋,暗物质火龙果,能量花,-|珊瑚(南瓜头),大哥(南瓜头)+原豌,洋芋(南瓜头),暗物质火龙果[瓷],气流水仙花(南瓜头),芦荟(南瓜头),暗物质火龙果,能量花,阳光蓓蕾|珊瑚(南瓜头),大哥(南瓜头)+原豌[瓷],钢地刺(南瓜头)[瓷],暗物质火龙果,气流水仙花(南瓜头),洋芋,暗物质火龙果,-,阳光蓓蕾|珊瑚(南瓜头),大哥(南瓜头)+原豌,芦荟(南瓜头),暗物质火龙果[瓷],气流水仙花(南瓜头),洋芋,暗物质火龙果,-,阳光蓓蕾|珊瑚(南瓜头),大哥(南瓜头)+原豌,洋芋(南瓜头),暗物质火龙果,气流水仙花(南瓜头),芦荟(南瓜头),暗物质火龙果,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1",
+     "cell": "8-1",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2",
+     "cell": "8-2",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "2-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 300
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "2-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "wl_大哥2_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_2",
+     "cell": "2-2",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_2",
+     "cell": "2-2",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "wl_大哥2_4"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_3",
+     "cell": "2-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_3",
+     "cell": "2-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "wl_大哥2_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_4",
+     "cell": "2-4",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_4",
+     "cell": "2-4",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "wl_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_5",
+     "cell": "2-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_5",
+     "cell": "2-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花",
+     "cell": "5-1",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花5_2",
+     "cell": "5-2",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花5_3",
+     "cell": "5-3",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花5_4",
+     "cell": "5-4",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花5_5",
+     "cell": "5-5",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "钢地刺",
+     "cell": "3-3",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "4-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_5",
+     "cell": "4-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_1",
+     "cell": "4-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_1",
+     "cell": "7-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_2",
+     "cell": "4-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_2",
+     "cell": "7-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_3",
+     "cell": "4-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_3",
+     "cell": "7-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_4",
+     "cell": "7-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_5",
+     "cell": "7-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "interleave",
+     "name": "识别结算"
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚",
+     "cell": "1-1",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_2",
+     "cell": "1-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_3",
+     "cell": "1-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_4",
+     "cell": "1-4",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_5",
+     "cell": "1-5",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋",
+     "cell": "3-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋6_1",
+     "cell": "6-1",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋6_3",
+     "cell": "6-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋6_4",
+     "cell": "6-4",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_5",
+     "cell": "3-5",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": [
+    {
+     "t": "wave",
+     "name": "点波_初始_d2"
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾",
+     "cell": "9-2",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_3",
+     "cell": "9-3",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_4",
+     "cell": "9-4",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_1",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_1",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_1",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_2",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_2",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_2",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_3",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_3",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_3",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "3-1",
+     "slot": 12,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_2",
+     "cell": "6-2",
+     "slot": 12,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟3_4",
+     "cell": "3-4",
+     "slot": 12,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_5",
+     "cell": "6-5",
+     "slot": 12,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜",
+     "cell": "4-2",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜3_3",
+     "cell": "3-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜2_3",
+     "cell": "2-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_4",
+     "cell": "4-4",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头",
+     "cell": "1-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头2_1",
+     "cell": "2-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头3_1",
+     "cell": "3-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头5_1",
+     "cell": "5-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头1_2",
+     "cell": "1-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头2_2",
+     "cell": "2-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头3_2",
+     "cell": "3-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头5_2",
+     "cell": "5-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_2",
+     "cell": "6-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头1_3",
+     "cell": "1-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头2_3",
+     "cell": "2-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头3_3",
+     "cell": "3-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头5_3",
+     "cell": "5-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头1_4",
+     "cell": "1-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头2_4",
+     "cell": "2-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头3_4",
+     "cell": "3-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头5_4",
+     "cell": "5-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头1_5",
+     "cell": "1-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头2_5",
+     "cell": "2-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头3_5",
+     "cell": "3-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头5_5",
+     "cell": "5-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_5",
+     "cell": "6-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5_d2"
+    }
+   ]
+  },
+  "boss": {
+   "feedSelect": true,
+   "ops": [
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 300
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆2_3",
+     "cell": "2-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": false
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆3_3",
+     "cell": "3-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": false
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆3_3_循环",
+     "cell": "3-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": true
+    }
+   ],
+   "feedCell": "3-3"
+  },
+  "route": {
+   "start_level": 1,
+   "deck1_first": 20,
+   "d2_tails": [
+    3,
+    8
+   ],
+   "boss_tails": [
+    5,
+    0
+   ],
+   "boss_feed_late": "wl_boss_喂豆2_3",
+   "wave_mode": "不点波"
+  },
+  "routeMode": "tail",
+  "throw": {
+   "on": true,
+   "slot": 1,
+   "cells": [
+    "8-1",
+    "8-2"
+   ]
+  },
+  "n_nodes": 136
+ },
+ "heian": {
+  "label": "黑暗",
+  "prefix": "ha_",
+  "entry": "ha_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "气流水仙花",
+    "大哥",
+    "电豌豆",
+    "原豌",
+    "暗物质火龙果",
+    "洋芋",
+    "珊瑚"
+   ],
+   "deck2": [
+    "能量花",
+    "阳光蓓蕾",
+    "芦荟",
+    "磁力菇",
+    "茄子",
+    "暗物质火龙果",
+    "蛇草",
+    "瓷砖萝卜"
+   ]
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 珊瑚,大哥+原豌,芦荟,暗物质火龙果[瓷],蛇草,洋芋,气流水仙花,能量花,-|珊瑚,茄子,洋芋,暗物质火龙果[瓷],蛇草,芦荟,气流水仙花,能量花,阳光蓓蕾|珊瑚,大哥+原豌[瓷],洋芋,暗物质火龙果[瓷],蛇草,磁力菇[瓷],气流水仙花,-,阳光蓓蕾|珊瑚,茄子,芦荟,暗物质火龙果[瓷],蛇草,洋芋,气流水仙花,-,阳光蓓蕾|珊瑚,大哥+原豌,洋芋,暗物质火龙果[瓷],蛇草,芦荟,气流水仙花,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1",
+     "cell": "8-1",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2",
+     "cell": "8-2",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花",
+     "cell": "7-1",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花7_2",
+     "cell": "7-2",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花7_3",
+     "cell": "7-3",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花7_4",
+     "cell": "7-4",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花7_5",
+     "cell": "7-5",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "2-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 300
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "2-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "ha_大哥2_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_3",
+     "cell": "2-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_3",
+     "cell": "2-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "ha_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_5",
+     "cell": "2-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_5",
+     "cell": "2-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "4-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_5",
+     "cell": "4-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_1",
+     "cell": "4-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_2",
+     "cell": "4-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_3",
+     "cell": "4-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚",
+     "cell": "1-1",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_2",
+     "cell": "1-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_3",
+     "cell": "1-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_4",
+     "cell": "1-4",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_5",
+     "cell": "1-5",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋",
+     "cell": "6-1",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_2",
+     "cell": "3-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_3",
+     "cell": "3-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋6_4",
+     "cell": "6-4",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_5",
+     "cell": "3-5",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": [
+    {
+     "t": "wave",
+     "name": "点波_初始_d2"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1_d2",
+     "cell": "8-1",
+     "slot": 9,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2_d2",
+     "cell": "8-2",
+     "slot": 9,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾",
+     "cell": "9-2",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_3",
+     "cell": "9-3",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_4",
+     "cell": "9-4",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_1",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_1",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_1",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_2",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_2",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_2",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_3",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_3",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_3",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "plant",
+     "name": "磁力菇",
+     "cell": "6-3",
+     "slot": 12,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草",
+     "cell": "5-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_2",
+     "cell": "5-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_3",
+     "cell": "5-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_4",
+     "cell": "5-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_5",
+     "cell": "5-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "3-1",
+     "slot": 11,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_2",
+     "cell": "6-2",
+     "slot": 11,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟3_4",
+     "cell": "3-4",
+     "slot": 11,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_5",
+     "cell": "6-5",
+     "slot": 11,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "茄子",
+     "cell": "2-2",
+     "slot": 13,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "茄子2_4",
+     "cell": "2-4",
+     "slot": 13,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜",
+     "cell": "4-1",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_2",
+     "cell": "4-2",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_3",
+     "cell": "4-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_4",
+     "cell": "4-4",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_5",
+     "cell": "4-5",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜6_3",
+     "cell": "6-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜2_3",
+     "cell": "2-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5_d2"
+    }
+   ]
+  },
+  "boss": {
+   "feedSelect": true,
+   "ops": [
+    {
+     "t": "feed",
+     "name": "boss_喂豆6_3",
+     "cell": "6-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": false
+    },
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 300
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆6_3_2",
+     "cell": "6-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": true
+    }
+   ],
+   "feedCell": "6-3"
+  },
+  "route": {
+   "start_level": 1,
+   "deck1_first": 20,
+   "d2_tails": [
+    3,
+    8
+   ],
+   "boss_tails": [
+    5,
+    0
+   ],
+   "boss_feed_early": "ha_boss_喂豆6_3_2",
+   "boss_feed_late": "ha_boss_喂豆6_3_2",
+   "boss_stack_from": 20,
+   "boss_stack_entry": "ha_boss_叠电大2_3",
+   "boss_stack_skip": "ha_boss_喂豆6_3",
+   "wave_mode": "不点波"
+  },
+  "routeMode": "tail",
+  "throw": {
+   "on": true,
+   "slot": 1,
+   "cells": [
+    "8-1",
+    "8-2"
+   ]
+  },
+  "n_nodes": 114
+ },
+ "heian2": {
+  "label": "黑暗纯火龙v2",
+  "prefix": "ha2_",
+  "entry": "ha2_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "气流水仙花",
+    "大哥",
+    "芦荟",
+    "原豌",
+    "暗物质火龙果",
+    "磁力菇",
+    "军炮"
+   ],
+   "deck2": [
+    "能量花",
+    "阳光蓓蕾",
+    "大哥",
+    "原豌",
+    "大守卫菇",
+    "暗物质火龙果",
+    "蛇草",
+    "瓷砖萝卜"
+   ]
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 大哥+原豌,暗物质火龙果,芦荟,暗物质火龙果[瓷],蛇草,军炮,暗物质火龙果,能量花,-|军炮,暗物质火龙果,军炮,暗物质火龙果[瓷],蛇草,芦荟,暗物质火龙果,能量花,阳光蓓蕾|大哥+原豌,暗物质火龙果,军炮,暗物质火龙果[瓷],蛇草,磁力菇[瓷],暗物质火龙果,-,阳光蓓蕾|军炮,暗物质火龙果,芦荟,暗物质火龙果[瓷],蛇草,军炮,暗物质火龙果,-,阳光蓓蕾|大哥+原豌,暗物质火龙果,军炮,暗物质火龙果[瓷],蛇草,芦荟,暗物质火龙果,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1",
+     "cell": "8-1",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2",
+     "cell": "8-2",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "1-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 300
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "1-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "ha2_大哥1_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_3",
+     "cell": "1-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_3",
+     "cell": "1-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "ha2_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_5",
+     "cell": "1-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_5",
+     "cell": "1-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "3-1",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_2",
+     "cell": "6-2",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟3_4",
+     "cell": "3-4",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟6_5",
+     "cell": "6-5",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "2-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_4",
+     "cell": "2-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_2",
+     "cell": "4-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_1",
+     "cell": "2-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_1",
+     "cell": "4-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_1",
+     "cell": "7-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_2",
+     "cell": "7-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_3",
+     "cell": "2-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_3",
+     "cell": "4-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_3",
+     "cell": "7-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_4",
+     "cell": "4-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_4",
+     "cell": "7-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_5",
+     "cell": "2-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果4_5",
+     "cell": "4-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果7_5",
+     "cell": "7-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "interleave",
+     "name": "识别结算"
+    },
+    {
+     "t": "plant",
+     "name": "磁力菇",
+     "cell": "6-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮",
+     "cell": "6-1",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮1_2",
+     "cell": "1-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮3_2",
+     "cell": "3-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮3_3",
+     "cell": "3-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮1_4",
+     "cell": "1-4",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮6_4",
+     "cell": "6-4",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "军炮3_5",
+     "cell": "3-5",
+     "slot": 8,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "interleave",
+     "name": "识别结算"
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": [
+    {
+     "t": "wave",
+     "name": "点波_初始_d2"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1_d2",
+     "cell": "8-1",
+     "slot": 9,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2_d2",
+     "cell": "8-2",
+     "slot": 9,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾",
+     "cell": "9-2",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_3",
+     "cell": "9-3",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "阳光蓓蕾9_4",
+     "cell": "9-4",
+     "slot": 10,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_1",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_1",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_1",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_2",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_2",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_2",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑8列_3",
+     "begin": [
+      1114,
+      167
+     ],
+     "end": [
+      1114,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑9列_3",
+     "begin": [
+      1204,
+      167
+     ],
+     "end": [
+      1204,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "sweep",
+     "name": "蓓蕾滑右侧_3",
+     "begin": [
+      1233,
+      167
+     ],
+     "end": [
+      1233,
+      600
+     ],
+     "repeat": 1
+    },
+    {
+     "t": "shovel",
+     "name": "d2_先铲",
+     "cell": "5-3",
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大守卫菇",
+     "cell": "5-3",
+     "slot": 13,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "feed",
+     "name": "d2_喂豆",
+     "cell": "5-3",
+     "pre": 0,
+     "post": 2000,
+     "loop": false
+    },
+    {
+     "t": "shovel",
+     "name": "d2_铲",
+     "cell": "5-3",
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草",
+     "cell": "5-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_2",
+     "cell": "5-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_3",
+     "cell": "5-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_4",
+     "cell": "5-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "蛇草5_5",
+     "cell": "5-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜",
+     "cell": "4-1",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_2",
+     "cell": "4-2",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_3",
+     "cell": "4-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜6_3",
+     "cell": "6-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_4",
+     "cell": "4-4",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜4_5",
+     "cell": "4-5",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5_d2"
+    }
+   ]
+  },
+  "boss": {
+   "feedSelect": true,
+   "ops": [
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 300
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆6_3",
+     "cell": "6-3",
+     "pre": 100,
+     "post": 3000,
+     "loop": true
+    }
+   ],
+   "feedCell": "6-3"
+  },
+  "route": {
+   "start_level": 1,
+   "deck1_first": 20,
+   "d2_tails": [
+    3,
+    8
+   ],
+   "boss_tails": [
+    5,
+    0
+   ],
+   "boss_feed_early": "ha2_boss_喂豆6_3",
+   "boss_feed_late": "ha2_boss_喂豆6_3",
+   "wave_mode": "不点波"
+  },
+  "routeMode": "tail",
+  "throw": {
+   "on": true,
+   "slot": 1,
+   "cells": [
+    "8-1",
+    "8-2"
+   ]
+  },
+  "n_nodes": 116
+ },
+ "shatan": {
+  "label": "沙滩火龙",
+  "prefix": "st_",
+  "entry": "st_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "大守卫菇",
+    "大哥",
+    "芦荟",
+    "原豌",
+    "暗物质火龙果",
+    "橄榄坑",
+    "火豌"
+   ],
+   "deck2": []
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 大哥+原豌,芦荟,暗物质火龙果,橄榄坑,-,-,-,能量花,-|大哥+火豌,暗物质火龙果,大守卫菇,橄榄坑,-,-,-,能量花,-|大哥+原豌,暗物质火龙果,大哥+火豌,橄榄坑,-,-,-,-,-|大哥+火豌,芦荟,暗物质火龙果,橄榄坑,-,-,-,-,-|大哥+原豌,暗物质火龙果,大守卫菇,橄榄坑,-,-,-,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1",
+     "cell": "8-1",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2",
+     "cell": "8-2",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "1-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 300
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "1-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "st_大哥1_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_2",
+     "cell": "1-2",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "火豌",
+     "cell": "1-2",
+     "slot": 8,
+     "pre": 200,
+     "post": 100,
+     "alt": "st_大哥3_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_3",
+     "cell": "1-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_3",
+     "cell": "1-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "st_大哥1_4"
+    },
+    {
+     "t": "plant",
+     "name": "大哥3_3",
+     "cell": "3-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "火豌3_3",
+     "cell": "3-3",
+     "slot": 8,
+     "pre": 200,
+     "post": 100,
+     "alt": "st_大哥1_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_4",
+     "cell": "1-4",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "火豌1_4",
+     "cell": "1-4",
+     "slot": 8,
+     "pre": 200,
+     "post": 100,
+     "alt": "st_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_5",
+     "cell": "1-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_5",
+     "cell": "1-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大守卫菇",
+     "cell": "3-2",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大守卫菇3_5",
+     "cell": "3-5",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "2-1",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟2_4",
+     "cell": "2-4",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "3-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果3_1",
+     "cell": "3-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_2",
+     "cell": "2-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_3",
+     "cell": "2-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果2_5",
+     "cell": "2-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑",
+     "cell": "4-1",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_2",
+     "cell": "4-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_3",
+     "cell": "4-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_4",
+     "cell": "4-4",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_5",
+     "cell": "4-5",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": []
+  },
+  "boss": {
+   "feedSelect": false,
+   "ops": [
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 300
+    }
+   ],
+   "feedCell": "2-3"
+  },
+  "route": {
+   "wave_mode": "不点波"
+  },
+  "routeMode": "none",
+  "throw": {
+   "on": true,
+   "slot": 1,
+   "cells": [
+    "8-1",
+    "8-2"
+   ]
+  },
+  "n_nodes": 56
+ },
+ "shatan2": {
+  "label": "沙滩桑葚",
+  "prefix": "st2_",
+  "entry": "st2_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "大守卫菇",
+    "大哥",
+    "芦荟",
+    "原豌",
+    "桑葚",
+    "橄榄坑",
+    "毒藤"
+   ],
+   "deck2": []
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 大哥+原豌,桑葚(毒藤),芦荟,橄榄坑,-,-,-,-,-|大哥+原豌,桑葚(毒藤),大守卫菇,橄榄坑,-,-,-,-,-|大哥+原豌,桑葚(毒藤),桑葚(毒藤),橄榄坑,-,-,-,-,-|大哥+原豌,桑葚(毒藤),芦荟,橄榄坑,-,-,-,-,-|大哥+原豌,桑葚(毒藤),大守卫菇,橄榄坑,-,-,-,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "1-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "1-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 0,
+     "alt": "st2_大哥1_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_2",
+     "cell": "1-2",
+     "slot": 3,
+     "pre": 0,
+     "post": 0,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_2",
+     "cell": "1-2",
+     "slot": 5,
+     "pre": 200,
+     "post": 0,
+     "alt": "st2_大哥1_4"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_3",
+     "cell": "1-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 0,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_3",
+     "cell": "1-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 0,
+     "alt": "st2_大哥1_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_4",
+     "cell": "1-4",
+     "slot": 3,
+     "pre": 0,
+     "post": 0,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_4",
+     "cell": "1-4",
+     "slot": 5,
+     "pre": 200,
+     "post": 0,
+     "alt": "st2_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥1_5",
+     "cell": "1-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 0,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌1_5",
+     "cell": "1-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 0
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大守卫菇",
+     "cell": "3-2",
+     "slot": 2,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "大守卫菇3_5",
+     "cell": "3-5",
+     "slot": 2,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "3-1",
+     "slot": 4,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "芦荟3_4",
+     "cell": "3-4",
+     "slot": 4,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚",
+     "cell": "2-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚2_4",
+     "cell": "2-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚2_1",
+     "cell": "2-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚2_2",
+     "cell": "2-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚2_3",
+     "cell": "2-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "桑葚3_3",
+     "cell": "3-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "interleave",
+     "name": "识别结算"
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑",
+     "cell": "4-1",
+     "slot": 7,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_2",
+     "cell": "4-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_3",
+     "cell": "4-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_4",
+     "cell": "4-4",
+     "slot": 7,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "橄榄坑4_5",
+     "cell": "4-5",
+     "slot": 7,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤",
+     "cell": "2-1",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤2_2",
+     "cell": "2-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤2_3",
+     "cell": "2-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤3_3",
+     "cell": "3-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤2_4",
+     "cell": "2-4",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "plant",
+     "name": "毒藤2_5",
+     "cell": "2-5",
+     "slot": 8,
+     "pre": 0,
+     "post": 0
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": []
+  },
+  "boss": {
+   "feedSelect": true,
+   "ops": [
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 0
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆1_3",
+     "cell": "1-3",
+     "pre": 100,
+     "post": 0,
+     "loop": true
+    }
+   ],
+   "feedCell": "1-3"
+  },
+  "route": {},
+  "routeMode": "none",
+  "n_nodes": 60
+ },
+ "binghe": {
+  "label": "冰河",
+  "prefix": "bh_",
+  "entry": "bh_Entry",
+  "slots": {
+   "deck1": [
+    "能量花",
+    "珊瑚",
+    "大哥",
+    "芦荟",
+    "原豌",
+    "气流水仙花",
+    "洋芋",
+    "火豌"
+   ],
+   "deck2": [
+    "能量花",
+    "阳光蓓蕾",
+    "大哥",
+    "原豌",
+    "洋芋",
+    "南瓜头",
+    "暗物质火龙果",
+    "瓷砖萝卜"
+   ]
+  },
+  "board": {
+   "cols": 9,
+   "rows": 5,
+   "compact": "9x5 布阵: 珊瑚,大哥+原豌,芦荟,洋芋,气流水仙花,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌[瓷],洋芋,气流水仙花,芦荟,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌[瓷],洋芋,气流水仙花,暗物质火龙果,大哥(南瓜头)+火豌[瓷],-,能量花,能量花|珊瑚,大哥+原豌,芦荟,气流水仙花,洋芋,暗物质火龙果(南瓜头),-,-,-|珊瑚,大哥+原豌,气流水仙花,洋芋,芦荟,暗物质火龙果(南瓜头),-,-,-"
+  },
+  "order": {
+   "deck1": [
+    {
+     "t": "wave",
+     "name": "点波_初始"
+    },
+    {
+     "t": "plant",
+     "name": "抛花1",
+     "cell": "8-3",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "抛花2",
+     "cell": "9-3",
+     "slot": 1,
+     "pre": 100,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "大哥",
+     "cell": "2-1",
+     "slot": 3,
+     "pre": 0,
+     "post": 300
+    },
+    {
+     "t": "plant",
+     "name": "原豌",
+     "cell": "2-1",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "bh_大哥2_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_2",
+     "cell": "2-2",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_2",
+     "cell": "2-2",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "bh_大哥6_3"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_3",
+     "cell": "2-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_3",
+     "cell": "2-3",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "bh_大哥2_4"
+    },
+    {
+     "t": "plant",
+     "name": "大哥6_3",
+     "cell": "6-3",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "火豌",
+     "cell": "6-3",
+     "slot": 8,
+     "pre": 200,
+     "post": 100,
+     "alt": "bh_大哥2_5"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_4",
+     "cell": "2-4",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_4",
+     "cell": "2-4",
+     "slot": 5,
+     "pre": 200,
+     "post": 100,
+     "alt": "bh_点波2"
+    },
+    {
+     "t": "plant",
+     "name": "大哥2_5",
+     "cell": "2-5",
+     "slot": 3,
+     "pre": 0,
+     "post": 300,
+     "check": true
+    },
+    {
+     "t": "plant",
+     "name": "原豌2_5",
+     "cell": "2-5",
+     "slot": 5,
+     "pre": 200,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波2"
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚",
+     "cell": "1-1",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_2",
+     "cell": "1-2",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_3",
+     "cell": "1-3",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_4",
+     "cell": "1-4",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "珊瑚1_5",
+     "cell": "1-5",
+     "slot": 2,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟",
+     "cell": "3-1",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟5_2",
+     "cell": "5-2",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟3_4",
+     "cell": "3-4",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "芦荟5_5",
+     "cell": "5-5",
+     "slot": 4,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花",
+     "cell": "5-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花4_2",
+     "cell": "4-2",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花4_3",
+     "cell": "4-3",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花4_4",
+     "cell": "4-4",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "气流水仙花3_5",
+     "cell": "3-5",
+     "slot": 6,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋",
+     "cell": "5-4",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋4_5",
+     "cell": "4-5",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋4_1",
+     "cell": "4-1",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_2",
+     "cell": "3-2",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "洋芋3_3",
+     "cell": "3-3",
+     "slot": 7,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5"
+    }
+   ],
+   "deck2": [
+    {
+     "t": "wave",
+     "name": "点波_初始_d2"
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果",
+     "cell": "6-1",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_2",
+     "cell": "6-2",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果5_3",
+     "cell": "5-3",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_4",
+     "cell": "6-4",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "暗物质火龙果6_5",
+     "cell": "6-5",
+     "slot": 15,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜",
+     "cell": "2-2",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜2_3",
+     "cell": "2-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "瓷砖萝卜6_3",
+     "cell": "6-3",
+     "slot": 16,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头",
+     "cell": "6-1",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_2",
+     "cell": "6-2",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_3",
+     "cell": "6-3",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_4",
+     "cell": "6-4",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "plant",
+     "name": "南瓜头6_5",
+     "cell": "6-5",
+     "slot": 14,
+     "pre": 0,
+     "post": 100
+    },
+    {
+     "t": "wave",
+     "name": "点波5_d2"
+    }
+   ]
+  },
+  "boss": {
+   "feedSelect": true,
+   "ops": [
+    {
+     "t": "accel",
+     "name": "boss_点加速",
+     "post": 300
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种5_1",
+     "cell": "5-1",
+     "slot": 6,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_2",
+     "cell": "2-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_3",
+     "cell": "2-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_2_2",
+     "cell": "2-2",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "stack",
+     "name": "boss_叠种2_3_2",
+     "cell": "2-3",
+     "slot": 8,
+     "pre": 0,
+     "post": 50
+    },
+    {
+     "t": "feed",
+     "name": "boss_喂豆6_3",
+     "cell": "6-3",
+     "pre": 100,
+     "post": 2500,
+     "loop": true
+    }
+   ],
+   "feedCell": "6-3"
+  },
+  "route": {
+   "start_level": 1,
+   "deck1_first": 20,
+   "d2_tails": [
+    3
+   ],
+   "boss_tails": [
+    5,
+    0
+   ],
+   "boss_feed_early": "bh_boss_叠种5_1",
+   "boss_feed_late": "bh_boss_叠种5_1",
+   "skip_same_deck": true,
+   "wave_mode": "不点波"
+  },
+  "routeMode": "tail",
+  "throw": {
+   "on": true,
+   "slot": 1,
+   "cells": [
+    "8-3",
+    "9-3"
+   ]
+  },
+  "n_nodes": 103
  }
 };
