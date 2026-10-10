@@ -22,7 +22,8 @@
   <button id="v2b-boss">👑 Boss</button>
   <button id="v2b-checks">🔍 检查</button>
   <button id="v2b-save">💾 存档</button>
-  <button id="v2b-export2">📤 导出 v2</button>
+  <button id="v2b-import">📥 导入</button>
+  <button id="v2b-export2">📤 导出</button>
   <button id="v2b-server">🌐 服务</button>
   <span class="v2sep"></span>
   <button id="v2b-undo" title="Ctrl+Z">↩ 撤销</button>
@@ -92,7 +93,9 @@
       <label data-rtmode="tail" data-tip="前 N 关只在尾数 3 切 deck2（尾数 8 不切）（童话=20）">前N关仅×3切deck2 (deck2_tail3_first) <input id="rtTail3First" type="number" placeholder="童话=20"></label>
       <label data-rtmode="tail" data-tip="超过 N 关后跳过蓓蕾补种段，直接滑阳光（童话=50）">N关后不补蓓蕾 (beilei_stop) <input id="rtBeileiStop" type="number" placeholder="童话=50"></label>
       <label data-rtmode="tail" data-tip="第 N 关起普关进入补白萝卜循环（agent bailuo_from；白萝卜落格/槽位取自 deck1 顺序里的白萝卜步；留空=关闭。火龙v2=60）">N关起补白萝卜 (bailuo_from) <input id="rtBailuoFrom" type="number" placeholder="火龙v2=60"></label>
-      <label data-rtmode="tail" data-tip="生成「关内点波」任务选项并定默认档；导出时 override 只指向实际存在的点波节点。留空=不生成该选项，维持点波5/点波1交替现状">关内点波默认档 (wave_mode) <select id="rtWaveMode"><option value="">不生成选项</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
+      <label data-rtmode="tail phase none" data-tip="生成「关内点波」任务选项并定默认档（尾数/阶段/单卡组通用）；导出时 override 只指向实际存在的点波节点（单卡组只有 点波5）。留空=不生成该选项，维持点波节点自带节奏">关内点波默认档 (wave_mode) <select id="rtWaveMode"><option value="">不生成选项</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
+      <label data-rtmode="tail phase none" data-tip="第 N 关后不再补阵，只走 抛花→点波→等结算（Boss 关不受影响，deck2 关同样不补阵）。0/空=关闭">第几关后不再补阵 <input id="rtFarmStop" type="number" placeholder="0=关" size="4"></label>
+      <label data-rtmode="tail phase none" data-tip="不补阵期间的关内点波档；留空=沿用全局「关内点波默认档」（两条路径共用同一档位设置）">不布阵点波档 <select id="rtFarmWave"><option value="">跟全局</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
       <label data-rtmode="tail" data-tip="Boss 喂豆目标（前N关，deck1_first>0 时生效）：填 pipeline 节点名（如 ty_boss_喂豆5_2）；留空＝复兴约定 1-3。节点不存在时导出会按 Boss 喂豆格自动创建">Boss喂豆前N (boss_feed_early) <input id="rtBossFeedEarly" placeholder="留空=1-3"></label>
       <label data-rtmode="tail" data-tip="Boss 喂豆目标（后续 Boss 关）：填节点名，通常是 Boss 链里已有的循环喂豆节点（如 ty_boss_喂豆5_3）；留空＝复兴约定 2-3">Boss喂豆后续 (boss_feed_late) <input id="rtBossFeedLate" placeholder="留空=2-3"></label>
     </div>
@@ -199,9 +202,28 @@
     <div class="v2hint">数据存浏览器 localStorage；换电脑/换浏览器请用「导出全部」带走。</div>
   </div>
 
-  <!-- 导出 -->
+  <!-- 导入（脚本 / 阵型；文件选择、粘贴、服务面板三条路共用同一报告框） -->
+  <div class="v2panel" id="v2p-import">
+    <div class="v2p-h">📥 导入脚本 / 阵型<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <label class="v2filebtn">选文件（可多选）<input type="file" id="impPipe" accept=".json,.jsonc,.txt" multiple></label>
+      <span id="impPipeName" class="v2muted">未选择</span>
+      <button id="impClear" title="清空已选文件与粘贴内容">清空</button>
+    </div>
+    <textarea id="impPaste" class="v2report" style="min-height:64px" placeholder="没有文件时把内容粘贴到这里（v2 源 / 完整 JSON v2 阵型 / pipeline JSON）；选了文件时以文件为准"></textarea>
+    <div class="v2row">
+      <button id="impAnalyze" class="primary">解析（先看报告）</button>
+      <button id="impApply" disabled>应用到画布</button>
+      <button id="ex2FrameImp" title="官方通用框架导出的单 JSON（选项集）解析回画布：粘贴框有内容就解析它，为空则打开文件选择">📥 解析通用框架 JSON</button>
+    </div>
+    <textarea id="impReport" class="v2report" style="min-height:200px" readonly placeholder="导入识别报告：格式判定 / 各链步数 / 植物名 / 路由模式 / 警告；点「应用到画布」才覆盖（可撤销）"></textarea>
+    <div class="v2hint">支持四类文件：① <b>v2 源</b>——「生成 pipeline 片段」得到的「头注释 + pipeline + task」三段合一文件，按 ② pipeline 段导入；② <b>完整 JSON v2 阵型存档</b>——「导出 JSON v2」的产物，直接载入棋盘/卡槽/顺序/路由/Boss；③ <b>YS_*.json / Endless_*.json</b>——MPZ pipeline，可多选合并；④ <b>*_wj.json</b>——task 片段（只有选项定义），必须与它的 pipeline 一起选。服务面板勾选的 pipeline 也走这里，报告落在同一个框。</div>
+    <div class="v2hint">走链规则与 tools/gen_presets.py 同源：判定节点 → 布阵链 → 金卡检测/扫动/喂豆/铲除/点波；deck 归属按 d1_/d2_ 标记或 deck2 判定链；路由参数取自计步 custom_action_param（检测到 haidao_计步分流 → 相位模式按海盗默认 2/12/20/21）。deck2 卡槽名按内部槽位 9~16 折算回 1~8 推断，链里没出现的槽位提示人工补名。</div>
+  </div>
+
+  <!-- 导出 / 部署 -->
   <div class="v2panel" id="v2p-export2">
-    <div class="v2p-h">📤 导出 v2<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2p-h">📤 导出 / 部署<button class="v2close" data-close="1">✕</button></div>
     <div class="v2row"><label>节点前缀 <input id="v2Prefix" value="wj_" style="width:110px"></label><label>任务名 <input id="v2TaskName" placeholder="留空=世界无尽(v2生成)" style="width:150px" title="自定义 interface.json 里的任务名；留空则自动按世界命名"></label></div>
     <div class="v2row">
       <button id="ex2Json">导出 JSON v2</button>
@@ -210,26 +232,14 @@
       <button id="ex2Frame" title="官方通用框架（custom 前期 + fw 后期）选项集：MaaPvz 可视化编辑器可直接导入">📤 通用框架 JSON</button>
     </div>
     <div class="v2row">
-      <button id="ex2ImportJson">应用粘贴的 JSON v2</button>
-      <button id="ex2FrameImp" title="把官方通用框架导出的单 JSON（选项集）解析回画布">📥 解析通用框架 JSON</button>
       <button id="ex2Copy">复制</button>
       <button id="ex2Download">下载 .json</button>
       <button id="ex2Deploy" title="把当前画布一键部署进 MPZ：写 pipeline/task 片段 + 注册 interface.json + agent 计数器检查（幂等，改前自动备份）。需桌面版，且「🌐 服务」面板已设 MPZ 根目录">🚀 部署到 MPZ</button>
       <button id="ex2Restore" title="MPZ 官方更新后一键还原：按注册表重建全部自制任务注册 + agent 文件自愈（只追加不覆盖官方，改前自动备份）。需桌面版">🩹 更新还原</button>
     </div>
-    <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」；导入时先粘贴到本框再点解析）"></textarea>
-    <div class="v2p-h" style="margin-top:10px;">📥 MPZ pipeline 导入（YS_*.json / Endless_*.json，可多选）</div>
-    <div class="v2row">
-      <label class="v2filebtn">选 pipeline JSON（可多选）<input type="file" id="impPipe" accept=".json,.jsonc,.txt" multiple></label>
-      <span id="impPipeName" class="v2muted">未选择</span>
-    </div>
-    <div class="v2row">
-      <button id="impAnalyze">解析（先看报告）</button>
-      <button id="impApply" class="primary" disabled>应用到画布</button>
-    </div>
-    <textarea id="impReport" class="v2report" readonly placeholder="导入识别报告：各链步数 / 植物名 / 路由模式 / 警告；点「应用到画布」才覆盖（可撤销）"></textarea>
-    <div class="v2hint">走链规则与 tools/gen_presets.py 同源：判定节点→布阵链→金卡检测/扫动/喂豆/铲除/点波；deck 归属按 d1_/d2_ 标记或 deck2 判定链 BFS；路由参数取自计步 custom_action_param（检测到 haidao_计步分流 → 相位模式按海盗默认 2/12/20/21）。未知植物名（如 Deck2种植）按槽位表兜底并提示补名。</div>
-    <div class="v2hint">pipeline 片段含：入口/计数/配队/识别/补给骨架 + deck1/deck2 种植链 + Boss 链 + 点波家族；task 片段含 5 选项（初始化/监控/启动关卡数/全自动循环/boss调试）+ 可选喂豆位置 select。坐标系 720 短边，配队坐标为复兴/童话布局。</div>
+    <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」）"></textarea>
+    <div class="v2hint">本面板只负责「画布 → 文件/MPZ」；反向的「文件/MPZ → 画布」在 📥 导入 面板（选文件或粘贴，解析报告与「应用到画布」都在那里）。</div>
+    <div class="v2hint">pipeline 片段含：入口/计数/配队/识别/补给骨架 + deck1/deck2 种植链 + Boss 链 + 点波家族；task 片段含选项（初始化/监控/启动关卡数/全自动循环/boss调试）+ 可选喂豆位置 select。坐标系 720 短边，配队坐标为复兴/童话布局。</div>
   </div>
 
   <!-- 服务模式（webui.py 本机服务；file:// 打开时显示引导） -->
@@ -257,7 +267,7 @@
       <div id="srvLogList" class="v2filelist"></div>
       <div class="v2row" style="margin-top:10px;">
         <button id="srvLoadChecks" class="primary">载入勾选文件 → 检查面板</button>
-        <button id="srvImport">导入勾选 pipeline → 画布</button>
+        <button id="srvImport">解析勾选 pipeline → 导入面板</button>
       </div>
       <div class="v2row">
         <button id="srvGenPresets">再生成预设（gen_presets + gen_official）</button>
@@ -282,7 +292,8 @@
   <button class="vsi" data-act="boss"    title="Boss 配置">👑<i>Boss</i></button>
   <button class="vsi" data-act="checks"  title="一致性检查">🔍<i>检查</i></button>
   <button class="vsi" data-act="save"    title="存档管理">💾<i>存档</i></button>
-  <button class="vsi" data-act="export2" title="导出 v2">📤<i>导出</i></button>
+  <button class="vsi" data-act="import"  title="导入脚本/阵型（文件或粘贴）">📥<i>导入</i></button>
+  <button class="vsi" data-act="export2" title="导出 / 部署">📤<i>导出</i></button>
   <button class="vsi" data-act="server"  title="服务面板">🌐<i>服务</i></button>
   <button class="vsi" data-act="help"    title="帮助手册（用户说明集中）">📖<i>帮助</i></button>
   <span class="vss"></span>

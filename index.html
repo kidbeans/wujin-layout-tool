@@ -2999,7 +2999,8 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
   <button id="v2b-boss">👑 Boss</button>
   <button id="v2b-checks">🔍 检查</button>
   <button id="v2b-save">💾 存档</button>
-  <button id="v2b-export2">📤 导出 v2</button>
+  <button id="v2b-import">📥 导入</button>
+  <button id="v2b-export2">📤 导出</button>
   <button id="v2b-server">🌐 服务</button>
   <span class="v2sep"></span>
   <button id="v2b-undo" title="Ctrl+Z">↩ 撤销</button>
@@ -3069,7 +3070,9 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <label data-rtmode="tail" data-tip="前 N 关只在尾数 3 切 deck2（尾数 8 不切）（童话=20）">前N关仅×3切deck2 (deck2_tail3_first) <input id="rtTail3First" type="number" placeholder="童话=20"></label>
       <label data-rtmode="tail" data-tip="超过 N 关后跳过蓓蕾补种段，直接滑阳光（童话=50）">N关后不补蓓蕾 (beilei_stop) <input id="rtBeileiStop" type="number" placeholder="童话=50"></label>
       <label data-rtmode="tail" data-tip="第 N 关起普关进入补白萝卜循环（agent bailuo_from；白萝卜落格/槽位取自 deck1 顺序里的白萝卜步；留空=关闭。火龙v2=60）">N关起补白萝卜 (bailuo_from) <input id="rtBailuoFrom" type="number" placeholder="火龙v2=60"></label>
-      <label data-rtmode="tail" data-tip="生成「关内点波」任务选项并定默认档；导出时 override 只指向实际存在的点波节点。留空=不生成该选项，维持点波5/点波1交替现状">关内点波默认档 (wave_mode) <select id="rtWaveMode"><option value="">不生成选项</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
+      <label data-rtmode="tail phase none" data-tip="生成「关内点波」任务选项并定默认档（尾数/阶段/单卡组通用）；导出时 override 只指向实际存在的点波节点（单卡组只有 点波5）。留空=不生成该选项，维持点波节点自带节奏">关内点波默认档 (wave_mode) <select id="rtWaveMode"><option value="">不生成选项</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
+      <label data-rtmode="tail phase none" data-tip="第 N 关后不再补阵，只走 抛花→点波→等结算（Boss 关不受影响，deck2 关同样不补阵）。0/空=关闭">第几关后不再补阵 <input id="rtFarmStop" type="number" placeholder="0=关" size="4"></label>
+      <label data-rtmode="tail phase none" data-tip="不补阵期间的关内点波档；留空=沿用全局「关内点波默认档」（两条路径共用同一档位设置）">不布阵点波档 <select id="rtFarmWave"><option value="">跟全局</option><option value="hold">不点波</option><option value="cycle">默认（交替）</option><option value="burst">狂点</option></select></label>
       <label data-rtmode="tail" data-tip="Boss 喂豆目标（前N关，deck1_first>0 时生效）：填 pipeline 节点名（如 ty_boss_喂豆5_2）；留空＝复兴约定 1-3。节点不存在时导出会按 Boss 喂豆格自动创建">Boss喂豆前N (boss_feed_early) <input id="rtBossFeedEarly" placeholder="留空=1-3"></label>
       <label data-rtmode="tail" data-tip="Boss 喂豆目标（后续 Boss 关）：填节点名，通常是 Boss 链里已有的循环喂豆节点（如 ty_boss_喂豆5_3）；留空＝复兴约定 2-3">Boss喂豆后续 (boss_feed_late) <input id="rtBossFeedLate" placeholder="留空=2-3"></label>
     </div>
@@ -3176,9 +3179,28 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
     <div class="v2hint">数据存浏览器 localStorage；换电脑/换浏览器请用「导出全部」带走。</div>
   </div>
 
-  <!-- 导出 -->
+  <!-- 导入（脚本 / 阵型；文件选择、粘贴、服务面板三条路共用同一报告框） -->
+  <div class="v2panel" id="v2p-import">
+    <div class="v2p-h">📥 导入脚本 / 阵型<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2row">
+      <label class="v2filebtn">选文件（可多选）<input type="file" id="impPipe" accept=".json,.jsonc,.txt" multiple></label>
+      <span id="impPipeName" class="v2muted">未选择</span>
+      <button id="impClear" title="清空已选文件与粘贴内容">清空</button>
+    </div>
+    <textarea id="impPaste" class="v2report" style="min-height:64px" placeholder="没有文件时把内容粘贴到这里（v2 源 / 完整 JSON v2 阵型 / pipeline JSON）；选了文件时以文件为准"></textarea>
+    <div class="v2row">
+      <button id="impAnalyze" class="primary">解析（先看报告）</button>
+      <button id="impApply" disabled>应用到画布</button>
+      <button id="ex2FrameImp" title="官方通用框架导出的单 JSON（选项集）解析回画布：粘贴框有内容就解析它，为空则打开文件选择">📥 解析通用框架 JSON</button>
+    </div>
+    <textarea id="impReport" class="v2report" style="min-height:200px" readonly placeholder="导入识别报告：格式判定 / 各链步数 / 植物名 / 路由模式 / 警告；点「应用到画布」才覆盖（可撤销）"></textarea>
+    <div class="v2hint">支持四类文件：① <b>v2 源</b>——「生成 pipeline 片段」得到的「头注释 + pipeline + task」三段合一文件，按 ② pipeline 段导入；② <b>完整 JSON v2 阵型存档</b>——「导出 JSON v2」的产物，直接载入棋盘/卡槽/顺序/路由/Boss；③ <b>YS_*.json / Endless_*.json</b>——MPZ pipeline，可多选合并；④ <b>*_wj.json</b>——task 片段（只有选项定义），必须与它的 pipeline 一起选。服务面板勾选的 pipeline 也走这里，报告落在同一个框。</div>
+    <div class="v2hint">走链规则与 tools/gen_presets.py 同源：判定节点 → 布阵链 → 金卡检测/扫动/喂豆/铲除/点波；deck 归属按 d1_/d2_ 标记或 deck2 判定链；路由参数取自计步 custom_action_param（检测到 haidao_计步分流 → 相位模式按海盗默认 2/12/20/21）。deck2 卡槽名按内部槽位 9~16 折算回 1~8 推断，链里没出现的槽位提示人工补名。</div>
+  </div>
+
+  <!-- 导出 / 部署 -->
   <div class="v2panel" id="v2p-export2">
-    <div class="v2p-h">📤 导出 v2<button class="v2close" data-close="1">✕</button></div>
+    <div class="v2p-h">📤 导出 / 部署<button class="v2close" data-close="1">✕</button></div>
     <div class="v2row"><label>节点前缀 <input id="v2Prefix" value="wj_" style="width:110px"></label><label>任务名 <input id="v2TaskName" placeholder="留空=世界无尽(v2生成)" style="width:150px" title="自定义 interface.json 里的任务名；留空则自动按世界命名"></label></div>
     <div class="v2row">
       <button id="ex2Json">导出 JSON v2</button>
@@ -3187,26 +3209,14 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <button id="ex2Frame" title="官方通用框架（custom 前期 + fw 后期）选项集：MaaPvz 可视化编辑器可直接导入">📤 通用框架 JSON</button>
     </div>
     <div class="v2row">
-      <button id="ex2ImportJson">应用粘贴的 JSON v2</button>
-      <button id="ex2FrameImp" title="把官方通用框架导出的单 JSON（选项集）解析回画布">📥 解析通用框架 JSON</button>
       <button id="ex2Copy">复制</button>
       <button id="ex2Download">下载 .json</button>
       <button id="ex2Deploy" title="把当前画布一键部署进 MPZ：写 pipeline/task 片段 + 注册 interface.json + agent 计数器检查（幂等，改前自动备份）。需桌面版，且「🌐 服务」面板已设 MPZ 根目录">🚀 部署到 MPZ</button>
       <button id="ex2Restore" title="MPZ 官方更新后一键还原：按注册表重建全部自制任务注册 + agent 文件自愈（只追加不覆盖官方，改前自动备份）。需桌面版">🩹 更新还原</button>
     </div>
-    <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」；导入时先粘贴到本框再点解析）"></textarea>
-    <div class="v2p-h" style="margin-top:10px;">📥 MPZ pipeline 导入（YS_*.json / Endless_*.json，可多选）</div>
-    <div class="v2row">
-      <label class="v2filebtn">选 pipeline JSON（可多选）<input type="file" id="impPipe" accept=".json,.jsonc,.txt" multiple></label>
-      <span id="impPipeName" class="v2muted">未选择</span>
-    </div>
-    <div class="v2row">
-      <button id="impAnalyze">解析（先看报告）</button>
-      <button id="impApply" class="primary" disabled>应用到画布</button>
-    </div>
-    <textarea id="impReport" class="v2report" readonly placeholder="导入识别报告：各链步数 / 植物名 / 路由模式 / 警告；点「应用到画布」才覆盖（可撤销）"></textarea>
-    <div class="v2hint">走链规则与 tools/gen_presets.py 同源：判定节点→布阵链→金卡检测/扫动/喂豆/铲除/点波；deck 归属按 d1_/d2_ 标记或 deck2 判定链 BFS；路由参数取自计步 custom_action_param（检测到 haidao_计步分流 → 相位模式按海盗默认 2/12/20/21）。未知植物名（如 Deck2种植）按槽位表兜底并提示补名。</div>
-    <div class="v2hint">pipeline 片段含：入口/计数/配队/识别/补给骨架 + deck1/deck2 种植链 + Boss 链 + 点波家族；task 片段含 5 选项（初始化/监控/启动关卡数/全自动循环/boss调试）+ 可选喂豆位置 select。坐标系 720 短边，配队坐标为复兴/童话布局。</div>
+    <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」）"></textarea>
+    <div class="v2hint">本面板只负责「画布 → 文件/MPZ」；反向的「文件/MPZ → 画布」在 📥 导入 面板（选文件或粘贴，解析报告与「应用到画布」都在那里）。</div>
+    <div class="v2hint">pipeline 片段含：入口/计数/配队/识别/补给骨架 + deck1/deck2 种植链 + Boss 链 + 点波家族；task 片段含选项（初始化/监控/启动关卡数/全自动循环/boss调试）+ 可选喂豆位置 select。坐标系 720 短边，配队坐标为复兴/童话布局。</div>
   </div>
 
   <!-- 服务模式（webui.py 本机服务；file:// 打开时显示引导） -->
@@ -3234,7 +3244,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <div id="srvLogList" class="v2filelist"></div>
       <div class="v2row" style="margin-top:10px;">
         <button id="srvLoadChecks" class="primary">载入勾选文件 → 检查面板</button>
-        <button id="srvImport">导入勾选 pipeline → 画布</button>
+        <button id="srvImport">解析勾选 pipeline → 导入面板</button>
       </div>
       <div class="v2row">
         <button id="srvGenPresets">再生成预设（gen_presets + gen_official）</button>
@@ -3259,7 +3269,8 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
   <button class="vsi" data-act="boss"    title="Boss 配置">👑<i>Boss</i></button>
   <button class="vsi" data-act="checks"  title="一致性检查">🔍<i>检查</i></button>
   <button class="vsi" data-act="save"    title="存档管理">💾<i>存档</i></button>
-  <button class="vsi" data-act="export2" title="导出 v2">📤<i>导出</i></button>
+  <button class="vsi" data-act="import"  title="导入脚本/阵型（文件或粘贴）">📥<i>导入</i></button>
+  <button class="vsi" data-act="export2" title="导出 / 部署">📤<i>导出</i></button>
   <button class="vsi" data-act="server"  title="服务面板">🌐<i>服务</i></button>
   <button class="vsi" data-act="help"    title="帮助手册（用户说明集中）">📖<i>帮助</i></button>
   <span class="vss"></span>
@@ -3495,7 +3506,8 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
     <button class="v3ni" data-panel="boss" title="Boss 关链编辑">👑<i>Boss</i></button>
     <button class="v3ni" data-panel="checks" title="pipeline / 日志检查链">🔍<i>检查</i></button>
     <button class="v3ni" data-panel="save" title="存档槽位">💾<i>存档</i></button>
-    <button class="v3ni" data-panel="export2" title="导出 v2 / MPZ 导入">📤<i>导入导出</i></button>
+    <button class="v3ni" data-panel="import" title="导入脚本 / 阵型（文件或粘贴，含服务面板勾选的 pipeline）">📥<i>导入</i></button>
+    <button class="v3ni" data-panel="export2" title="导出 / 部署（pipeline 片段 / 通用框架 / MPZ）">📤<i>导出</i></button>
     <button class="v3ni" data-panel="server" title="服务模式（MPZ 文件清单）">🌐<i>服务</i></button>
     <button class="v3ni" data-view="help" title="帮助 / 文档（用户说明集中阅读，F1）">📖<i>帮助</i></button>
     <button class="v3ni" data-view="skin" title="换肤中心（11 款主题预览即点即换）">🎨<i>换肤</i></button>
@@ -5638,7 +5650,10 @@ function v2Default(){
       params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, fast_mode: 0,
                 front30_feed: '', deck2_tail3_first: 0, beilei_stop: 0,
                 boss_feed_early: '', boss_feed_late: '',
-                bailuo_from: 0, wave_mode: '' }
+                bailuo_from: 0, wave_mode: '',
+                /* 第 XX 关后不再补阵（2026-10-10 批 B）：0/空=关闭；
+                   farm_wave_mode 是不补阵期的关内点波档，留空=沿用全局 wave_mode */
+                farm_stop_from: 0, farm_wave_mode: '' }
     },
     boss: {
       ops: [],                            /* {t:'stack'|'feed'|'accel'|'flower', ...} */
@@ -5864,6 +5879,7 @@ function v2RouteLevel(rt, level){
     } else target = 'd2';
   } else target = '普';
   if (target !== 'boss'){
+    if (p.farm_stop_from > 0 && level > p.farm_stop_from) notes.push('不补阵期：只走 抛花→点波→等结算（Boss 关不受影响）');
     if (p.front30 > 0 && level <= p.front30) notes.push('front30：速刷（给豆+狂点）');
     if (p.front10 > 0 && level <= p.front10) notes.push('front10：等结算循环(未命中拖豆' + (p.front10_feed || '1-3') + ')');
     if (p.beilei_stop > 0 && level > p.beilei_stop) notes.push('beilei_stop=' + p.beilei_stop + '：不补蓓蕾');
@@ -5903,6 +5919,13 @@ function v2RouteIssues(rt, ctx){
   if (rt.mode === 'none' && p.fast_mode) out.push(['R6', 'warn', '单卡组（无计数）模式没有切卡组动作，激进省时模式无效（请取消勾选）']);
   if (rt.mode === 'none' && !ctx.bossReady) out.push(['R2', 'error', '单卡组同样会遇到 Boss 关（尾数5/0），Boss 链为空会在 Boss 关失败（请到 Boss 面板配置）']);
   if (rt.mode === 'none' && ctx.subSlotsOn) out.push(['R6', 'info', '单卡组模式开启配队2不会产生路由（如需请改尾数分流）']);
+  /* 不补阵（B 批）：两档都留空时保持点波节点自带节奏；只有全局档时提示沿用关系 */
+  if (p.farm_stop_from > 0){
+    if (!v2WaveModeNorm(p.farm_wave_mode) && !v2WaveModeNorm(p.wave_mode))
+      out.push(['R6', 'warn', '第' + p.farm_stop_from + '关后不补阵已开，但「不布阵点波档」与全局档都留空：不补阵期间保持点波节点自带节奏（默认交替点波）']);
+    else if (!v2WaveModeNorm(p.farm_wave_mode))
+      out.push(['R6', 'info', '不补阵期点波沿用全局档：第' + p.farm_stop_from + '关后与关内是同一档位']);
+  }
   return out;
 }
 
@@ -5990,6 +6013,12 @@ function v2RouteDetail(rt, level){
   }
   if (p.beilei_stop > 0 && level > p.beilei_stop && tail !== 5 && tail !== 0) L.push('  → level > beilei_stop=' + p.beilei_stop + ' → 蓓蕾补种入口被 override（不补蓓蕾）');
   if (p.bailuo_from > 0 && level >= p.bailuo_from && tail !== 5 && tail !== 0) L.push('  → level ≥ bailuo_from=' + p.bailuo_from + ' → 点波5 被改写为补白萝卜循环（agent）');
+  if (p.farm_stop_from > 0 && level > p.farm_stop_from && tail !== 5 && tail !== 0){
+    L.push('  → level > farm_stop_from=' + p.farm_stop_from + ' → 布阵链入口被改写为 [抛花链尾, 点波5_nf]：不补阵，只抛花/点波/等结算（agent）' +
+      (v2WaveModeNorm(p.farm_wave_mode) ? '；点波档=' + v2WaveModeNorm(p.farm_wave_mode) : '；点波档沿用全局'));
+    if (rt.mode === 'tail' && (rt.tail.d2 || []).indexOf(tail) > -1)
+      L.push('  → 本关是 deck2 关：改写的是 deck2 链入口（点波_初始_d2 → 点波5_d2_nf），deck2 也不补阵');
+  }
   return L.join('\n');
 }
 function v2EstimateTime(rt, from, to, avgNormal, avgBoss){
@@ -6014,6 +6043,22 @@ var V2_ROUTE_PRESETS = [
   { name: '海盗', mode: 'phase', args: { start_level: 1 }, phase: { deck2Levels: [2, 12], bossEarlyFeed: 20, farmFrom: 21 } },
   { name: '西部/埃及(单卡组)', mode: 'none', args: { start_level: 1 } }
 ];
+
+/* ---- wave_mode 归一（2026-10-10）：英文键与中文 case 名同义等效 ----
+ * 画布下拉与生成器用英文值（hold/cycle/burst，空=不生成「关内点波」选项）；
+ * 但 gen_presets.py 手写表 → 30_presets_data.js 里存的是中文 case 名
+ * （wl_/ha_/ha2_/st_/bh_ = '不点波'，见 30_presets_data.js；gf2_ 是 'hold'）。
+ * 不做归一时，载入这些预设再导出会静默掉进 default_case='默认' 分支
+ * （现网部署件的 default_case 全是「不点波」，一重导默认档就被改）。
+ * 兼容中文名与 task 里 case 的 label 形态；未知值原样返回（default_case 回落「默认」，同旧行为）。 */
+function v2WaveModeNorm(wm){
+  var s = String(wm == null ? '' : wm).trim();
+  if (!s || s === 'hold' || s === 'cycle' || s === 'burst') return s;
+  if (s === '不点波' || s === '不点波（只等结算）' || s === '只等结算') return 'hold';
+  if (s === '狂点' || s === '狂点加速' || s === '狂点（突发连点）') return 'burst';
+  if (s === '默认' || s === '默认（点波5/点波1）' || s === '默认（交替）' || s === '交替') return 'cycle';
+  return s;
+}
 
 /* ---- 面板 UI ---- */
 function v2ReadRouteUI(){
@@ -6043,6 +6088,8 @@ function v2ReadRouteUI(){
   p_set('beilei_stop', ri('rtBeileiStop'));
   p_set('bailuo_from', ri('rtBailuoFrom'));
   rc.params.wave_mode = (document.getElementById('rtWaveMode') || {}).value || '';
+  p_set('farm_stop_from', ri('rtFarmStop'));
+  rc.params.farm_wave_mode = (document.getElementById('rtFarmWave') || {}).value || '';
   rc.params.boss_feed_early = q('rtBossFeedEarly').trim();
   rc.params.boss_feed_late = q('rtBossFeedLate').trim();
   /* 小关抛花（西部同构） */
@@ -6072,7 +6119,11 @@ function v2WriteRouteUI(){
   q('rtTail3First').value = rc.params.deck2_tail3_first || '';
   q('rtBeileiStop').value = rc.params.beilei_stop || '';
   if (q('rtBailuoFrom')) q('rtBailuoFrom').value = rc.params.bailuo_from || '';
-  if (q('rtWaveMode')) q('rtWaveMode').value = rc.params.wave_mode || '';
+  /* 回填显示也走归一：预设里存的中文值（'不点波'）要落到对应档位，否则下拉显示"不生成选项"
+     而状态里其实有值（15_route 与 40_export 对同一参数的分歧） */
+  if (q('rtWaveMode')) q('rtWaveMode').value = v2WaveModeNorm(rc.params.wave_mode) || '';
+  if (q('rtFarmStop')) q('rtFarmStop').value = rc.params.farm_stop_from || '';
+  if (q('rtFarmWave')) q('rtFarmWave').value = v2WaveModeNorm(rc.params.farm_wave_mode) || '';
   var V2th = V2.throw = V2.throw || { on: false, slot: 1, cells: [] };
   if (q('rtThrowOn')) q('rtThrowOn').checked = !!V2th.on;
   if (q('rtThrowSlot')) q('rtThrowSlot').value = V2th.slot || 1;
@@ -6161,7 +6212,11 @@ function v2RouteRender(){
     if (pr.deck2_tail3_first) extra.push('"deck2_tail3_first": ' + pr.deck2_tail3_first);
     if (pr.beilei_stop) extra.push('"beilei_stop": ' + pr.beilei_stop);
     if (pr.bailuo_from) extra.push('"bailuo_from": ' + pr.bailuo_from);
-    if (rt.mode === 'tail' && pr.front30 && pr.front30_feed) extra.push('"front30_feed": "' + pr.front30_feed + '"');
+    if (pr.farm_stop_from){
+      extra.push('"farm_stop_from": ' + pr.farm_stop_from);
+      if (pr.farm_wave_mode) extra.push('"farm_wave_mode": "' + v2WaveModeNorm(pr.farm_wave_mode) + '"');
+    }
+    if (rt.mode !== 'none' && pr.front30 && pr.front30_feed) extra.push('"front30_feed": "' + pr.front30_feed + '"');
     var cap = '{"start_level": {关卡}';
     if (extra.length) cap += ', ' + extra.join(', ');
     cap += '}';
@@ -6199,6 +6254,7 @@ function v2RouteStrip(rt, from, to){
     if (p.beilei_stop) marks.push([p.beilei_stop, 'beilei=' + p.beilei_stop]);
     if (p.bailuo_from) marks.push([p.bailuo_from, 'bailuo=' + p.bailuo_from]);
   }
+  if (p.farm_stop_from) marks.push([p.farm_stop_from, '不补阵=' + p.farm_stop_from]);
   ctx.fillStyle = '#333';
   ctx.font = '10px sans-serif';
   marks.forEach(function(m){
@@ -6213,7 +6269,7 @@ function initRoutePanel(){
    'rtDeck1First', 'rtFront10', 'rtFront10Feed', 'rtFront30', 'rtFront30Feed', 'rtTail3First', 'rtBeileiStop',
    'rtFrom', 'rtTo', 'rtAvgN', 'rtAvgB', 'rtDetailLv',
    'rtThrowOn', 'rtThrowSlot', 'rtThrowCells', 'rtBossFeedEarly', 'rtBossFeedLate',
-   'rtBailuoFrom', 'rtWaveMode'].forEach(function(id){
+   'rtBailuoFrom', 'rtWaveMode', 'rtFarmStop', 'rtFarmWave'].forEach(function(id){
     var e = document.getElementById(id);
     if (!e) return;
     /* ⚠ 顺序必须是「先读 DOM 进 state，再落盘/渲染」。
@@ -6236,7 +6292,8 @@ function initRoutePanel(){
     if (!pre) return;
     V2.route.mode = pre.mode;
     V2.route.params = Object.assign({ start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, front30_feed: '',
-      deck2_tail3_first: 0, beilei_stop: 0, boss_feed_early: '', boss_feed_late: '' }, pre.args || {});
+      deck2_tail3_first: 0, beilei_stop: 0, boss_feed_early: '', boss_feed_late: '',
+      bailuo_from: 0, wave_mode: '', farm_stop_from: 0, farm_wave_mode: '' }, pre.args || {});
     if (pre.phase) V2.route.phase = v2Clone(pre.phase);
     save();
     v2WriteRouteUI();
@@ -22840,7 +22897,42 @@ function v2RouteParamsExtra(pp, p){
   if (pp.front30 && f30f) extra.push('"front30_feed": "' + f30f + '"');
   if (pp.boss_feed_early) extra.push('"boss_feed_early": "' + pp.boss_feed_early + '"');
   if (pp.boss_feed_late) extra.push('"boss_feed_late": "' + pp.boss_feed_late + '"');
+  /* 第 XX 关后不补阵（批 B）：纯 pp 字段走这里 → 计步/计步_boss_start 的静态 cap 与 input 模板四处自动带齐；
+     链上的节点名（入口/原样值/抛花链尾/_nf）走 v2FarmStopExtra（需要 built.nodes）。 */
+  if (parseInt(pp.farm_stop_from, 10) > 0) extra.push('"farm_stop_from": ' + parseInt(pp.farm_stop_from, 10));
+  var fwmP = v2WaveModeNorm(pp.farm_wave_mode);
+  if (fwmP) extra.push('"farm_wave_mode": "' + fwmP + '"');
   return extra;
+}
+/* ---- 「第 XX 关后不补阵」链上参数（批 B，2026-10-10）----
+ * agent 只改写**一个**节点：布阵段前最后一个节点 entry，把它的 next 指向 [jump]（不补阵）或
+ * 还原成 back（补阵）——entry.next[0] 就是 back，所以每关写一次天然幂等。
+ *   · 有小关抛花：entry = 抛花链尾（抛花1 → 抛花2 → …），只改它一个 ⇒ 花照抛全，抛完进 点波5_nf
+ *     （计划原写法是"入口指向抛花链尾"，那会跳过前面几朵花；这里改成改链尾的 next，一朵不丢）
+ *   · 没抛花：entry = 点波_初始
+ * 每关都要重写而不是只在超过阈值时写：打满一轮自动刷新会从第 1 关重来，override 是持久的，
+ * 不还原就会出现"新一轮头 N 关也不补阵"。deck2 关同理，entry_d2 = 点波_初始_d2（deck2 没有抛花）。
+ * 集中在这一份实现里，pipeline 静态 cap 与 task input 模板两条路径共用。 */
+function v2FarmStopExtra(nodes, p){
+  var pp = (V2.route && V2.route.params) || {};
+  if ((parseInt(pp.farm_stop_from, 10) || 0) <= 0) return [];
+  var e1 = p + '点波_初始', e2 = p + '点波_初始_d2';
+  if (!nodes[e1] || !nodes[p + '点波5_nf']) return [];      /* 缺入口或缺 _nf：不补阵无法生效（R7 会报 warn） */
+  var firstOf = function(n){ var nx = (nodes[n] && nodes[n].next) || []; return nx[0] || ''; };
+  var esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var reTh = new RegExp('^' + esc + '抛花\\d+$');
+  var fe = e1, cur = firstOf(e1), guard = 0;
+  while (cur && reTh.test(cur) && guard++ < 10){ fe = cur; cur = firstOf(cur); }   /* fe = 布阵段前最后一个节点 */
+  var out = [];
+  out.push('"farm_stop_entry": "' + fe + '"');
+  out.push('"farm_stop_back": "' + firstOf(fe) + '"');
+  out.push('"farm_stop_jump": "' + p + '点波5_nf"');
+  if (nodes[e2] && nodes[p + '点波5_d2_nf']){
+    out.push('"farm_stop_entry_d2": "' + e2 + '"');
+    out.push('"farm_stop_back_d2": "' + firstOf(e2) + '"');
+    out.push('"farm_stop_jump_d2": "' + p + '点波5_d2_nf"');
+  }
+  return out;
 }
 function v2NodeNameOf(it, p, tag){
   if (it.name) return p + it.name;
@@ -22898,6 +22990,7 @@ function v2BuildPipeline(){
   var bossFeedNodes = [];
   var throwInfo = null;   /* 小关抛花: {after: 点波_初始节点名, nodes: [抛花节点名...]} */
   var rt = V2.route;
+  var noneMode = (rt.mode === 'none');
   function N(n, def){ nodes[n] = def; return n; }
   function N2(base){ if (!nodes[base]) return base; for (var i = 2; ; i++){ var n = base + '_' + i; if (!nodes[n]) return n; } }
   function chain(items, tag){
@@ -23032,6 +23125,23 @@ function v2BuildPipeline(){
   var d1head = chain(V2.order.deck1 || [], 'd1');
   var d2head = chain(V2.order.deck2 || [], 'd2');
 
+  /* ---- 「第 XX 关后不补阵」点波节点（2026-10-10 批 B）----
+     不补阵期 agent 把布阵链入口 override 成 [抛花链尾, 点波5_nf]（deck2 关用 点波_初始_d2 → 点波5_d2_nf）。
+     _nf 与全局档节点逐字段同构（自环 + 识别结算/识别开始战斗/识别boss关 打断），但**独立成节点**：
+     「不布阵点波档」只覆盖 _nf、「全局关内点波」只覆盖 点波5 家族，两个档位选项互不抢同一个节点
+     （MAA 限制：同一 custom 节点只允许一个 input 覆盖；两个 select 档位互相踩同样会变成先后顺序问题）。 */
+  if ((parseInt((V2.route.params || {}).farm_stop_from, 10) || 0) > 0){
+    ['点波5', '点波5_d2'].forEach(function(base){
+      var src = nodes[p + base];
+      if (!src) return;
+      var nf = p + base + '_nf';
+      if (nodes[nf]) return;
+      var cp = JSON.parse(JSON.stringify(src));
+      cp.next = (src.next || []).map(function(x){ return x === p + base ? nf : x; });
+      N(nf, cp);
+    });
+  }
+
   /* ---- Boss 链 ---- */
   var ops = V2.boss.ops || [];
   var bossHead = null, bprev = null;
@@ -23068,8 +23178,11 @@ function v2BuildPipeline(){
      （2026-09-08 龙芋卡第二关教训：wujin_返回 命中后进入 [开始挑战1,返回] 死胡同子链）。 */
   N(p + '过渡', { action: 'DoNothing', timeout: -1,
     next: [p + '识别开始战斗', p + '识别boss关'] });
+  /* 识别开始战斗：tail/phase 由 开始游戏X 节点点击，这里只等；none 没有那一步，
+     必须自己点，否则选卡界面没人点「开始战斗」→ 判断是否进入关内 成孤儿（2026-10-08 火龙实测）。
+     两模式都接 计步：计数模式下 计步 走 尾数路由；none 的 计步 route:false 直接去 判断是否进入关内。 */
   N(p + '识别开始战斗', { recognition: 'OCR', expected: ['开始战斗'], roi: [1060, 647, 201, 59], threshold: 0.75,
-    action: 'DoNothing', timeout: -1, next: rt.mode === 'none' ? [d1head || p + '点波5'] : [p + '计步'] });
+    action: noneMode ? 'Click' : 'DoNothing', timeout: -1, next: [p + '计步'] });
   N(p + '识别结算', { recognition: 'OCR', expected: '继续挑战', roi: [716, 621, 179, 50], action: 'Click',
     rate_limit: 1000, timeout: -1, next: [p + '过渡'] });
   N(p + '识别boss关', { recognition: 'ColorMatch', lower: [148, 213, 8], upper: [168, 233, 28], roi: [723, 56, 17, 22],
@@ -23085,6 +23198,7 @@ function v2BuildPipeline(){
     var pp = rt.params || {};
     var extra = v2RouteParamsExtra(pp, p);
     if (pp.bailuo_from > 0) extra.push('"bailuo_from": ' + pp.bailuo_from);   /* pipeline 静态 cap 含补白（task 版按节点分流） */
+    extra = extra.concat(v2FarmStopExtra(nodes, p));   /* 不补阵入口/back/via/jump（批 B，链上节点名） */
     var cap = '{"start_level": 1, "route_node": "' + p + '尾数路由"' + (extra.length ? ', ' + extra.join(', ') : '') + '}';
     N(p + '监控开关', { action: 'Custom', custom_action: 'fx_monitor_switch', custom_action_param: '{"enabled": true}', next: [p + '重置计数'] });
     N(p + '重置计数', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": ' + (pp.start_level || 1) + '}', next: [p + '初始化完毕'] });
@@ -23112,6 +23226,27 @@ function v2BuildPipeline(){
     N(p + '配队1boss_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1boss_选卡_2'] });
     N(p + '配队1boss_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏boss'] });
     N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + 'boss_判断是否进入关内'] });
+  } else {
+    /* none 模式（2026-10-10 Q1）：同样上 agent 计数——监控窗口
+       与「第XX关后不补阵」都依赖逐关 计步，level 不再等于「第几个 Boss 关」。
+       普关由 计步 计数、Boss 关由 计步_补给 计数，每关恰好一次、不双计（与 tail 语义一致）。
+       计步 route:false：无尾数路由，只计数后回 判断是否进入关内。 */
+    var ppN = rt.params || {};
+    /* none 模式也要带 farm_stop_*（批 B）：「不补阵」在单卡组同样生效——route:false 的 计步 里
+       agent 照样会按 level 改写布阵链入口。这里没有 v2RouteParamsExtra，所以纯字段也手动带上。 */
+    var farmN = [];
+    if ((parseInt(ppN.farm_stop_from, 10) || 0) > 0){
+      farmN.push('"farm_stop_from": ' + parseInt(ppN.farm_stop_from, 10));
+      var fwmN = v2WaveModeNorm(ppN.farm_wave_mode);
+      if (fwmN) farmN.push('"farm_wave_mode": "' + fwmN + '"');
+      farmN = farmN.concat(v2FarmStopExtra(nodes, p));
+    }
+    N(p + '监控开关', { action: 'Custom', custom_action: 'fx_monitor_switch', custom_action_param: '{"enabled": true}', next: [p + '重置计数'] });
+    N(p + '重置计数', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": ' + (ppN.start_level || 1) + '}', next: [p + '初始化完毕'] });
+    N(p + '重置到1', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": 1, "force": true}', next: [p + '初始化完毕'] });
+    N(p + '计步', { action: 'Custom', custom_action: 'fx_counter',
+      custom_action_param: '{"start_level": 1, "route": false' + (farmN.length ? ', ' + farmN.join(', ') : '') + '}',
+      next: [p + '判断是否进入关内'] });
   }
   /* ---- 计数器 override 支撑节点（fx_counter 按路由参数改写这些节点的 next，目标必须存在；
    *      2026-09-08 龙芋教训：front30 速刷指向不存在的 给豆1_2，第2关 bad next 38ms 失败） ---- */
@@ -23269,6 +23404,25 @@ function v2BuildTask(built){
       { name: 'Yes', label: '开启(默认)', pipeline_override: (function(){ var o = {}; o[p + '监控开关'] = { custom_action_param: '{"enabled": true}' }; return o; })() }
     ]
   };
+  /* 无尽全自动循环选项（2026-10-10 起对 none 模式也生成）：打完整轮后自动花钻石刷新重打。
+     默认 No=不开（cases[0] 即 MPZ 默认），开了才有：过渡 多一个 wujin_返回 候选 + 官方
+     wujin_确定4 接 重置到1。原本只在计数模式生成，因为 Yes 分支引用的 重置到1 是 agent 节点、
+     none 模式不存在（T1 死引用）；A2 给 none 补上 计步四件套后该限制消失，且 重置到1 从此
+     被 task override 引用、不再是「入口不可达孤岛」（检查器 S2/S3 误报一并消失）。
+     用工厂函数是为了让两个模式各自在原位置挂载——tail 的选项顺序与现网导出件保持不变。 */
+  function autoLoopOptionDef(){
+    return {
+      type: 'switch', label: '无尽全自动循环', description: '打一遍后自动花钻石刷新重新打',
+      cases: [
+        { name: 'No', label: '否', pipeline_override: {} },
+        { name: 'Yes', label: '是', pipeline_override: (function(){
+            var o = {};
+            o[p + '过渡'] = { next: [p + '识别开始战斗', p + '识别boss关', 'wujin_返回'] };
+            o['wujin_确定4'] = { next: [p + '重置到1'] };
+            return o; })() }
+      ]
+    };
+  }
   if (rt.mode !== 'none'){
     var pp = rt.params || {};
     var extra = v2RouteParamsExtra(pp, p);   /* 与 v2BuildPipeline 共享（2026-09-14 审查去重） */
@@ -23278,6 +23432,10 @@ function v2BuildTask(built){
     /* bailuo_from 只进 计步：计步_boss_start 是 route:false 的绝对计数，与补白循环无关
        （保持与火龙 v2 部署产物一致，避免 override 串漂移） */
     if (pp.bailuo_from > 0) cap = cap.slice(0, -1) + ', "bailuo_from": ' + pp.bailuo_from + '}';
+    /* 不补阵链上参数（批 B）：pipeline 静态 cap 已带，input 模板这里必须同样带——
+       忘记带的话，用户在 MPZ 界面填「启动时关卡数」就会整串替换掉 cap，不补阵静默失效 */
+    var farmT = v2FarmStopExtra(built.nodes, p);
+    if (farmT.length) cap = cap.slice(0, -1) + ', ' + farmT.join(', ') + '}';
     var ovCount = {};
     ovCount[p + '计步'] = { custom_action_param: cap };
     ovCount[p + '计步_boss_start'] = { custom_action_param: '{"start_level": {关卡}, "route": false, "absolute": true, "route_node": "' + p + '尾数路由"' + (extra.length ? ', ' + extra.join(', ') : '') + '}' };
@@ -23292,17 +23450,7 @@ function v2BuildTask(built){
       inputs: [{ name: '关卡', label: '关卡', verify: '^([1-9]|[1-9][0-9]|1[0-4][0-9])$' }],
       pipeline_override: ovCount
     };
-    option[p + '无尽全自动循环'] = {
-      type: 'switch', label: '无尽全自动循环', description: '打一遍后自动花钻石刷新重新打',
-      cases: [
-        { name: 'No', label: '否', pipeline_override: {} },
-        { name: 'Yes', label: '是', pipeline_override: (function(){
-            var o = {};
-            o[p + '过渡'] = { next: [p + '识别开始战斗', p + '识别boss关', 'wujin_返回'] };
-            o['wujin_确定4'] = { next: [p + '重置到1'] };
-            return o; })() }
-      ]
-    };
+    option[p + '无尽全自动循环'] = autoLoopOptionDef();
     if (V2.debugCardUI !== false){
       option[p + 'boss关选卡界面开始'] = {
         type: 'switch', label: '从boss关选卡界面开始', description: '跳过普关流程直接从boss关开始（调试用），需配合启动时关卡数',
@@ -23314,18 +23462,29 @@ function v2BuildTask(built){
         ]
       };
     }
+  } else {
+    /* none 模式：没有「启动时关卡数」「从boss关选卡界面开始」（那是计数路由/调试专用），
+       但自动循环照样给（重置到1 已由 A2 生成，开了就能用）。默认仍是 No=不开。 */
+    option[p + '无尽全自动循环'] = autoLoopOptionDef();
   }
-  /* 「关内点波」任务选项（火龙 v2 同款）：路由参数 wave_mode 非空时生成，default_case=所选档。
+  /* 「关内点波」任务选项（火龙 v2 同款）：路由参数 wave_mode 非空时生成，default_case=所选档
+     （中文/英文同义，经 v2WaveModeNorm 归一——预设里存的是中文 case 名）。
      只收 action/repeat、不动 next（agent 每关会 override 点波 next）；override 目标按
      实际生成的节点收窄——点波5_d2 仅双卡组、点波1 仅 front30/bailuo、前10_点波 仅 front10，
      避免把不存在的节点写进 pipeline_override（T1 断链）。留空=不生成该选项，行为与旧版一致。 */
   (function(){
-    var wm = String((V2.route.params || {}).wave_mode || '');
+    var wm = v2WaveModeNorm((V2.route.params || {}).wave_mode);
     if (!wm || !built.nodes[p + '点波5']) return;
     var waveNodes = [p + '点波5'];
     if (built.nodes[p + '点波5_d2']) waveNodes.push(p + '点波5_d2');
     if (built.nodes[p + '点波1']) waveNodes.push(p + '点波1');
     if (built.nodes[p + '前10_点波']) waveNodes.push(p + '前10_点波');
+    /* 不补阵期「留空=跟全局」：全局档也要覆盖 _nf 节点，否则不补阵期退回节点自带节奏而不是用户选的档
+       （没开不补阵、或另设了「不布阵点波档」时不加——那时 _nf 由农场档独占覆盖） */
+    var ppG = V2.route.params || {};
+    if ((parseInt(ppG.farm_stop_from, 10) || 0) > 0 && !v2WaveModeNorm(ppG.farm_wave_mode)){
+      ['点波5_nf', '点波5_d2_nf'].forEach(function(b){ if (built.nodes[p + b]) waveNodes.push(p + b); });
+    }
     var holdOv = {}, burstOv = {};
     waveNodes.forEach(function(n){ holdOv[n] = { action: 'DoNothing' }; });
     waveNodes.forEach(function(n){
@@ -23339,6 +23498,31 @@ function v2BuildTask(built){
       cases: [
         { name: '不点波', label: '不点波（只等结算）', pipeline_override: holdOv },
         { name: '默认', label: '默认（点波5/点波1）', pipeline_override: {} },
+        { name: '狂点', label: '狂点加速', pipeline_override: burstOv }
+      ]
+    };
+  })();
+  /* 「不布阵点波档」任务选项（批 B）：第 N 关后不补阵期间的关内点波方式。
+     只 override _nf 节点（与全局档的 点波5 家族完全不重叠）；farm_wave_mode 留空时不生成，
+     由全局档覆盖 _nf 实现「跟全局」回落（Q3 语义）。 */
+  (function(){
+    var ppF = V2.route.params || {};
+    var from = parseInt(ppF.farm_stop_from, 10) || 0;
+    var fwm = v2WaveModeNorm(ppF.farm_wave_mode);
+    if (from <= 0 || !fwm) return;
+    var nfNodes = [p + '点波5_nf', p + '点波5_d2_nf'].filter(function(n){ return !!built.nodes[n]; });
+    if (!nfNodes.length) return;
+    var tap = built.nodes[nfNodes[0]].target || V2_WAVE_TAP;   /* 坐标从现役节点取，勿硬编码 */
+    var holdOv = {}, burstOv = {};
+    nfNodes.forEach(function(n){ holdOv[n] = { action: 'DoNothing' }; });
+    nfNodes.forEach(function(n){ burstOv[n] = { action: 'Click', target: tap, repeat: 6, repeat_delay: 200, post_delay: 0 }; });
+    option[p + '不布阵点波档'] = {
+      type: 'select', label: '不布阵点波档（第' + from + '关后）',
+      description: '第' + from + '关后不补阵期间的关内点波：不点波=只等结算(最稳)；默认=与全局档同节奏；狂点=突发连点(最快)。只作用于不补阵期，不影响正常布阵关。',
+      default_case: fwm === 'hold' ? '不点波' : (fwm === 'burst' ? '狂点' : '默认'),
+      cases: [
+        { name: '不点波', label: '不点波（只等结算）', pipeline_override: holdOv },
+        { name: '默认', label: '默认（同全局档节奏）', pipeline_override: {} },
         { name: '狂点', label: '狂点加速', pipeline_override: burstOv }
       ]
     };
@@ -23370,7 +23554,10 @@ function v2BuildTask(built){
       cases: cases, default_case: dftCase
     };
   }
-  /* 小关抛花开关 + 每朵花行列坐标（西部 xb_小关同构；开关默认否=关掉前原行为不变）
+  /* 小关抛花开关 + 每朵花行列坐标（西部 xb_小关同构）
+     case 序必须 Yes 在前：MPZ 取**首 case** 为默认值，No 在前等于「配了抛花却默认不抛」
+     （2026-10-10 火龙部署 P2 实测：部署后要手点成「是」才抛花）。该选项仅在有抛花步时生成，
+     所以 Yes 在前不会影响没配抛花的阵型。
      位置 input 只被开关 Yes 分支 option 引用，不进任务顶层 option 列表——
      两处都列会在 MFA 界面重复渲染（官方「创意庭院」嵌套用法同款约定，2026-09-08 龙芋实测教训） */
   var nestedOpts = {};
@@ -23383,8 +23570,8 @@ function v2BuildTask(built){
       type: 'switch', label: '小关是否抛花',
       description: '进关点波后抛能量花产豆（deck1 ' + built.throwInfo.nodes.length + ' 朵）；开启后可自定义每朵花的行列坐标',
       cases: [
-        { name: 'No', label: '否', pipeline_override: thNo },
-        { name: 'Yes', label: '是', option: built.throwInfo.nodes.map(function(_, ix){ return p + '抛花' + (ix + 1) + '位置'; }) }
+        { name: 'Yes', label: '是', option: built.throwInfo.nodes.map(function(_, ix){ return p + '抛花' + (ix + 1) + '位置'; }) },
+        { name: 'No', label: '否', pipeline_override: thNo }
       ]
     };
     built.throwInfo.nodes.forEach(function(nm, ix){
@@ -23440,8 +23627,33 @@ function v2ChainIssues(built){
  * 此项兜底手填参数（如自定义 front30_feed）。 */
 function v2CounterIssues(built){
   var p = built.prefix, nodes = built.nodes, rt = V2.route;
-  if (rt.mode === 'none') return [];
-  var pp = rt.params || {}, out = [];
+  var out = [];
+  if (rt.mode === 'none'){
+    /* none 模式（2026-10-10 Q1）：agent 计数入口 = 计步(普关)/计步_补给(Boss 关)，每关恰好一次；
+       监控开关/重置计数/重置到1 是「初始化卡槽和草坪位置」「监控窗口」两个选项的 override 目标，
+       缺了就是死引用（T1/T2 的老症状）。路由类 override 目标（front30/bailuo/beilei）在 none
+       不生成节点，故一律不校验——按旧代码 `return []` 直接放行会让 none 导出再次带着死引用出厂。 */
+    ['监控开关', '重置计数', '重置到1', '计步', '计步_补给'].forEach(function(n){
+      if (!nodes[p + n]) out.push(['R7', 'error', 'none 模式缺 agent 计数节点：' + p + n +
+        '（普关走 计步、Boss 关走 计步_补给；监控开关/重置计数/重置到1 供初始化与监控窗口选项覆盖）']);
+    });
+    var jb = nodes[p + '计步'];
+    if (jb){
+      var nx = jb.next || [];
+      if (!nx.length) out.push(['R7', 'error', 'none 模式 ' + p + '计步.next 为空：计完数没有出口（应指向 ' + p + '判断是否进入关内）']);
+      nx.forEach(function(n){
+        if (!nodes[n] && !/^(wujin_|种植物_初始化|神器_初始化)/.test(n))
+          out.push(['R7', 'error', 'none 模式 ' + p + '计步.next 指向不存在的节点：' + n + '（bad next 会直接中断任务）']);
+      });
+    }
+    /* 不补阵（批 B）：agent 会跳到 点波5_nf 并改写 点波_初始 —— 缺则静默不生效/直接 bad next */
+    if ((parseInt((rt.params || {}).farm_stop_from, 10) || 0) > 0){
+      if (!nodes[p + '点波5_nf']) out.push(['R7', 'error', '开了不补阵但缺 ' + p + '点波5_nf：agent 会跳向不存在的节点（bad next）']);
+      if (!nodes[p + '点波_初始']) out.push(['R7', 'warn', '开了不补阵但缺 ' + p + '点波_初始：没有可改写的布阵链入口，不补阵不生效']);
+    }
+    return out;
+  }
+  var pp = rt.params || {};
   var full = function(n){ return n.indexOf(p) === 0 ? n : p + n; };
   var has = function(n){ return !!nodes[full(n)]; };
   var targets = ['识别结算', '识别开始战斗', '识别boss关', '配队1普', '配队1boss'].map(full);
@@ -23471,6 +23683,13 @@ function v2CounterIssues(built){
     anchors.push('d1_胆小菇5_4');
     targets.push(full('蓓蕾滑8列_1'));
   }
+  /* 不补阵（批 B）：agent 改写 点波_初始 / 点波_初始_d2 的 next，跳到 抛花链尾 + _nf；
+     目标缺失 = bad next 直接失败（error），入口缺失 = 改写无效（warn，沿用 R7 惯例）。 */
+  if ((parseInt(pp.farm_stop_from, 10) || 0) > 0){
+    anchors = anchors.concat(['点波_初始', '点波_初始_d2']);
+    targets.push(p + '点波5_nf');
+    if (nodes[p + '点波5_d2']) targets.push(p + '点波5_d2_nf');
+  }
   var seen = {};
   targets.forEach(function(n){
     if (seen[n]) return;
@@ -23494,17 +23713,21 @@ function v2CounterIssues(built){
    把 description 原样抄进 interface.json 即可，不必再对着管线反推卡槽。 */
 function v2TaskIntro(){
   var L = [];
+  var r = V2.route, pp = r.params || {};
+  /* none 模式没有配队2/尾数分流/前N关参数节点（计数节点 2026-10-10 起有，见 A2），
+     简介一律不写这些字样——以前照抄画布卡槽表，出现「配队2[…]｜前20关不切deck2(deck1_first)」等
+     与生成脚本不符的承诺（T4：10-08/10-10 两次火龙部署都要手工改简介）。 */
+  var noneMode = (r.mode === 'none');
   try {
     if (typeof slotNames !== 'undefined' && slotNames && slotNames.length){
       var fmtDeck = function(arr){
         return arr.map(function(n, i){ return (i + 1) + (n && String(n).trim() ? n : '空'); }).join(' ');
       };
       L.push('卡槽 配队1[' + fmtDeck(slotNames.slice(0, 8)) + ']' +
-        (slotNames.slice(8).join('') ? ' 配队2[' + fmtDeck(slotNames.slice(8, 16)) + ']' : ''));
+        (!noneMode && slotNames.slice(8).join('') ? ' 配队2[' + fmtDeck(slotNames.slice(8, 16)) + ']' : ''));
     }
   } catch (e) {}
   var notes = [];
-  var r = V2.route, pp = r.params || {};
   var have = function(a){ return a && a.length; };
   if (r.mode === 'tail'){
     var d2t = (r.tail.d2 || []).filter(function(x){ return x >= 0 && x <= 9; });
@@ -23516,13 +23739,15 @@ function v2TaskIntro(){
   } else if (r.mode === 'phase'){
     notes.push('阶段分流 deck2@' + JSON.stringify(r.phase.deck2Levels || []));
   }
-  if (pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
-  if (pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
-  if (pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
-  if (pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
-  if (pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');
-  if (pp.beilei_stop > 0) notes.push('第' + pp.beilei_stop + '关后不补蓓蕾');
-  if (pp.bailuo_from > 0) notes.push('第' + pp.bailuo_from + '关起补白萝卜(防吸阵)');
+  if (!noneMode && pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
+  if (!noneMode && pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
+  if (!noneMode && pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
+  if (!noneMode && pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
+  if (!noneMode && pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');
+  if (!noneMode && pp.beilei_stop > 0) notes.push('第' + pp.beilei_stop + '关后不补蓓蕾');
+  if (!noneMode && pp.bailuo_from > 0) notes.push('第' + pp.bailuo_from + '关起补白萝卜(防吸阵)');
+  /* 不补阵（批 B）：所有模式适用，与 none 无关 */
+  if (pp.farm_stop_from > 0) notes.push('第' + pp.farm_stop_from + '关后不补阵(只走抛花→点波→等结算，Boss关照旧)');
   var ops = V2.boss.ops || [];
   for (var i = 0; i < ops.length; i++){
     if (ops[i].t === 'feed'){
@@ -23533,10 +23758,15 @@ function v2TaskIntro(){
   }
   if (V2.throw && V2.throw.on && have(V2.throw.cells))
     notes.push('抛花卡槽' + (V2.throw.slot || 1) + '→' + V2.throw.cells.join('/'));
-  if (pp.wave_mode === 'hold') notes.push('「关内点波」默认不点波(只等结算)');
-  else if (pp.wave_mode === 'burst') notes.push('「关内点波」默认狂点');
+  var wmIntro = v2WaveModeNorm(pp.wave_mode);   /* 中文/英文同义归一，见 15_route.js */
+  if (wmIntro === 'hold') notes.push('「关内点波」默认不点波(只等结算)');
+  else if (wmIntro === 'burst') notes.push('「关内点波」默认狂点');
+  var fwmIntro = v2WaveModeNorm(pp.farm_wave_mode);
+  if (pp.farm_stop_from > 0 && fwmIntro === 'hold') notes.push('不补阵期不点波');
+  else if (pp.farm_stop_from > 0 && fwmIntro === 'burst') notes.push('不补阵期狂点');
   notes.push('首次运行/换分辨率必开「初始化卡槽和草坪位置」');
-  if (r.mode !== 'none') notes.push('勿与其它自制无尽同时运行(agent 计数器共用)');
+  /* 2026-10-10 Q1：none 模式也接 agent 计数（监控窗口/不补阵都要），提示对所有模式都要写 */
+  notes.push('勿与其它自制无尽同时运行(agent 计数器共用)');
   return (L.length ? L.join('') + '｜' : '') + notes.join('；');
 }
 
@@ -23906,8 +24136,9 @@ function v2FrameImportPick(){
         : '✅ 已导入：前期布阵 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
           ' · 后期补卡 ' + r.late + ' 格' + (r.notes.length ? '；' + r.notes.join('；') : ''));
       if (typeof showToast === 'function') showToast(msg);
-      var outBox = document.getElementById('v2Out');
-      if (outBox) outBox.value = msg;
+      /* 结果写统一报告框（导入面板），旧版写导出面板的 v2Out（2026-10-10 批 D2） */
+      if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】\n' + msg);
+      else { var outBox0 = document.getElementById('v2Out'); if (outBox0) outBox0.value = msg; }
       inp.value = '';
     };
     rd.readAsText(f, 'utf-8');
@@ -23935,14 +24166,20 @@ function v2FrameImportPick(){
   });
   var im = document.getElementById('ex2FrameImp');
   if (im) im.addEventListener('click', function(){
-    var box = document.getElementById('v2Out');
+    /* 粘贴框改到导入面板（2026-10-10 批 D2：导入入口统一，旧版读 v2Out） */
+    var box = document.getElementById('impPaste') || document.getElementById('v2Out');
     var text = box ? box.value : '';
     if (!text.trim()){ v2FrameImportPick(); return; }   /* 空时直接走文件选择 */
     var r = v2ImportFrameJSON(text);
-    if (!r.ok){ showToast('解析失败：' + r.err); return; }
-    var msg = '已导入：前期布阵 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
+    if (!r.ok){
+      if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】解析失败：' + r.err);
+      showToast('解析失败：' + r.err);
+      return;
+    }
+    var msg = '已导入通用框架布阵：前期 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
       ' · 后期补卡 ' + r.late + ' 格' + (r.notes.length ? '；' + r.notes.join('；') : '');
-    if (box) box.value = msg;
+    if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】\n' + msg);
+    else if (box) box.value = msg;
     showToast('通用框架布阵已应用到画布');
   });
 })();
@@ -24136,6 +24373,73 @@ function v2ImpBuildBoard(d1, d2){
   return { compact: '9x5 布阵: ' + txt.join('|'), rows: txt };
 }
 
+/* 槽位推断：植物步的槽号 → 首个植物名（deck1 取 1~8；deck2 的步已被走链归一成内部槽位 9~16，
+   折算成相对槽位 1~8）。旧代码在 v2ImportAnalyze 内只认 1~8，配队2 八个槽位永远推断不出来，
+   导入任何双卡组脚本都要人工补名（2026-10-10 实测复兴/童话/海盗三个 fixture 全中）。 */
+function v2ImpInferSlots(items, deck){
+  var m = {};
+  items.forEach(function(it){
+    if (it.t !== 'plant' || !it.slot) return;
+    var rel = (deck === 2) ? (it.slot > 8 ? it.slot - 8 : it.slot) : it.slot;
+    if (rel < 1 || rel > 8) return;
+    var nm = v2ImpPlantName(it.name);
+    if (nm && !m[rel]) m[rel] = nm;
+  });
+  var arr = [];
+  for (var i = 1; i <= 8; i++) arr.push(m[i] || '');
+  return arr;
+}
+
+/* task 片段的 _register.description 里有「卡槽 配队1[…] 配队2[…]」全量卡槽表（部署时写入，
+   gen_presets 逆向预设也用它）。走链只能推出链上出现过的槽位（deck2 尤其少），
+   这份文本才是卡槽真相——单选 pipeline 时配队2 只推得出 3/8，配上 task 片段即 8/8。 */
+function v2ImpSlotsFromTask(mp){
+  var desc = '';
+  (mp.parsed || []).forEach(function(x){
+    var r = (x.p || {})._register;
+    if (!desc && r && typeof r.description === 'string' && r.description.indexOf('卡槽') > -1) desc = r.description;
+  });
+  if (!desc) return null;
+  function parse(seg){
+    var out = ['', '', '', '', '', '', '', ''];
+    String(seg || '').split(/\s+/).forEach(function(tok){
+      var g = /^([1-8])(.*)$/.exec(tok);
+      if (!g) return;
+      var nm = String(g[2] || '').trim();
+      out[+g[1] - 1] = (nm === '空' ? '' : nm);      /* 简介里空槽位写作「3空」 */
+    });
+    return out;
+  }
+  var m1 = /配队1\[([^\]]*)\]/.exec(desc), m2 = /配队2\[([^\]]*)\]/.exec(desc);
+  if (!m1 && !m2) return null;
+  var name = '';
+  (mp.parsed || []).forEach(function(x){ var r = (x.p || {})._register; if (!name && r && r.name) name = r.name; });
+  return { deck1: parse(m1 && m1[1]), deck2: parse(m2 && m2[1]), desc: desc, taskName: name };
+}
+
+/* 抛花还原：task 片段里有「小关是否抛花」选项 ⇒ pipeline 里 点波_初始 之后的 抛花1..N 节点
+   是画布 V2.throw 生成的 → 还原成画布抛花设置（落格取节点 end、卡槽取 begin 的第N个槽位），
+   并把它们从顺序里摘掉（再导出时生成器按 V2.throw 重新插入，节点完全同构）。
+   没有该选项时不还原——避免把硬编码抛花步的脚本改走样。 */
+function v2ImpThrowFromPipe(p, pfx, mp){
+  var hasOpt = (mp.parsed || []).some(function(x){
+    return Object.keys((x.p || {}).option || {}).some(function(k){ return /小关是否抛花$/.test(k); });
+  });
+  if (!hasOpt) return null;
+  var esc = pfx.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var names = Object.keys(p).filter(function(k){ return new RegExp('^' + esc + '抛花\\d+$').test(k); }).sort();
+  if (!names.length) return null;
+  var cells = [], slot = 1;
+  names.forEach(function(k){
+    var m = /格子(\d)_(\d)$/.exec(String(p[k].end || ''));
+    if (m) cells.push(m[1] + '-' + m[2]);
+    var s = v2ImpSlot(p[k].begin);
+    if (s && s !== 1) slot = s;
+  });
+  if (!cells.length) return null;
+  return { on: true, slot: slot, cells: cells, names: names };
+}
+
 /* 主入口：files=[{name,text}] → 画像 A（含报告字段）；不落 DOM */
 function v2ImportAnalyze(files, prefixHint){
   var A = { ok: false, warns: [], notes: [], unknown: [] };
@@ -24146,12 +24450,42 @@ function v2ImportAnalyze(files, prefixHint){
   (mp.notes || []).forEach(function(n){ A.notes.push(n); });
   (mp.collisions || []).forEach(function(c){ A.warns.push('同名节点冲突（V2）: ' + c); });
   A.nNodes = Object.keys(p).length;
-  if (!A.nNodes){ A.warns.push('未解析出任何节点'); return A; }
+  /* 选错文件的指路（2026-10-10 批 D3）：以前一律「未解析出任何节点」，用户不知道错在哪 */
+  function hasKey(keys){
+    return (mp.parsed || []).some(function(x){ return Object.keys(x.p || {}).some(function(k){ return keys.indexOf(k) > -1; }); });
+  }
+  if (!A.nNodes){
+    var oks = [];
+    (mp.parsed || []).forEach(function(x){ Object.keys((x.p || {}).option || {}).forEach(function(k){ oks.push(k); }); });
+    var toolTask = oks.some(function(k){
+      return /(初始化卡槽和草坪位置|监控窗口|启动时关卡数|小关是否抛花|boss喂豆位置|关内点波|无尽全自动循环)$/.test(k);
+    });
+    if (files.length && /"version"\s*:\s*2/.test(String(files[0].text)) && /"(boards|slots|order)"\s*:/.test(String(files[0].text)))
+      A.warns.push('这是布阵工具的 v2 阵型存档（完整状态：棋盘/卡槽/顺序/路由），不是 pipeline 脚本——' +
+        '本面板直接点「解析」会识别为阵型并载入画布');
+    else if (toolTask || hasKey(['_register']))
+      A.warns.push('这是 task 片段（选项定义），不含 pipeline 节点——请与配套的 YS_*.json（pipeline）一起选；' +
+        '只想部署的话用导出面板的「🚀 部署到 MPZ」');
+    else if (oks.length || hasKey(['option']))
+      A.warns.push('这是选项集 JSON（官方通用框架 / task 选项定义），不含无尽布阵链——' +
+        '官方通用框架请在「📥 导入」面板点「解析通用框架 JSON」');
+    else
+      A.warns.push('未识别到 pipeline 节点；支持：v2 源（生成 pipeline 片段得到的三段合一文件）、' +
+        'YS_*.json / Endless_*.json（pipeline）、*_wj.json（task 片段，需与 pipeline 一起选）');
+    return A;
+  }
 
   /* 前缀：找 判断是否进入关内 判定节点（后缀精确），多候选时列出 */
   var S_D1 = '判断是否进入关内', S_D2 = '判断进入关内_deck2', S_BOSS = '判断进入关内_boss', S_FARM = '判断进入关内_后期';
   var cands = Object.keys(p).filter(function(k){ var n = String(k); return n === S_D1 || n.slice(-S_D1.length) === S_D1; });
-  if (!cands.length){ A.warns.push('未找到「判断是否进入关内」判定节点（可能不是无尽布阵脚本）'); return A; }
+  if (!cands.length){
+    if (hasKey(['option', 'task']))
+      A.warns.push('这是官方通用框架 / 选项集 JSON（只有 option 定义），不含无尽布阵链；' +
+        '请在「📥 导入」面板用「解析通用框架 JSON」导入');
+    else
+      A.warns.push('未找到「判断是否进入关内」判定节点（可能不是无尽布阵脚本，或只选了骨架/片段文件）');
+    return A;
+  }
   var pfx = '';
   var d1Judge = cands[0];
   if (cands.length > 1){
@@ -24179,19 +24513,28 @@ function v2ImportAnalyze(files, prefixHint){
   if (farm.length) A.order.farm = farm;
   A.counts = { d1: d1.length, d2: d2.length, farm: farm.length, boss: boss.length };
 
-  /* 槽位推断：植物步的槽号 → 首个植物名 */
-  function inferSlots(items){
-    var m = {};
-    items.forEach(function(it){
-      if (it.t !== 'plant' || !it.slot || it.slot < 1 || it.slot > 8) return;
-      var nm = v2ImpPlantName(it.name);
-      if (nm && !m[it.slot]) m[it.slot] = nm;
+  A.slots = { deck1: v2ImpInferSlots(d1, 1), deck2: d2.length ? v2ImpInferSlots(d2, 2) : [] };
+  /* task 片段在的话，用 _register 简介里的卡槽表补齐（走链推不出的槽位，deck2 尤其多） */
+  var slotSrc = v2ImpSlotsFromTask(mp);
+  if (slotSrc){
+    var filledByTask = 0;
+    ['deck1', 'deck2'].forEach(function(dk){
+      if (A.slots[dk].length !== 8) return;      /* 该 deck 本就没链（如 none 模式的 deck2）→ 不补，免得凭空造出配队2 */
+      slotSrc[dk].forEach(function(nm, i){
+        if (nm && !A.slots[dk][i]){ A.slots[dk][i] = nm; filledByTask++; }
+      });
     });
-    var arr = [];
-    for (var i = 1; i <= 8; i++) arr.push(m[i] || '');
-    return arr;
+    if (filledByTask) A.notes.push('卡槽表补齐 ' + filledByTask + ' 格：取自 task 片段 _register 简介（走链只能推出链上出现过的槽位）');
+    if (slotSrc.taskName) A.taskName = slotSrc.taskName;
   }
-  A.slots = { deck1: inferSlots(d1), deck2: d2.length ? inferSlots(d2) : [] };
+  /* 抛花设置还原（需 task 片段佐证） */
+  var thSrc = v2ImpThrowFromPipe(p, pfx, mp);
+  if (thSrc){
+    A.throw = { on: true, slot: thSrc.slot, cells: thSrc.cells };
+    A.order.deck1 = d1.filter(function(it){ return !(it.t === 'plant' && /^抛花\d+$/.test(it.name || '')); });
+    A.notes.push('抛花设置已还原：卡槽' + thSrc.slot + ' → ' + thSrc.cells.join('/') +
+      '（' + thSrc.names.length + ' 朵；已从顺序里摘出，导出时按画布抛花设置重新生成）');
+  }
 
   /* 路由参数：计步 custom_action_param（双层解码） */
   var params = {};
@@ -24228,6 +24571,14 @@ function v2ImportAnalyze(files, prefixHint){
   if (emptySlots.length) A.warns.push('以下槽位未在链中出现（载入后留空，请人工补名）: ' + emptySlots.join('、'));
   if (isPhase) A.notes.push('检测到相位路由（haidao 计步分流）：deck2=[2,12]、Boss 前20直喂/后叠电豌、21 关起挂机链，均按海盗默认填充');
   if (farm.length) A.notes.push('farm 挂机链 ' + farm.length + ' 步（21 关后小关用），已存入顺序数据 farm 段');
+  /* 「v2 源」只指**单文件**里同时装着节点与 task 片段（三段合一）；
+     两份文件分开选（YS_*.json + *_wj.json）不算 v2 源，别说岔了 */
+  var isV2Src = (mp.parsed || []).some(function(x){
+    var o = x.p || {};
+    var hasNode = Object.keys(o).some(function(k){ return !V2_NON_NODE_KEYS[k]; });
+    return hasNode && !!(o.option || o.task || o.nested);
+  });
+  if (isV2Src) A.notes.push('已识别为布阵工具 v2 源：按 ② pipeline 段导入，③ task 片段（选项定义）已忽略——选项由部署/导出时重新生成');
   A.ok = true;
   return A;
 }
@@ -24261,7 +24612,12 @@ function v2ImportApply(A, worldKey){
   V2.boss.ops = v2Clone((A.boss && A.boss.ops) || []);
   V2.boss.feedSelect = !!(A.boss && A.boss.feedSelect);
   V2.boss.feedCell = (A.boss && A.boss.feedCell) || '2-3';
+  if (A.throw && A.throw.on) V2.throw = v2Clone(A.throw);      /* 抛花设置还原，否则再导出丢「小关是否抛花」选项 */
   V2.debugCardUI = true;
+  if (A.taskName){
+    var tn2 = document.getElementById('v2TaskName');
+    if (tn2){ tn2.value = A.taskName; try{ localStorage.setItem('v2taskname', A.taskName); }catch(e){} }
+  }
   save();
   buildAllChips(); renderSlots(); renderGrid(); updateStatus();
   var bs = document.getElementById('btnSubSlots');
@@ -24296,37 +24652,101 @@ function v2ImportReportText(A, fileNames){
   return L.join('\n');
 }
 
-/* UI 装配 */
+/* ---- 统一入口（2026-10-10 批 D2）：文件选择 / 粘贴框 / 服务面板三条路共用同一套解析与报告框 ----
+ * 之前三处各写一份：导出面板里的 pipeline 导入块、导出面板的「应用粘贴的 JSON v2」、
+ * 服务面板的「导入勾选 pipeline → 画布」；都能用但入口分散、报告框不统一。 */
+function v2ImpReportSet(text){
+  var box = document.getElementById('impReport') || document.getElementById('v2Out');
+  if (box) box.value = text;
+}
+/* 完整 v2 阵型存档（version:2 + boards + slots）：不走 pipeline 走链，直接载入画布状态 */
+function v2ImpFullV2(text){
+  var d = null;
+  try{ d = v2ParseAnyJson(text); }catch(e){ return null; }
+  if (!d || typeof d !== 'object' || Array.isArray(d) || d.version !== 2) return null;
+  if (!d.boards || !d.slots) return null;
+  return d;
+}
+/* 解析（不改画布）：v2 阵型 → 状态画像；其余 → pipeline/task 走链画像。报告写入统一报告框 */
+function v2ImpParse(files){
+  var state = { kind: '', files: files || [], A: null, text: '' };
+  if (!state.files.length) return state;
+  state.text = state.files.map(function(f){ return f.text; }).join('\n');
+  if (state.files.length === 1){
+    var full = v2ImpFullV2(state.text);
+    if (full){
+      state.kind = 'full';
+      var nCells = 0;
+      try{ (full.boards.main || []).forEach(function(r){ (r || []).forEach(function(c){ if (c && (c.base || c.merge || c.vine)) nCells++; }); }); }catch(e){}
+      v2ImpReportSet('【导入识别报告】' + (state.files[0].name || '粘贴内容') + '\n' +
+        '识别为：布阵工具 v2 阵型存档（完整状态）\n' +
+        '世界 ' + ((full.meta && full.meta.world) || '（未命名）') + ' · 前缀 ' + ((full.meta && full.meta.prefix) || 'wj_') +
+        ' · 棋盘 ' + (full.meta ? (full.meta.cols || 9) + 'x' + (full.meta.rows || 5) : '9x5') + '（有植物 ' + nCells + ' 格）\n' +
+        '顺序：deck1 ' + (((full.order || {}).deck1) || []).length + ' 步 / deck2 ' + (((full.order || {}).deck2) || []).length + ' 步' +
+        ' · 路由模式 ' + (((full.route || {}).mode) || 'tail') + '\n' +
+        (full.meta && full.meta.intro ? '简介：' + full.meta.intro + '\n' : '') +
+        '\n—— 点「应用到画布」覆盖棋盘/卡槽/顺序/路由/Boss（可 Ctrl+Z 撤销）');
+      return state;
+    }
+  }
+  state.kind = 'frag';
+  var A = v2ImportAnalyze(state.files, (document.getElementById('v2Prefix') || {}).value);
+  state.A = A;
+  v2ImpReportSet(v2ImportReportText(A, state.files.map(function(f){ return f.name; })));
+  return state;
+}
+function v2ImpFilesNow(){
+  var files = (window.__v2ImpFiles || []).slice();
+  if (!files.length){
+    var t = ((document.getElementById('impPaste') || {}).value || '');
+    if (t.trim()) files = [{ name: '粘贴内容', text: t }];
+  }
+  return files;
+}
+function v2ImpOk(st){ return !!st && (st.kind === 'full' || (st.A && st.A.ok)); }
+function v2ImpAnalyzeClick(){
+  var files = v2ImpFilesNow();
+  if (!files.length){ showToast('先选文件，或把内容粘贴到下面的框'); return; }
+  window.__v2ImpState = v2ImpParse(files);
+  var ap = document.getElementById('impApply');
+  if (ap) ap.disabled = !v2ImpOk(window.__v2ImpState);
+  showToast(v2ImpOk(window.__v2ImpState) ? '解析完成，请查看报告后点「应用到画布」' : '解析失败，详见报告');
+}
+function v2ImpApplyClick(){
+  var st = window.__v2ImpState;
+  if (!v2ImpOk(st)){ showToast('请先点「解析（先看报告）」'); return; }
+  if (st.kind === 'full'){ v2ImportJSON(st.text); return; }
+  if (v2ImportApply(st.A)) showToast('导入完成：' + (st.A.prefix || '（无前缀）') + ' 画像已应用');
+}
+
+/* UI 装配（导入面板） */
 function v2ImportBind(){
   var inp = document.getElementById('impPipe');
   if (!inp) return;
   inp.addEventListener('change', function(){
     var fs = Array.prototype.slice.call(inp.files || []);
     if (!fs.length) return;
-    var names = fs.map(function(f){ return f.name; });
-    document.getElementById('impPipeName').textContent = names.join(', ');
     Promise.all(fs.map(function(f){
-      return new Promise(function(res){ var rd = new FileReader(); rd.onload = function(){ res({ name: f.name, text: String(rd.result) }); rd.readAsText(f, 'utf-8'); }; });
+      return new Promise(function(res){ var rd = new FileReader(); rd.onload = function(){ res({ name: f.name, text: String(rd.result) }); }; rd.readAsText(f, 'utf-8'); });
     })).then(function(files){
       window.__v2ImpFiles = files;
-      var A = v2ImportAnalyze(files, (document.getElementById('v2Prefix') || {}).value);
-      window.__v2ImpResult = A;
-      document.getElementById('impReport').value = v2ImportReportText(A, names);
-      document.getElementById('impApply').disabled = !A.ok;
+      var el = document.getElementById('impPipeName');
+      if (el) el.textContent = files.length === 1 ? files[0].name : files.length + ' 个文件';
+      v2ImpAnalyzeClick();            /* 选完即解析，少点一次 */
     });
   });
-  var an = document.getElementById('impAnalyze');
-  if (an) an.addEventListener('click', function(){
-    if (!window.__v2ImpFiles){ showToast('先选择 pipeline JSON'); return; }
-    var A = v2ImportAnalyze(window.__v2ImpFiles, (document.getElementById('v2Prefix') || {}).value);
-    window.__v2ImpResult = A;
-    document.getElementById('impReport').value = v2ImportReportText(A, window.__v2ImpFiles.map(function(f){ return f.name; }));
-    document.getElementById('impApply').disabled = !A.ok;
+  var b = function(id){ return document.getElementById(id); };
+  if (b('impAnalyze')) b('impAnalyze').addEventListener('click', v2ImpAnalyzeClick);
+  if (b('impApply')) b('impApply').addEventListener('click', v2ImpApplyClick);
+  if (b('impClear')) b('impClear').addEventListener('click', function(){
+    window.__v2ImpFiles = null; window.__v2ImpState = null;
+    inp.value = '';
+    var el = b('impPipeName'); if (el) el.textContent = '未选择';
+    var box = b('impPaste'); if (box) box.value = '';
+    var ap = b('impApply'); if (ap) ap.disabled = true;
+    v2ImpReportSet('已清空。选择文件（可多选）或粘贴内容后自动解析；解析成功才可「应用到画布」。');
   });
-  var ap = document.getElementById('impApply');
-  if (ap) ap.addEventListener('click', function(){
-    if (v2ImportApply(window.__v2ImpResult)) showToast('导入完成：' + (window.__v2ImpResult.prefix || '（无前缀）') + ' 画像已应用');
-  });
+  v2ImpReportSet('选择文件或粘贴内容后点「解析（先看报告）」；解析成功才可「应用到画布」。');
 }
 
 /* ===== js/47_touch.js ===== */
@@ -24619,17 +25039,18 @@ function v2SrvIntoChecks(){
   }).catch(function(e){ showToast('载入失败：' + e); });
 }
 
+/* 服务面板只负责「列出 MPZ 上的文件并勾选」；解析与报告统一走导入面板（2026-10-10 批 D2）。
+   旧版在这里直接 v2ImportAnalyze 并自己写 impReport —— 同一件事两套代码，报告框也不是同一处。 */
 function v2SrvIntoImport(){
   var pipes = v2SrvPicked('pipe');
   if (!pipes.length){ showToast('先勾选 pipeline 文件'); return; }
   v2SrvFetchFiles(pipes).then(function(files){
     window.__v2ImpFiles = files;
-    var A = v2ImportAnalyze(files, (document.getElementById('v2Prefix') || {}).value);
-    window.__v2ImpResult = A;
-    document.getElementById('impReport').value = v2ImportReportText(A, files.map(function(f){ return f.name; }));
-    document.getElementById('impApply').disabled = !A.ok;
-    if (typeof v2OpenPanel === 'function') v2OpenPanel('export2');
-    showToast('解析完成，请查看报告后点「应用到画布」');
+    var el = document.getElementById('impPipeName');
+    if (el) el.textContent = files.length === 1 ? files[0].name : files.length + ' 个文件';
+    if (typeof v2ImpAnalyzeClick === 'function') v2ImpAnalyzeClick();
+    if (typeof v2OpenPanel === 'function') v2OpenPanel('import');
+    showToast('已解析勾选的 pipeline，报告见导入面板');
   }).catch(function(e){ showToast('载入失败：' + e); });
 }
 
@@ -25125,7 +25546,7 @@ function v2RestoreAfterUpdate(){
  * 一键部署时若 MPZ 的 agent/fx_counter.py 缺失则由此写入——工具不再依赖备份区外部文件（跨机可用）。
  * ================= */
 "use strict";
-var V2_AGENT_FX_PY = "\"\"\"\\\nMPZ \u81ea\u5236\u65e0\u5c3d \u00b7 agent \u5173\u5361\u8ba1\u6570\u5668\n=================================\n\u4e3a MPZ(MFAAvalonia) \u7684 agent \u673a\u5236\u6ce8\u518c custom action, \u4f9b\u5404\u4e16\u754c\u65e0\u5c3d pipeline \u8c03\u7528:\n\n  fx_counter        \u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u5173\u5361\u6570 +1, \u5e76\u6309\u5c3e\u6570\u6539\u5199 <prefix>\u5c3e\u6570\u8def\u7531 \u7684 next\n                    (\u9ed8\u8ba4 \u5c3e\u6570 3/8 -> \u914d\u961f2d2, 5/0 -> \u914d\u961f1boss, \u5176\u4f59 -> \u914d\u961f1\u666e;\n                     d2_tails/boss_tails \u53ef\u7531 pipeline \u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d)\n  fx_counter_reset  \u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6: \u628a\u8ba1\u6570\u5668\u91cd\u7f6e\u4e3a start_level-1,\n                    \u4f7f\u4e0b\u4e00\u6b21 fx_counter \u8ba1\u6570\u540e\u7b49\u4e8e start_level\n  fx_monitor_switch \u76d1\u63a7\u7a97\u53e3\u5f00\u5173\n\n\u5173\u5361\u6570\u5728 agent \u8fdb\u7a0b\u5185\u7d2f\u8ba1(\u6a21\u5757\u7ea7\u53d8\u91cf)\u3002agent \u8fdb\u7a0b\u5728 MPZ \u4efb\u52a1\u4f1a\u8bdd\u671f\u95f4\u6301\u7eed\u5b58\u6d3b,\n\u8fdb\u7a0b\u9000\u51fa(\u4efb\u52a1\u7ed3\u675f)\u540e\u81ea\u52a8\u6e05\u96f6, \u4e0b\u6b21\u4efb\u52a1\u4ece custom_action_param.start_level \u91cd\u65b0\u5f00\u59cb\u3002\n\n\u5c3e\u6570\u8def\u7531\u53c2\u6570\u5316 (2026-09-10):\n  \u8ba1\u6b65\u8282\u70b9 custom_action_param \u53ef\u5e26 \"d2_tails\": [3,8] / \"boss_tails\": [5,0],\n  \u4e0d\u4f20\u65f6\u56de\u843d\u9ed8\u8ba4, \u8001\u811a\u672c(\u590d\u5174/\u7ae5\u8bdd/\u6d77\u76d7)\u884c\u4e3a\u5b8c\u5168\u4e0d\u53d8\u3002\n\n\u4f9d\u8d56: pip install maafw  (\u4e0e MPZ \u7684 MaaFramework \u540c\u6e90 Python \u7ed1\u5b9a)\n\"\"\"\n\nimport datetime\nimport json\nimport os\nimport time\n\nfrom maa.agent.agent_server import AgentServer\nfrom maa.custom_action import CustomAction\nfrom maa.context import Context\n\n# \u5b9e\u65f6\u76d1\u63a7\u7a97\u53e3(\u53ef\u9009: \u65e0 tkinter \u73af\u5883\u65f6\u9759\u9ed8\u8df3\u8fc7)\ntry:\n    import fx_monitor\nexcept Exception:\n    fx_monitor = None\n\n# \u6a21\u5757\u7ea7\u8ba1\u6570\u72b6\u6001 (None = \u672a\u521d\u59cb\u5316)\n# prev_deck: \u4e0a\u4e00\u5173\u5b9e\u9645\u9009\u7528\u7684\u5361\u7ec4\uff0c\u4f9b skip_same_deck \u8df3\u5207\uff1breset \u65f6\u6e05\u7a7a\n_state = {\"level\": None, \"prev_deck\": None}\n# \u4e0a\u4e00\u5173\u8ba1\u6b65\u65f6\u523b(\u8ba1\u7b97\u6bcf\u5173\u8017\u65f6)\n_last_step = None\n# \u76d1\u63a7\u7a97\u53e3\u603b\u5f00\u5173: \u7531 fx_monitor_switch \u52a8\u4f5c\u63a7\u5236, \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173\u95ed\u4e0d\u5f39\u7a97\n_monitor_enabled = True\n\n# \u5173\u5361\u53d8\u5316\u65e5\u5fd7: \u540c\u65f6 print(\u88ab MFAAvalonia \u6355\u83b7\u5230\u754c\u9762\u65e5\u5fd7) \u548c\u5199\u6587\u4ef6(\u53cc\u4fdd\u9669)\n_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"debug\")\n_LOG_PATH = os.path.join(_LOG_DIR, \"fx_counter.log\")\n\n\ndef _log(msg: str):\n    # \u6bcf\u884c\u5e26\u65f6\u95f4\u6233(\u6587\u4ef6+\u754c\u9762\u65e5\u5fd7), \u4fbf\u4e8e\u6309\u5173\u5361\u7edf\u8ba1\u8017\u65f6\n    line = f\"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\"\n    print(line)\n    try:\n        os.makedirs(_LOG_DIR, exist_ok=True)\n        with open(_LOG_PATH, \"a\", encoding=\"utf-8\") as f:\n            f.write(line + \"\\n\")\n    except OSError:\n        pass\n    # \u540c\u6b65\u5230\u76d1\u63a7\u7a97\u53e3(\u4f20\u539f\u59cb msg, \u76d1\u63a7\u6b63\u5219\u89e3\u6790 \u7b2cX\u5173/-> \u4e0d\u53d7\u65f6\u95f4\u6233\u5f71\u54cd)\n    if fx_monitor is not None and _monitor_enabled:\n        try:\n            fx_monitor.notify(msg)\n        except Exception:\n            pass\n\n\ndef _parse_param(custom_action_param: str) -> dict:\n    \"\"\"\n    \u4ece pipeline \u8282\u70b9 custom_action_param \u89e3\u6790\u53c2\u6570\u3002\n    \u517c\u5bb9\u4e24\u79cd\u7f16\u7801(\u5b9e\u6d4b):\n      1) \u5355\u5c42: {\"start_level\": 103}            (\u76f4\u63a5\u5199\u8fdb pipeline \u7684\u9ed8\u8ba4\u503c)\n      2) \u53cc\u5c42: \"{\\\\\"start_level\\\\\": 103}\"       (MPZ input override \u5e8f\u5217\u5316\u540e,\n                \u5916\u5c42\u88ab\u5305\u6210 JSON \u5b57\u7b26\u4e32\u5b57\u9762\u91cf, \u9700\u8981\u89e3\u4e24\u5c42)\n    \"\"\"\n    try:\n        p = json.loads(custom_action_param or \"{}\")\n        if isinstance(p, dict):\n            return p\n        if isinstance(p, str):\n            p2 = json.loads(p)\n            if isinstance(p2, dict):\n                return p2\n        return {}\n    except (ValueError, TypeError):\n        return {}\n\n\ndef _parse_start_level(custom_action_param: str) -> int:\n    return int(_parse_param(custom_action_param).get(\"start_level\", 1))\n\n\ndef _parse_tails(v, default):\n    \"\"\"\u628a param \u91cc\u7684\u5c3e\u6570\u5217\u8868\u89c4\u6574\u6210 0~9 \u7684 int tuple; \u7f3a\u5931/\u975e\u6cd5\u56de\u843d default\u3002\n    \u652f\u6301 [3,8] \u4e0e \"3,8\"/\"3 8\"/\"3\uff0c8\" \u4e24\u79cd\u5199\u6cd5(\u5de5\u5177\u5bfc\u51fa\u4e3a\u6570\u7ec4)\u3002\"\"\"\n    if v is None:\n        return default\n    if isinstance(v, str):\n        v = [x for x in v.replace(\"\uff0c\", \",\").replace(\" \", \",\").split(\",\") if x != \"\"]\n    if not isinstance(v, (list, tuple)):\n        return default\n    try:\n        out = tuple(int(x) % 10 for x in v)\n    except (TypeError, ValueError):\n        return default\n    return out or default\n\n\ndef _route_by_tail(level: int, prefix: str, deck1_first: int = 0, deck2_tail3_first: int = 0,\n                   d2_tails=(3, 8), boss_tails=(5, 0)) -> str:\n    \"\"\"\u6309\u5173\u5361\u5c3e\u6570\u8fd4\u56de\u76ee\u6807 pipeline \u8282\u70b9\u540d(\u7528 prefix \u62fc\u5168\u540d)\n    d2_tails/boss_tails: \u7531\u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u7f3a\u7701 3/8 \u5207 deck2\u30015/0 \u8d70 Boss\n        (2026-09-10 \u6253\u901a\u5de5\u5177\u8def\u7531\u9762\u677f: \u754c\u9762\u586b\u7684\u5c3e\u6570\u771f\u6b63\u751f\u6548; \u4e0d\u4f20\u5219\u56de\u843d\u9ed8\u8ba4)\n    deck1_first>0 \u65f6: \u524d deck1_first \u5173 \u5c3e\u6570 \u2208 d2_tails \u4e0d\u5207 deck2, \u6539\u8d70 deck1 \u914d\u961f\n    (\u5f00\u8352\u671f deck1 \u6210\u578b\u4f18\u5148; \u6d0b\u828b/\u6851\u845a\u811a\u672c\u7528)\n    deck2_tail3_first>0 \u65f6: \u524d N \u5173\u53ea\u5728 d2_tails \u7684\u9996\u4e2a\u5c3e\u6570\u5207 deck2(\u5176\u4f59 d2 \u5c3e\u6570\u6539\u8d70 deck1)\n    (\u7ae5\u8bdd\u7528: \u524d20\u5173\u53ea\u5728 3/13 \u5207 deck2, 8/18 \u4e0d\u5207)\"\"\"\n    tail = level % 10\n    d2 = tuple(d2_tails) if d2_tails else (3, 8)\n    bt = tuple(boss_tails) if boss_tails else (5, 0)\n    first_d2 = d2[0] if d2 else 3\n    if deck1_first and level <= deck1_first and tail in d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if deck2_tail3_first and level <= deck2_tail3_first and tail in d2 and tail != first_d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if tail in d2:\n        return f\"{prefix}\u914d\u961f2d2\"\n    if tail in bt:\n        return f\"{prefix}\u914d\u961f1boss\"\n    return f\"{prefix}\u914d\u961f1\u666e\"\n\n\n@AgentServer.custom_action(\"fx_counter\")\nclass FxCounter(CustomAction):\n    \"\"\"\u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u8ba1\u6570 +1; route=true \u6309\u5c3e\u6570\u8def\u7531, route=false \u4ec5\u8ba1\u6570(\u5e03\u9635\u6bb5)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _last_step\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        route = bool(param.get(\"route\", True))\n        absolute = bool(param.get(\"absolute\", False))\n        deck1_first = int(param.get(\"deck1_first\", 0))   # \u524dN\u5173\u4e0d\u5207deck2(\u5c3e\u6570\u547d\u4e2dd2_tails\u6539\u8d70deck1)\n        deck2_tail3_first = int(param.get(\"deck2_tail3_first\", 0))  # \u524dN\u5173\u53ea\u5728d2\u9996\u4e2a\u5c3e\u6570\u5207deck2\n        # \u5c3e\u6570\u5206\u6d41\u8868(\u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d; \u7f3a\u7701 3/8\u2192deck2, 5/0\u2192Boss)\n        d2_tails = _parse_tails(param.get(\"d2_tails\"), (3, 8))\n        boss_tails = _parse_tails(param.get(\"boss_tails\"), (5, 0))\n        # \u540c\u5361\u7ec4\u8df3\u5207(2026-10-09 P5): \u4e0a\u4e00\u5173\u4e0e\u672c\u5173\u5361\u7ec4\u76f8\u540c \u2192 \u8def\u7531\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fX\uff0c\u8df3\u8fc7 \u914d\u961f+\u9009\u5361\u00d72\u3002\n        # \u9ed8\u8ba4 false(\u5176\u5b83\u4e16\u754c\u96f6\u5f71\u54cd)\uff1b\u4f1a\u8bdd\u7b2c\u4e00\u5173 prev_deck=None \u5fc5\u8d70\u5b8c\u6574\u94fe\uff1b\u4e2d\u9014\u624b\u64cd\u9009\u5361\u754c\u9762\u9700\u5173\u95ed\u672c\u5f00\u5173\n        skip_sd = bool(param.get(\"skip_same_deck\", False))\n        # \u8def\u7531\u8282\u70b9\u5168\u540d(\u5982 fx_\u5c3e\u6570\u8def\u7531 / th_wj_\u5c3e\u6570\u8def\u7531), \u7531 pipeline \u4f20, \u524d\u7f00\u636e\u6b64\u63a8\u5bfc\n        # \u4e0d\u540c\u811a\u672c\u524d\u7f00\u4e0d\u540c(\u590d\u5174 fx_ / \u7ae5\u8bdd th_wj_), \u4e0d\u80fd\u786c\u7f16\u7801\u590d\u5174\u524d\u7f00!\n        route_node = param.get(\"route_node\", \"fx_\u5c3e\u6570\u8def\u7531\")\n        prefix = route_node.rsplit(\"_\", 1)[0] + \"_\"\n\n        if absolute:\n            # \u7edd\u5bf9\u5bf9\u9f50: \u65e0\u89c6\u5f53\u524d level, \u76f4\u63a5\u8bbe\u4e3a start(\u5e03\u9635\u6bb5/\u4eceboss\u76f4\u5f00\u7528, \u514d\u75ab reset \u6c61\u67d3)\n            _state[\"level\"] = start\n        elif _state[\"level\"] is None:\n            _state[\"level\"] = start\n        else:\n            _state[\"level\"] += 1\n\n        # \u6bcf\u5173\u8017\u65f6(\u8ddd\u4e0a\u6b21\u8ba1\u6b65; \u5faa\u73af\u5237\u65b0\u8de8\u5173\u65f6\u542b\u5237\u65b0/\u9009\u5361\u65f6\u95f4)\n        now = time.monotonic()\n        elapsed = \"\"\n        if _last_step is not None:\n            elapsed = f\" (\u95f4\u9694{now - _last_step:.1f}s)\"\n        _last_step = now\n\n        if route:\n            target = _route_by_tail(_state[\"level\"], prefix, deck1_first, deck2_tail3_first,\n                                    d2_tails, boss_tails)\n            note = \"\"\n            if deck1_first and _state[\"level\"] <= deck1_first and _state[\"level\"] % 10 in d2_tails:\n                note = \" [\u524dN\u5173\u4e0d\u5207deck2]\"\n            if (deck2_tail3_first and _state[\"level\"] <= deck2_tail3_first\n                    and _state[\"level\"] % 10 in d2_tails\n                    and _state[\"level\"] % 10 != (d2_tails[0] if d2_tails else 3)):\n                note = \" [\u524dN\u5173\u975e\u9996\u4e2ad2\u5c3e\u6570\u4e0d\u5207deck2]\"\n            deck = 'deck2' if target.endswith('\u914d\u961f2d2') else 'deck1'\n            if skip_sd and _state.get(\"prev_deck\") == deck:\n                target = prefix + (\"\u5f00\u59cb\u6e38\u620f\u666e\" if deck == 'deck1' else \"\u5f00\u59cb\u6e38\u620fd2\")\n                note += \" [\u540c\u5361\u7ec4\u8df3\u5207]\"\n            _state[\"prev_deck\"] = deck\n            context.override_next(route_node, [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5c3e\u6570{_state['level'] % 10}) -> {target}{elapsed}{note}\")\n        else:\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5e03\u9635\u8ba1\u6b65, \u4e0d\u8def\u7531){elapsed}\")\n            # \u8865\u7ed9\u6bb5(\u8ba1\u6b65_\u8865\u7ed9, route:false \u4e14\u663e\u5f0f\u5e26 route_node)\u7684 Boss \u8df3\u5207:\n            # Boss \u5173\u524d\u4e00\u5173\u5fc5\u662f\u5c3e\u65704/9=deck1\uff0cprev_deck \u4e3a deck1 \u65f6\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fboss\n            if skip_sd and param.get(\"route_node\") and _state.get(\"prev_deck\") == 'deck1':\n                context.override_next(prefix + \"boss_\u8865\u7ed9\u7b49\u9009\u5361\", [prefix + \"\u5f00\u59cb\u6e38\u620fboss\"])\n                _log(f\"[fx_counter] \u8865\u7ed9\u6bb5 Boss\u8df3\u5207 -> {prefix}\u5f00\u59cb\u6e38\u620fboss\")\n\n        # Boss \u5173\u5582\u8c46\u76ee\u6807: \u524d deck1_first \u5173\u6ca1\u6709 deck2 \u7684\u5fc3\u53f6\u5170/\u74f7\u7816,\n        # \u70b9\u52a0\u901f \u540e\u6539\u5582 1-3 \u7535\u5927(\u6bcf3s); \u4e4b\u540e\u6062\u590d\u5582 2-3 \u5fc3\u53f6\u5170(\u6bcf1s)\n        if deck1_first and _state[\"level\"] % 10 in boss_tails:\n            # Boss \u5582\u8c46\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\uff08boss_feed_early/boss_feed_late\uff0c\u5b8c\u6574\u8282\u70b9\u540d\uff09\uff1b\n            # \u9ed8\u8ba4\u6cbf\u7528\u590d\u5174\u7ea6\u5b9a\uff1a\u524dN\u5173\u55821-3\u7535\u5927(d1)\uff0c\u4e4b\u540e\u55822-3\u5fc3\u53f6\u5170\n            feed_early = param.get(\"boss_feed_early\", \"\") or f\"{prefix}boss_\u5582\u8c461_3_d1\"\n            feed_late = param.get(\"boss_feed_late\", \"\") or f\"{prefix}boss_\u5582\u8c462_3\"\n            feed = feed_early if _state[\"level\"] <= deck1_first else feed_late\n            context.override_next(f\"{prefix}boss_\u70b9\u52a0\u901f\", [feed])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u5582\u8c46 -> {feed}\")\n\n        # Boss \u5173\u5f00\u5c40\u53e0\u79cd\u95e8\u63a7: \u9759\u6001\u94fe \u5224\u65ad\u5165\u5173 \u2192 \u5582\u8c46 \u2192 \u70b9\u52a0\u901f \u2192 \u5faa\u73af\u5582\u8c46\n        # boss_stack_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e Boss \u5f00\u5c40\u5148\u53e0\u79cd\uff08\u5982\u590d\u5174\u300c\u53e0\u7535\u5927\u300d= \u7535\u8c4c\u53e0\u5230\u539f\u5927\u683c\uff09\uff0c\n        # \u672a\u8fbe\u5219\u8df3\u8fc7\u53e0\u79cd\u76f4\u8fbe\u5582\u8c46\uff08\u540c\u9759\u6001\u94fe\uff09\u3002\u5165\u53e3/\u8df3\u8fc7\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\u3002\n        boss_stack_from = int(param.get(\"boss_stack_from\", 0))\n        if boss_stack_from and _state[\"level\"] % 10 in boss_tails:\n            entry = param.get(\"boss_stack_entry\", \"\") or f\"{prefix}boss_\u53e0\u7535\u59272_3\"\n            skip = param.get(\"boss_stack_skip\", \"\") or f\"{prefix}boss_\u5582\u8c466_3\"\n            target = entry if _state[\"level\"] > boss_stack_from else skip\n            context.override_next(f\"{prefix}boss_\u5224\u65ad\u662f\u5426\u8fdb\u5165\u5173\u5185\", [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u53e0\u79cd -> {target}\"\n                 + (\"\" if _state[\"level\"] > boss_stack_from else \" [\u524dN\u5173\u8df3\u8fc7\u53e0\u79cd]\"))\n\n        # \u524d front30 \u5173\u5c0f\u5173: \u5e03\u9635\u4e00\u8f6e\u540e \u7ed9\u8c46\u5f00\u5927 \u2192 \u72c2\u70b9\u4e0b\u4e00\u6ce25s \u2192 \u8bc6\u522b\u7ed3\u7b97\n        front30 = int(param.get(\"front30\", 0))\n        # \u524d front10 \u5173\u5c0f\u5173: \u6ce2\u5f88\u77ed, \u4e0d\u72c2\u70b9\u6ce2; \u7b49\u7ed3\u7b97\u5faa\u73af\u91cc\u5148\u8bc6\u522b\u7ed3\u7b97\u3001\u672a\u547d\u4e2d\u624d\u62d6\u8c46\u5f00\u5927\n        front10 = int(param.get(\"front10\", 0))\n        # \u901f\u5237\u5582\u8c46\u76ee\u6807\u8282\u70b9: \u9ed8\u8ba4\u63a8\u5bfc {prefix}\u7ed9\u8c461_2(\u590d\u5174), \u7ae5\u8bdd\u663e\u5f0f\u4f20 th_wj_\u7ed9\u8c461_3\n        # (\u7ae5\u8bdd\u5927\u54e5\u4ece\u4e0b\u5f80\u4e0a\u79cd, 1-2/1-1 \u91d1\u5361\u68c0\u6d4b\u53ef\u80fd\u8df3\u8fc7, 1-3 \u524d\u671f\u5fc5\u6709)\n        front30_feed = param.get(\"front30_feed\", \"\") or f\"{prefix}\u7ed9\u8c461_2\"\n        if front30 and _state[\"level\"] % 10 not in boss_tails:\n            if front10 and _state[\"level\"] <= front10:\n                wave_next = [f\"{prefix}\u524d10_\u7b49\u7ed3\u7b97\"]  # \u5148\u8bc6\u522b\u7ed3\u7b97, \u672a\u547d\u4e2d\u624d\u62d6\u8c46(\u4e0d\u70b9\u6ce2)\n            elif _state[\"level\"] <= front30:\n                wave_next = [front30_feed]\n            else:\n                wave_next = [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                             f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce21\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", wave_next)\n            d2_next = wave_next if _state[\"level\"] <= front30 else \\\n                [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                 f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce25_d2\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25_d2\", d2_next)\n\n        # \u540e\u671f\u8865\u767d\u841d\u535c\uff082026-09-12\uff09\uff1a\u7985\u6756\u50f5\u5c38\u4f1a\u628a\u9635\u578b\u5411\u53f3\u6574\u4f53\u5438\u4e00\u683c\uff0c\u767d\u841d\u535c\u4e00\u8f6e\u53ea\u79cd\u4e00\u6b21\u6709\u7834\u9635\u98ce\u9669\u3002\n        # \u8ba1\u6b65\u53c2\u6570 bailuo_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e deck1 \u666e\u5173\u5728\u5e03\u5b8c\u4e00\u8f6e\u9635\u540e\u8fdb\u5165 \u8865\u767d \u5faa\u73af\n        # \uff08\u6162\u901f\u91cd\u79cd\u767d\u841d\u535c \u2192 \u7b49\u5f85 \u2192 \u56de\u73af\uff1b\u7b49\u5f85\u8282\u70b9\u81ea\u5e26 \u8bc6\u522b\u7ed3\u7b97/\u8bc6\u522b\u5f00\u59cb\u6218\u6597/\u8bc6\u522bboss\u5173 \u515c\u5e95\uff09\u3002\n        # \u4e0d\u4f20=\u5173\u95ed\uff0c\u5176\u4ed6\u4e16\u754c\u811a\u672c\u4e0d\u53d7\u5f71\u54cd\uff1bdeck2 \u5173\u5e26\u4e0d\u4e86\u767d\u841d\u535c\u5361\uff0c\u4e0d\u8fdb\u5faa\u73af\u3002\n        bailuo_from = int(param.get(\"bailuo_from\", 0))\n        if bailuo_from and _state[\"level\"] >= bailuo_from \\\n                and _state[\"level\"] % 10 not in boss_tails and _state[\"level\"] % 10 not in d2_tails:\n            bl = param.get(\"bailuo_node\", \"\") or f\"{prefix}\u8865\u767d1\"\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", [bl])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 \u540e\u671f\u8865\u767d\u841d\u535c -> {bl}\")\n\n        # \u84d3\u857e\u505c\u6b62\u8865\u79cd: \u524d beilei_stop \u5173\u8865\u79cd 8-1~8-4, \u4e4b\u540e\u8df3\u8fc7\u6574\u4e2a\u84d3\u857e\u79cd\u690d\u6bb5\u76f4\u63a5\u6ed1\u9633\u5149\n        # (override \u84d3\u857e\u6bb5\u5165\u53e3 \u80c6\u5c0f\u83c75_4\u2014\u2014\u53ea override \u84d3\u857e8_1 \u7684\u8bdd 8_1 \u4ecd\u4f1a\u6bcf\u8f6e\u8bd5\u79cd!\n        #  \u5df2\u79cd\u7684\u84d3\u857e\u7ee7\u7eed\u4ea7\u9633\u5149, \u88ab\u6253\u6b7b\u4e0d\u8865; \u7ae5\u8bdd\u7528 50, \u590d\u5174\u4e0d\u4f20\u4e0d\u751f\u6548)\n        beilei_stop = int(param.get(\"beilei_stop\", 0))\n        if beilei_stop and _state[\"level\"] > beilei_stop:\n            context.override_next(f\"{prefix}d1_\u80c6\u5c0f\u83c75_4\",\n                                  [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u84d3\u857e\u6ed18\u5217_1\"])\n\n        # Boss \u5582\u8c46\u94fe: \u7ae5\u8bdd\u5df2\u5168\u90e8\u9ed8\u8ba4\"\u51485-3\u518d7-4\u5faa\u73af\"(pipeline \u9759\u6001\u94fe, \u89c1 #43),\n        # \u4e0d\u518d\u9700\u8981 boss53_first/boss2_max \u5206\u6bb5 override\u2014\u2014\u5386\u53f2\u5206\u6bb5(boss53=20/boss2_max=60)\n        # \u5df2\u4e8e 2026-08-14 \u5220\u9664(boss_loop/boss53/boss_unify \u8865\u4e01\u4e0d\u53ef\u91cd\u8dd1)\n        return True\n\n\n@AgentServer.custom_action(\"fx_counter_reset\")\nclass FxCounterReset(CustomAction):\n    \"\"\"\u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6\u91cd\u7f6e\u8ba1\u6570: level = start_level - 1, \u4e0b\u4e00\u6b21 fx_counter +1 \u540e = start_level\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        force = bool(param.get(\"force\", False))\n        # \u8bca\u65ad: \u6253\u5370\u6536\u5230\u7684\u539f\u59cb custom_action_param, \u786e\u8ba4 input \u662f\u5426\u751f\u6548\n        _log(f\"[fx_counter_reset] \u539f\u59cbparam={argv.custom_action_param!r}\")\n        _state[\"prev_deck\"] = None   # \u65b0\u4e00\u8f6e/\u5faa\u73af\u91cd\u542f: \u7b2c\u4e00\u5173\u5fc5\u8d70\u5b8c\u6574\u5207\u5361\u7ec4\u94fe(P5)\n        if force or _state[\"level\"] is None or _state[\"level\"] != start - 1:\n            _state[\"level\"] = start - 1\n            _log(f\"[fx_counter_reset] level={start - 1} (next count -> {start})\")\n        else:\n            _log(f\"[fx_counter_reset] \u8df3\u8fc7(\u5df2\u662f start_level-1={start - 1})\")\n        return True\n\n\n@AgentServer.custom_action(\"fx_monitor_switch\")\nclass FxMonitorSwitch(CustomAction):\n    \"\"\"\u76d1\u63a7\u7a97\u53e3\u5f00\u5173: \u6d4b\u8bd5\u671f\u5f00(true, \u5f39\u7a97\u5b9e\u65f6\u663e\u793a\u5173\u5361\u6570), \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173(false, \u4e0d\u518d\u5f39\u7a97)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _monitor_enabled\n        param = _parse_param(argv.custom_action_param)\n        _monitor_enabled = bool(param.get(\"enabled\", True))\n        _log(f\"[fx_monitor_switch] enabled={_monitor_enabled}\")\n        return True\n";
+var V2_AGENT_FX_PY = "\"\"\"\\\nMPZ \u81ea\u5236\u65e0\u5c3d \u00b7 agent \u5173\u5361\u8ba1\u6570\u5668\n=================================\n\u4e3a MPZ(MFAAvalonia) \u7684 agent \u673a\u5236\u6ce8\u518c custom action, \u4f9b\u5404\u4e16\u754c\u65e0\u5c3d pipeline \u8c03\u7528:\n\n  fx_counter        \u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u5173\u5361\u6570 +1, \u5e76\u6309\u5c3e\u6570\u6539\u5199 <prefix>\u5c3e\u6570\u8def\u7531 \u7684 next\n                    (\u9ed8\u8ba4 \u5c3e\u6570 3/8 -> \u914d\u961f2d2, 5/0 -> \u914d\u961f1boss, \u5176\u4f59 -> \u914d\u961f1\u666e;\n                     d2_tails/boss_tails \u53ef\u7531 pipeline \u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d)\n  fx_counter_reset  \u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6: \u628a\u8ba1\u6570\u5668\u91cd\u7f6e\u4e3a start_level-1,\n                    \u4f7f\u4e0b\u4e00\u6b21 fx_counter \u8ba1\u6570\u540e\u7b49\u4e8e start_level\n  fx_monitor_switch \u76d1\u63a7\u7a97\u53e3\u5f00\u5173\n\n\u5173\u5361\u6570\u5728 agent \u8fdb\u7a0b\u5185\u7d2f\u8ba1(\u6a21\u5757\u7ea7\u53d8\u91cf)\u3002agent \u8fdb\u7a0b\u5728 MPZ \u4efb\u52a1\u4f1a\u8bdd\u671f\u95f4\u6301\u7eed\u5b58\u6d3b,\n\u8fdb\u7a0b\u9000\u51fa(\u4efb\u52a1\u7ed3\u675f)\u540e\u81ea\u52a8\u6e05\u96f6, \u4e0b\u6b21\u4efb\u52a1\u4ece custom_action_param.start_level \u91cd\u65b0\u5f00\u59cb\u3002\n\n\u5c3e\u6570\u8def\u7531\u53c2\u6570\u5316 (2026-09-10):\n  \u8ba1\u6b65\u8282\u70b9 custom_action_param \u53ef\u5e26 \"d2_tails\": [3,8] / \"boss_tails\": [5,0],\n  \u4e0d\u4f20\u65f6\u56de\u843d\u9ed8\u8ba4, \u8001\u811a\u672c(\u590d\u5174/\u7ae5\u8bdd/\u6d77\u76d7)\u884c\u4e3a\u5b8c\u5168\u4e0d\u53d8\u3002\n\n\u4f9d\u8d56: pip install maafw  (\u4e0e MPZ \u7684 MaaFramework \u540c\u6e90 Python \u7ed1\u5b9a)\n\"\"\"\n\nimport datetime\nimport json\nimport os\nimport time\n\nfrom maa.agent.agent_server import AgentServer\nfrom maa.custom_action import CustomAction\nfrom maa.context import Context\n\n# \u5b9e\u65f6\u76d1\u63a7\u7a97\u53e3(\u53ef\u9009: \u65e0 tkinter \u73af\u5883\u65f6\u9759\u9ed8\u8df3\u8fc7)\ntry:\n    import fx_monitor\nexcept Exception:\n    fx_monitor = None\n\n# \u6a21\u5757\u7ea7\u8ba1\u6570\u72b6\u6001 (None = \u672a\u521d\u59cb\u5316)\n# prev_deck: \u4e0a\u4e00\u5173\u5b9e\u9645\u9009\u7528\u7684\u5361\u7ec4\uff0c\u4f9b skip_same_deck \u8df3\u5207\uff1breset \u65f6\u6e05\u7a7a\n_state = {\"level\": None, \"prev_deck\": None}\n# \u4e0a\u4e00\u5173\u8ba1\u6b65\u65f6\u523b(\u8ba1\u7b97\u6bcf\u5173\u8017\u65f6)\n_last_step = None\n# \u76d1\u63a7\u7a97\u53e3\u603b\u5f00\u5173: \u7531 fx_monitor_switch \u52a8\u4f5c\u63a7\u5236, \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173\u95ed\u4e0d\u5f39\u7a97\n_monitor_enabled = True\n\n# \u5173\u5361\u53d8\u5316\u65e5\u5fd7: \u540c\u65f6 print(\u88ab MFAAvalonia \u6355\u83b7\u5230\u754c\u9762\u65e5\u5fd7) \u548c\u5199\u6587\u4ef6(\u53cc\u4fdd\u9669)\n_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), \"debug\")\n_LOG_PATH = os.path.join(_LOG_DIR, \"fx_counter.log\")\n\n\ndef _log(msg: str):\n    # \u6bcf\u884c\u5e26\u65f6\u95f4\u6233(\u6587\u4ef6+\u754c\u9762\u65e5\u5fd7), \u4fbf\u4e8e\u6309\u5173\u5361\u7edf\u8ba1\u8017\u65f6\n    line = f\"[{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\"\n    print(line)\n    try:\n        os.makedirs(_LOG_DIR, exist_ok=True)\n        with open(_LOG_PATH, \"a\", encoding=\"utf-8\") as f:\n            f.write(line + \"\\n\")\n    except OSError:\n        pass\n    # \u540c\u6b65\u5230\u76d1\u63a7\u7a97\u53e3(\u4f20\u539f\u59cb msg, \u76d1\u63a7\u6b63\u5219\u89e3\u6790 \u7b2cX\u5173/-> \u4e0d\u53d7\u65f6\u95f4\u6233\u5f71\u54cd)\n    if fx_monitor is not None and _monitor_enabled:\n        try:\n            fx_monitor.notify(msg)\n        except Exception:\n            pass\n\n\ndef _parse_param(custom_action_param: str) -> dict:\n    \"\"\"\n    \u4ece pipeline \u8282\u70b9 custom_action_param \u89e3\u6790\u53c2\u6570\u3002\n    \u517c\u5bb9\u4e24\u79cd\u7f16\u7801(\u5b9e\u6d4b):\n      1) \u5355\u5c42: {\"start_level\": 103}            (\u76f4\u63a5\u5199\u8fdb pipeline \u7684\u9ed8\u8ba4\u503c)\n      2) \u53cc\u5c42: \"{\\\\\"start_level\\\\\": 103}\"       (MPZ input override \u5e8f\u5217\u5316\u540e,\n                \u5916\u5c42\u88ab\u5305\u6210 JSON \u5b57\u7b26\u4e32\u5b57\u9762\u91cf, \u9700\u8981\u89e3\u4e24\u5c42)\n    \"\"\"\n    try:\n        p = json.loads(custom_action_param or \"{}\")\n        if isinstance(p, dict):\n            return p\n        if isinstance(p, str):\n            p2 = json.loads(p)\n            if isinstance(p2, dict):\n                return p2\n        return {}\n    except (ValueError, TypeError):\n        return {}\n\n\ndef _parse_start_level(custom_action_param: str) -> int:\n    return int(_parse_param(custom_action_param).get(\"start_level\", 1))\n\n\ndef _parse_tails(v, default):\n    \"\"\"\u628a param \u91cc\u7684\u5c3e\u6570\u5217\u8868\u89c4\u6574\u6210 0~9 \u7684 int tuple; \u7f3a\u5931/\u975e\u6cd5\u56de\u843d default\u3002\n    \u652f\u6301 [3,8] \u4e0e \"3,8\"/\"3 8\"/\"3\uff0c8\" \u4e24\u79cd\u5199\u6cd5(\u5de5\u5177\u5bfc\u51fa\u4e3a\u6570\u7ec4)\u3002\"\"\"\n    if v is None:\n        return default\n    if isinstance(v, str):\n        v = [x for x in v.replace(\"\uff0c\", \",\").replace(\" \", \",\").split(\",\") if x != \"\"]\n    if not isinstance(v, (list, tuple)):\n        return default\n    try:\n        out = tuple(int(x) % 10 for x in v)\n    except (TypeError, ValueError):\n        return default\n    return out or default\n\n\ndef _route_by_tail(level: int, prefix: str, deck1_first: int = 0, deck2_tail3_first: int = 0,\n                   d2_tails=(3, 8), boss_tails=(5, 0)) -> str:\n    \"\"\"\u6309\u5173\u5361\u5c3e\u6570\u8fd4\u56de\u76ee\u6807 pipeline \u8282\u70b9\u540d(\u7528 prefix \u62fc\u5168\u540d)\n    d2_tails/boss_tails: \u7531\u8ba1\u6b65\u53c2\u6570\u4f20\u5165, \u7f3a\u7701 3/8 \u5207 deck2\u30015/0 \u8d70 Boss\n        (2026-09-10 \u6253\u901a\u5de5\u5177\u8def\u7531\u9762\u677f: \u754c\u9762\u586b\u7684\u5c3e\u6570\u771f\u6b63\u751f\u6548; \u4e0d\u4f20\u5219\u56de\u843d\u9ed8\u8ba4)\n    deck1_first>0 \u65f6: \u524d deck1_first \u5173 \u5c3e\u6570 \u2208 d2_tails \u4e0d\u5207 deck2, \u6539\u8d70 deck1 \u914d\u961f\n    (\u5f00\u8352\u671f deck1 \u6210\u578b\u4f18\u5148; \u6d0b\u828b/\u6851\u845a\u811a\u672c\u7528)\n    deck2_tail3_first>0 \u65f6: \u524d N \u5173\u53ea\u5728 d2_tails \u7684\u9996\u4e2a\u5c3e\u6570\u5207 deck2(\u5176\u4f59 d2 \u5c3e\u6570\u6539\u8d70 deck1)\n    (\u7ae5\u8bdd\u7528: \u524d20\u5173\u53ea\u5728 3/13 \u5207 deck2, 8/18 \u4e0d\u5207)\"\"\"\n    tail = level % 10\n    d2 = tuple(d2_tails) if d2_tails else (3, 8)\n    bt = tuple(boss_tails) if boss_tails else (5, 0)\n    first_d2 = d2[0] if d2 else 3\n    if deck1_first and level <= deck1_first and tail in d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if deck2_tail3_first and level <= deck2_tail3_first and tail in d2 and tail != first_d2:\n        return f\"{prefix}\u914d\u961f1\u666e\"\n    if tail in d2:\n        return f\"{prefix}\u914d\u961f2d2\"\n    if tail in bt:\n        return f\"{prefix}\u914d\u961f1boss\"\n    return f\"{prefix}\u914d\u961f1\u666e\"\n\n\n@AgentServer.custom_action(\"fx_counter\")\nclass FxCounter(CustomAction):\n    \"\"\"\u6bcf\u5173\u8fdb\u9009\u5361\u754c\u9762\u540e\u6267\u884c: \u8ba1\u6570 +1; route=true \u6309\u5c3e\u6570\u8def\u7531, route=false \u4ec5\u8ba1\u6570(\u5e03\u9635\u6bb5)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _last_step\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        route = bool(param.get(\"route\", True))\n        absolute = bool(param.get(\"absolute\", False))\n        deck1_first = int(param.get(\"deck1_first\", 0))   # \u524dN\u5173\u4e0d\u5207deck2(\u5c3e\u6570\u547d\u4e2dd2_tails\u6539\u8d70deck1)\n        deck2_tail3_first = int(param.get(\"deck2_tail3_first\", 0))  # \u524dN\u5173\u53ea\u5728d2\u9996\u4e2a\u5c3e\u6570\u5207deck2\n        # \u5c3e\u6570\u5206\u6d41\u8868(\u5de5\u5177\u8def\u7531\u9762\u677f\u53ef\u914d; \u7f3a\u7701 3/8\u2192deck2, 5/0\u2192Boss)\n        d2_tails = _parse_tails(param.get(\"d2_tails\"), (3, 8))\n        boss_tails = _parse_tails(param.get(\"boss_tails\"), (5, 0))\n        # \u540c\u5361\u7ec4\u8df3\u5207(2026-10-09 P5): \u4e0a\u4e00\u5173\u4e0e\u672c\u5173\u5361\u7ec4\u76f8\u540c \u2192 \u8def\u7531\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fX\uff0c\u8df3\u8fc7 \u914d\u961f+\u9009\u5361\u00d72\u3002\n        # \u9ed8\u8ba4 false(\u5176\u5b83\u4e16\u754c\u96f6\u5f71\u54cd)\uff1b\u4f1a\u8bdd\u7b2c\u4e00\u5173 prev_deck=None \u5fc5\u8d70\u5b8c\u6574\u94fe\uff1b\u4e2d\u9014\u624b\u64cd\u9009\u5361\u754c\u9762\u9700\u5173\u95ed\u672c\u5f00\u5173\n        skip_sd = bool(param.get(\"skip_same_deck\", False))\n        # \u8def\u7531\u8282\u70b9\u5168\u540d(\u5982 fx_\u5c3e\u6570\u8def\u7531 / th_wj_\u5c3e\u6570\u8def\u7531), \u7531 pipeline \u4f20, \u524d\u7f00\u636e\u6b64\u63a8\u5bfc\n        # \u4e0d\u540c\u811a\u672c\u524d\u7f00\u4e0d\u540c(\u590d\u5174 fx_ / \u7ae5\u8bdd th_wj_), \u4e0d\u80fd\u786c\u7f16\u7801\u590d\u5174\u524d\u7f00!\n        route_node = param.get(\"route_node\", \"fx_\u5c3e\u6570\u8def\u7531\")\n        prefix = route_node.rsplit(\"_\", 1)[0] + \"_\"\n\n        if absolute:\n            # \u7edd\u5bf9\u5bf9\u9f50: \u65e0\u89c6\u5f53\u524d level, \u76f4\u63a5\u8bbe\u4e3a start(\u5e03\u9635\u6bb5/\u4eceboss\u76f4\u5f00\u7528, \u514d\u75ab reset \u6c61\u67d3)\n            _state[\"level\"] = start\n        elif _state[\"level\"] is None:\n            _state[\"level\"] = start\n        else:\n            _state[\"level\"] += 1\n\n        # \u6bcf\u5173\u8017\u65f6(\u8ddd\u4e0a\u6b21\u8ba1\u6b65; \u5faa\u73af\u5237\u65b0\u8de8\u5173\u65f6\u542b\u5237\u65b0/\u9009\u5361\u65f6\u95f4)\n        now = time.monotonic()\n        elapsed = \"\"\n        if _last_step is not None:\n            elapsed = f\" (\u95f4\u9694{now - _last_step:.1f}s)\"\n        _last_step = now\n\n        if route:\n            target = _route_by_tail(_state[\"level\"], prefix, deck1_first, deck2_tail3_first,\n                                    d2_tails, boss_tails)\n            note = \"\"\n            if deck1_first and _state[\"level\"] <= deck1_first and _state[\"level\"] % 10 in d2_tails:\n                note = \" [\u524dN\u5173\u4e0d\u5207deck2]\"\n            if (deck2_tail3_first and _state[\"level\"] <= deck2_tail3_first\n                    and _state[\"level\"] % 10 in d2_tails\n                    and _state[\"level\"] % 10 != (d2_tails[0] if d2_tails else 3)):\n                note = \" [\u524dN\u5173\u975e\u9996\u4e2ad2\u5c3e\u6570\u4e0d\u5207deck2]\"\n            deck = 'deck2' if target.endswith('\u914d\u961f2d2') else 'deck1'\n            if skip_sd and _state.get(\"prev_deck\") == deck:\n                target = prefix + (\"\u5f00\u59cb\u6e38\u620f\u666e\" if deck == 'deck1' else \"\u5f00\u59cb\u6e38\u620fd2\")\n                note += \" [\u540c\u5361\u7ec4\u8df3\u5207]\"\n            _state[\"prev_deck\"] = deck\n            context.override_next(route_node, [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5c3e\u6570{_state['level'] % 10}) -> {target}{elapsed}{note}\")\n        else:\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 (\u5e03\u9635\u8ba1\u6b65, \u4e0d\u8def\u7531){elapsed}\")\n            # \u8865\u7ed9\u6bb5(\u8ba1\u6b65_\u8865\u7ed9, route:false \u4e14\u663e\u5f0f\u5e26 route_node)\u7684 Boss \u8df3\u5207:\n            # Boss \u5173\u524d\u4e00\u5173\u5fc5\u662f\u5c3e\u65704/9=deck1\uff0cprev_deck \u4e3a deck1 \u65f6\u76f4\u8fbe \u5f00\u59cb\u6e38\u620fboss\n            if skip_sd and param.get(\"route_node\") and _state.get(\"prev_deck\") == 'deck1':\n                context.override_next(prefix + \"boss_\u8865\u7ed9\u7b49\u9009\u5361\", [prefix + \"\u5f00\u59cb\u6e38\u620fboss\"])\n                _log(f\"[fx_counter] \u8865\u7ed9\u6bb5 Boss\u8df3\u5207 -> {prefix}\u5f00\u59cb\u6e38\u620fboss\")\n\n        # Boss \u5173\u5582\u8c46\u76ee\u6807: \u524d deck1_first \u5173\u6ca1\u6709 deck2 \u7684\u5fc3\u53f6\u5170/\u74f7\u7816,\n        # \u70b9\u52a0\u901f \u540e\u6539\u5582 1-3 \u7535\u5927(\u6bcf3s); \u4e4b\u540e\u6062\u590d\u5582 2-3 \u5fc3\u53f6\u5170(\u6bcf1s)\n        if deck1_first and _state[\"level\"] % 10 in boss_tails:\n            # Boss \u5582\u8c46\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\uff08boss_feed_early/boss_feed_late\uff0c\u5b8c\u6574\u8282\u70b9\u540d\uff09\uff1b\n            # \u9ed8\u8ba4\u6cbf\u7528\u590d\u5174\u7ea6\u5b9a\uff1a\u524dN\u5173\u55821-3\u7535\u5927(d1)\uff0c\u4e4b\u540e\u55822-3\u5fc3\u53f6\u5170\n            feed_early = param.get(\"boss_feed_early\", \"\") or f\"{prefix}boss_\u5582\u8c461_3_d1\"\n            feed_late = param.get(\"boss_feed_late\", \"\") or f\"{prefix}boss_\u5582\u8c462_3\"\n            feed = feed_early if _state[\"level\"] <= deck1_first else feed_late\n            context.override_next(f\"{prefix}boss_\u70b9\u52a0\u901f\", [feed])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u5582\u8c46 -> {feed}\")\n\n        # Boss \u5173\u5f00\u5c40\u53e0\u79cd\u95e8\u63a7: \u9759\u6001\u94fe \u5224\u65ad\u5165\u5173 \u2192 \u5582\u8c46 \u2192 \u70b9\u52a0\u901f \u2192 \u5faa\u73af\u5582\u8c46\n        # boss_stack_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e Boss \u5f00\u5c40\u5148\u53e0\u79cd\uff08\u5982\u590d\u5174\u300c\u53e0\u7535\u5927\u300d= \u7535\u8c4c\u53e0\u5230\u539f\u5927\u683c\uff09\uff0c\n        # \u672a\u8fbe\u5219\u8df3\u8fc7\u53e0\u79cd\u76f4\u8fbe\u5582\u8c46\uff08\u540c\u9759\u6001\u94fe\uff09\u3002\u5165\u53e3/\u8df3\u8fc7\u76ee\u6807\u53ef\u7531\u53c2\u6570\u6307\u5b9a\u3002\n        boss_stack_from = int(param.get(\"boss_stack_from\", 0))\n        if boss_stack_from and _state[\"level\"] % 10 in boss_tails:\n            entry = param.get(\"boss_stack_entry\", \"\") or f\"{prefix}boss_\u53e0\u7535\u59272_3\"\n            skip = param.get(\"boss_stack_skip\", \"\") or f\"{prefix}boss_\u5582\u8c466_3\"\n            target = entry if _state[\"level\"] > boss_stack_from else skip\n            context.override_next(f\"{prefix}boss_\u5224\u65ad\u662f\u5426\u8fdb\u5165\u5173\u5185\", [target])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 Boss\u53e0\u79cd -> {target}\"\n                 + (\"\" if _state[\"level\"] > boss_stack_from else \" [\u524dN\u5173\u8df3\u8fc7\u53e0\u79cd]\"))\n\n        # \u524d front30 \u5173\u5c0f\u5173: \u5e03\u9635\u4e00\u8f6e\u540e \u7ed9\u8c46\u5f00\u5927 \u2192 \u72c2\u70b9\u4e0b\u4e00\u6ce25s \u2192 \u8bc6\u522b\u7ed3\u7b97\n        front30 = int(param.get(\"front30\", 0))\n        # \u524d front10 \u5173\u5c0f\u5173: \u6ce2\u5f88\u77ed, \u4e0d\u72c2\u70b9\u6ce2; \u7b49\u7ed3\u7b97\u5faa\u73af\u91cc\u5148\u8bc6\u522b\u7ed3\u7b97\u3001\u672a\u547d\u4e2d\u624d\u62d6\u8c46\u5f00\u5927\n        front10 = int(param.get(\"front10\", 0))\n        # \u901f\u5237\u5582\u8c46\u76ee\u6807\u8282\u70b9: \u9ed8\u8ba4\u63a8\u5bfc {prefix}\u7ed9\u8c461_2(\u590d\u5174), \u7ae5\u8bdd\u663e\u5f0f\u4f20 th_wj_\u7ed9\u8c461_3\n        # (\u7ae5\u8bdd\u5927\u54e5\u4ece\u4e0b\u5f80\u4e0a\u79cd, 1-2/1-1 \u91d1\u5361\u68c0\u6d4b\u53ef\u80fd\u8df3\u8fc7, 1-3 \u524d\u671f\u5fc5\u6709)\n        front30_feed = param.get(\"front30_feed\", \"\") or f\"{prefix}\u7ed9\u8c461_2\"\n        if front30 and _state[\"level\"] % 10 not in boss_tails:\n            if front10 and _state[\"level\"] <= front10:\n                wave_next = [f\"{prefix}\u524d10_\u7b49\u7ed3\u7b97\"]  # \u5148\u8bc6\u522b\u7ed3\u7b97, \u672a\u547d\u4e2d\u624d\u62d6\u8c46(\u4e0d\u70b9\u6ce2)\n            elif _state[\"level\"] <= front30:\n                wave_next = [front30_feed]\n            else:\n                wave_next = [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                             f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce21\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", wave_next)\n            d2_next = wave_next if _state[\"level\"] <= front30 else \\\n                [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u8bc6\u522b\u5f00\u59cb\u6218\u6597\",\n                 f\"{prefix}\u8bc6\u522bboss\u5173\", f\"{prefix}\u70b9\u6ce25_d2\"]\n            context.override_next(f\"{prefix}\u70b9\u6ce25_d2\", d2_next)\n\n        # \u540e\u671f\u8865\u767d\u841d\u535c\uff082026-09-12\uff09\uff1a\u7985\u6756\u50f5\u5c38\u4f1a\u628a\u9635\u578b\u5411\u53f3\u6574\u4f53\u5438\u4e00\u683c\uff0c\u767d\u841d\u535c\u4e00\u8f6e\u53ea\u79cd\u4e00\u6b21\u6709\u7834\u9635\u98ce\u9669\u3002\n        # \u8ba1\u6b65\u53c2\u6570 bailuo_from>0 \u65f6\uff0c\u8fbe\u5230\u8be5\u5173\u540e deck1 \u666e\u5173\u5728\u5e03\u5b8c\u4e00\u8f6e\u9635\u540e\u8fdb\u5165 \u8865\u767d \u5faa\u73af\n        # \uff08\u6162\u901f\u91cd\u79cd\u767d\u841d\u535c \u2192 \u7b49\u5f85 \u2192 \u56de\u73af\uff1b\u7b49\u5f85\u8282\u70b9\u81ea\u5e26 \u8bc6\u522b\u7ed3\u7b97/\u8bc6\u522b\u5f00\u59cb\u6218\u6597/\u8bc6\u522bboss\u5173 \u515c\u5e95\uff09\u3002\n        # \u4e0d\u4f20=\u5173\u95ed\uff0c\u5176\u4ed6\u4e16\u754c\u811a\u672c\u4e0d\u53d7\u5f71\u54cd\uff1bdeck2 \u5173\u5e26\u4e0d\u4e86\u767d\u841d\u535c\u5361\uff0c\u4e0d\u8fdb\u5faa\u73af\u3002\n        bailuo_from = int(param.get(\"bailuo_from\", 0))\n        if bailuo_from and _state[\"level\"] >= bailuo_from \\\n                and _state[\"level\"] % 10 not in boss_tails and _state[\"level\"] % 10 not in d2_tails:\n            bl = param.get(\"bailuo_node\", \"\") or f\"{prefix}\u8865\u767d1\"\n            context.override_next(f\"{prefix}\u70b9\u6ce25\", [bl])\n            _log(f\"[fx_counter] \u7b2c{_state['level']}\u5173 \u540e\u671f\u8865\u767d\u841d\u535c -> {bl}\")\n\n        # \u7b2c XX \u5173\u540e\u4e0d\u518d\u8865\u9635\uff082026-10-10 \u6279 B\uff09\uff1a\u666e\u5173 / deck2 \u5173\u90fd\u4e0d\u518d\u8d70\u5e03\u9635\u6bb5\uff0c\u53ea \u629b\u82b1 \u2192 \u70b9\u6ce2 \u2192 \u7b49\u7ed3\u7b97\u3002\n        # \u53ea\u6539\u5199\u4e00\u4e2a\u8282\u70b9 farm_stop_entry\uff08\u5e03\u9635\u6bb5\u524d\u6700\u540e\u4e00\u4e2a\u8282\u70b9\uff1a\u6709\u629b\u82b1\u65f6\u662f\u629b\u82b1\u94fe\u5c3e\uff0c\u5426\u5219 \u70b9\u6ce2_\u521d\u59cb\uff09\uff0c\n        # \u628a\u5b83 next \u6307\u5411 farm_stop_jump\uff08_nf \u70b9\u6ce2\u8282\u70b9\uff09\u6216\u8fd8\u539f\u6210 farm_stop_back\u3002\u8981\u70b9\uff1a\n        #  \u2460 \u6bcf\u5173\u90fd\u8981\u91cd\u5199\uff08\u4e0d\u53ea\u662f\u8d85\u8fc7\u9608\u503c\u65f6\u5199\uff09\u3002\u6253\u6ee1\u4e00\u6574\u8f6e\u4f1a\u81ea\u52a8\u5237\u65b0\u3001\u8ba1\u6570\u56de\u5230\u7b2c 1 \u5173\uff0c\n        #     \u800c override_next \u662f**\u6301\u4e45**\u7684\u2014\u2014\u53ea\u5728\u8d85\u8fc7\u9608\u503c\u65f6\u5199\uff0c\u5c31\u4f1a\u51fa\u73b0\"\u65b0\u4e00\u8f6e\u5934 N \u5173\u4e5f\u4e0d\u8865\u9635\"\u3002\n        #  \u2461 deck2 \u5173\u8d70 deck2 \u7684\u5165\u53e3/jump\uff08farm_stop_*_d2\uff09\uff1b\u8be5\u7ec4\u53c2\u6570\u7f3a\u7701\u65f6\u9000\u56de deck1 \u90a3\u7ec4\n        #     \uff08\u5355\u5361\u7ec4 none \u6a21\u5f0f\u6ca1\u6709 deck2 \u5206\u6d41\uff0c\u5c3e\u6570\u547d\u4e2d d2_tails \u4e5f\u4e0d\u6784\u6210\"d2 \u5173\"\uff09\u3002\n        # Boss \u5173\u4e0d\u53c2\u4e0e\uff08Q2\uff1aBoss \u5173\u7167\u65e7\u53e0\u79cd+\u5582\u8c46\uff0c\u672c\u6765\u4e5f\u4e0d\u7ecf\u8fc7\u5e03\u9635\u6bb5\uff09\u3002\n        # \u672c\u5206\u652f\u6392\u5728 bailuo \u4e4b\u540e\uff1a\u4e0d\u8865\u9635\u751f\u6548\u65f6\u8fde\u8865\u767d\u841d\u535c\u4e00\u8d77\u505c\uff082026-10-10 \u7528\u6237\u62cd\u677f\uff09\u3002\n        farm_from = int(param.get(\"farm_stop_from\", 0))\n        if farm_from:\n            lv = _state[\"level\"]\n            if lv % 10 not in boss_tails:\n                use_d2 = bool(param.get(\"farm_stop_jump_d2\")) and lv % 10 in d2_tails\n                sfx = \"_d2\" if use_d2 else \"\"\n                entry = param.get(\"farm_stop_entry\" + sfx, \"\")\n                back = param.get(\"farm_stop_back\" + sfx, \"\")\n                jump = param.get(\"farm_stop_jump\" + sfx, \"\")\n                if entry and jump:\n                    if lv > farm_from:\n                        context.override_next(entry, [jump])\n                        _log(f\"[fx_counter] \u7b2c{lv}\u5173 {'deck2 ' if use_d2 else ''}\u4e0d\u8865\u9635 -> {jump}\")\n                    elif back:\n                        context.override_next(entry, [back])\n                        if lv == 1:\n                            _log(f\"[fx_counter] \u7b2c1\u5173 \u6062\u590d\u8865\u9635\u5165\u53e3 -> {back}\uff08\u7b2c{farm_from + 1}\u5173\u8d77\u4e0d\u518d\u8865\u9635\uff09\")\n                elif lv == farm_from + 1:\n                    _log(f\"[fx_counter] \u7b2c{lv}\u5173 \u4e0d\u8865\u9635\u53c2\u6570\u4e0d\u5b8c\u6574\uff08entry/jump \u7f3a\uff09\uff0c\u672a\u6539\u5199\u2014\u2014\u8bf7\u7528\u65b0\u7248\u5de5\u5177\u91cd\u65b0\u5bfc\u51fa\u90e8\u7f72\")\n\n        # \u84d3\u857e\u505c\u6b62\u8865\u79cd: \u524d beilei_stop \u5173\u8865\u79cd 8-1~8-4, \u4e4b\u540e\u8df3\u8fc7\u6574\u4e2a\u84d3\u857e\u79cd\u690d\u6bb5\u76f4\u63a5\u6ed1\u9633\u5149\n        # (override \u84d3\u857e\u6bb5\u5165\u53e3 \u80c6\u5c0f\u83c75_4\u2014\u2014\u53ea override \u84d3\u857e8_1 \u7684\u8bdd 8_1 \u4ecd\u4f1a\u6bcf\u8f6e\u8bd5\u79cd!\n        #  \u5df2\u79cd\u7684\u84d3\u857e\u7ee7\u7eed\u4ea7\u9633\u5149, \u88ab\u6253\u6b7b\u4e0d\u8865; \u7ae5\u8bdd\u7528 50, \u590d\u5174\u4e0d\u4f20\u4e0d\u751f\u6548)\n        beilei_stop = int(param.get(\"beilei_stop\", 0))\n        if beilei_stop and _state[\"level\"] > beilei_stop:\n            context.override_next(f\"{prefix}d1_\u80c6\u5c0f\u83c75_4\",\n                                  [f\"{prefix}\u8bc6\u522b\u7ed3\u7b97\", f\"{prefix}\u84d3\u857e\u6ed18\u5217_1\"])\n\n        # Boss \u5582\u8c46\u94fe: \u7ae5\u8bdd\u5df2\u5168\u90e8\u9ed8\u8ba4\"\u51485-3\u518d7-4\u5faa\u73af\"(pipeline \u9759\u6001\u94fe, \u89c1 #43),\n        # \u4e0d\u518d\u9700\u8981 boss53_first/boss2_max \u5206\u6bb5 override\u2014\u2014\u5386\u53f2\u5206\u6bb5(boss53=20/boss2_max=60)\n        # \u5df2\u4e8e 2026-08-14 \u5220\u9664(boss_loop/boss53/boss_unify \u8865\u4e01\u4e0d\u53ef\u91cd\u8dd1)\n        return True\n\n\n@AgentServer.custom_action(\"fx_counter_reset\")\nclass FxCounterReset(CustomAction):\n    \"\"\"\u4efb\u52a1\u542f\u52a8/\u65e0\u5c3d\u5237\u65b0\u65f6\u91cd\u7f6e\u8ba1\u6570: level = start_level - 1, \u4e0b\u4e00\u6b21 fx_counter +1 \u540e = start_level\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        force = bool(param.get(\"force\", False))\n        # \u8bca\u65ad: \u6253\u5370\u6536\u5230\u7684\u539f\u59cb custom_action_param, \u786e\u8ba4 input \u662f\u5426\u751f\u6548\n        _log(f\"[fx_counter_reset] \u539f\u59cbparam={argv.custom_action_param!r}\")\n        _state[\"prev_deck\"] = None   # \u65b0\u4e00\u8f6e/\u5faa\u73af\u91cd\u542f: \u7b2c\u4e00\u5173\u5fc5\u8d70\u5b8c\u6574\u5207\u5361\u7ec4\u94fe(P5)\n        if force or _state[\"level\"] is None or _state[\"level\"] != start - 1:\n            _state[\"level\"] = start - 1\n            _log(f\"[fx_counter_reset] level={start - 1} (next count -> {start})\")\n        else:\n            _log(f\"[fx_counter_reset] \u8df3\u8fc7(\u5df2\u662f start_level-1={start - 1})\")\n        return True\n\n\n@AgentServer.custom_action(\"fx_monitor_switch\")\nclass FxMonitorSwitch(CustomAction):\n    \"\"\"\u76d1\u63a7\u7a97\u53e3\u5f00\u5173: \u6d4b\u8bd5\u671f\u5f00(true, \u5f39\u7a97\u5b9e\u65f6\u663e\u793a\u5173\u5361\u6570), \u6d4b\u8bd5\u5b8c\u6210\u540e\u53ef\u5173(false, \u4e0d\u518d\u5f39\u7a97)\"\"\"\n\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _monitor_enabled\n        param = _parse_param(argv.custom_action_param)\n        _monitor_enabled = bool(param.get(\"enabled\", True))\n        _log(f\"[fx_monitor_switch] enabled={_monitor_enabled}\")\n        return True\n";
 
 /* ================= 内置 fx 监控窗口源码（agent/fx_monitor.py） =================
  * 由 fx_counter import，随任务实时弹窗显示关卡数/尾数路由/最近日志。
@@ -25160,13 +25581,66 @@ function v2StripJsonc(text){
   }
   return out.join('').replace(/,(\s*[}\]])/g, '$1');
 }
+/* ---- 逐段取 JSON 文档（配平扫描，字符串感知）----
+ * v2 源的形态是「①头注释 + ②pipeline 节点 JSON + ③task 片段 JSON」三段拼在一个文件里，
+ * 整文件 JSON.parse 必然失败（2026-10-10 之前 v2 源导入报「未解析出任何节点」）。
+ * 剥完注释后按「配平到一个顶层 {} / [] 就切一段」逐段 parse，能拼的都拼回来。 */
+function v2ParseDocs(text){
+  var out = [], i = 0, n = text.length;
+  while (i < n){
+    var ch = text[i];
+    if (ch !== '{' && ch !== '['){ i++; continue; }
+    var start = i, depth = 0, inStr = false, q = '', esc = false, end = -1;
+    for (; i < n; i++){
+      var c = text[i];
+      if (inStr){
+        if (esc){ esc = false; continue; }
+        if (c === '\\'){ esc = true; continue; }
+        if (c === q) inStr = false;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`'){ inStr = true; q = c; continue; }
+      if (c === '{' || c === '[') depth++;
+      else if (c === '}' || c === ']'){ depth--; if (depth === 0){ end = i + 1; break; } }
+    }
+    if (end < 0) break;                        /* 尾部残缺：保留前面已取到的段 */
+    try{
+      var seg = JSON.parse(text.slice(start, end));
+      if (seg && typeof seg === 'object') out.push(seg);
+    }catch(e){}
+    i = end;
+  }
+  return out.length ? out : null;
+}
 function v2ParseAnyJson(text){
   try{ return JSON.parse(text); }catch(e){}
-  try{ return JSON.parse(v2StripJsonc(String(text))); }catch(e){}
-  return null;
+  var raw = v2StripJsonc(String(text == null ? '' : text));
+  try{ return JSON.parse(raw); }catch(e){}
+  var docs = v2ParseDocs(raw);
+  if (!docs) return null;
+  if (docs.length === 1) return docs[0];
+  /* 多文档：按出现顺序合并（后段不覆盖前段已有键，避免 task 片段的同名键吃掉节点） */
+  var merged = {};
+  docs.forEach(function(d){
+    if (Array.isArray(d)) return;
+    Object.keys(d).forEach(function(k){ if (!(k in merged)) merged[k] = d[k]; });
+  });
+  return Object.keys(merged).length ? merged : null;
 }
 
+/* v2 状态/ task 片段里「不是 pipeline 节点」的顶层键：合并图与导入都不该把它们当节点
+ * （v2 源会把 ③ task 片段一起带进来；旧行为把它们并入节点表 → 节点数虚高、S2/S3 噪声） */
+var V2_NON_NODE_KEYS = { version: 1, meta: 1, boards: 1, slots: 1, order: 1, route: 1, boss: 1,
+  throw: 1, debugCardUI: 1, option: 1, task: 1, nested: 1, _register: 1 };
+
 var V2_CHECK_WL = ['种植物_初始化_', 'wujin_', '卡槽', '种植物_', '通用_', '[JumpBack]', '迷你工具_', '无尽挑战_'];
+/* agent 运行时才接线的节点（静态图上没有入边）：尾数分流目标、速刷给豆/狂点、Boss 喂豆、
+   批 B 的不补阵 _nf 点波节点、海盗（phase）的路由/后期/分支族。
+   ⚠ 这份家族清单必须与 无尽脚本公共/endless_deploy.py 的 AGENT_WIRED 逐字一致，改一处同步另一处。
+   2026-10-10 补入 路由|后期|后20Boss|分支|重试|变身|点加速$：海盗的 海盗_配队1后期、海盗_路由_*、
+   haidao_路由_*、海盗_boss_分支_*、海盗_重试配队1后期 等节点静态无入边，漏了会被误报孤岛/不可达。
+   原 神器补给_神器 白名单项已于 2026-10-10 清理：该孤儿节点（复兴/童话各一）已从现网删除。 */
+function v2AgentWired(n){ return /配队2d2$|配队1boss$|给豆|狂点|boss_喂豆|点波5_nf$|点波5_d2_nf$|前10_|补白|快速点波循环|卡7_补植物|卡8_补植物|点波2$|点波1$|boss_叠电大|boss_叠种|boss_识别开始$|boss_判断是否进入关内$|路由|后期|后20Boss|分支|重试|变身|点加速$/.test(n || ''); }
 function v2NxArr(d){ return (d && Array.isArray(d.next)) ? d.next : []; }
 function v2Anchors(d){ if (d && d.anchor && typeof d.anchor === 'object') return Object.keys(d.anchor).map(function(k){ return d.anchor[k]; }); return []; }
 function v2CheckWhitelisted(ref){
@@ -25179,8 +25653,9 @@ function v2MergePipelines(files){
   (files || []).forEach(function(f){
     var p = v2ParseAnyJson(f.text);
     if (!p || typeof p !== 'object'){ notes.push('[S0] ' + f.name + ' 解析失败（非法 JSON/JSONC）'); return; }
-    parsed.push({ name: f.name, p: p });
+    var dropped = [];
     Object.keys(p).forEach(function(k){
+      if (V2_NON_NODE_KEYS[k]){ dropped.push(k); return; }   /* task 片段/ v2 状态字段：不是节点 */
       if (Object.prototype.hasOwnProperty.call(merged, k)){
         collisions.push(k + '  ← ' + f.name);
         var i = 2, nk = k + '#' + i;
@@ -25188,6 +25663,9 @@ function v2MergePipelines(files){
         merged[nk] = p[k];
       } else merged[k] = p[k];
     });
+    if (dropped.length) notes.push('[V4] ' + f.name + '：忽略非节点键 ' + dropped.join('/') +
+      '（task 片段/ v2 状态字段，检查与导入都不当节点）');
+    parsed.push({ name: f.name, p: p });
   });
   return { merged: merged, collisions: collisions, notes: notes, parsed: parsed };
 }
@@ -25370,7 +25848,7 @@ function v2RunChecksEx(opts){
   });
   add('info', 'V0', '识别：前缀 ' + (pfx || '(无)') + (world ? '（' + WJP_PRESETS[world].label + '，预设节点数 ' + WJP_PRESETS[world].n_nodes + '，实际 ' + names.length + '）' : '（合并 ' + (opts.pipeFiles || []).length + ' 个文件）'));
 
-  /* task override 目标（含 anchor 值） */
+  /* task override 目标（含 anchor 值）——T1 用：这些是「被覆盖的节点」，必须在 pipeline 里 */
   var ovTargets = {};
   if (taskObj){
     Object.keys(taskObj.option || {}).forEach(function(ok){
@@ -25380,6 +25858,24 @@ function v2RunChecksEx(opts){
           ovTargets[k] = 1;
           var a = ov[k] && ov[k].anchor;
           if (a) Object.keys(a).forEach(function(ak){ ovTargets[a[ak]] = 1; });
+        });
+      });
+    });
+  }
+  /* 「被 task 接线」的节点集合（S2/S3 用）= override 键 ∪ override 体里写进 next/anchor 的目标。
+     只认键会误报：重置到1 静态图上没有入边（只有 agent 运行时改写 wujin_确定4 的 next 才走到它），
+     于是「无尽全自动循环」开了才有意义的节点被报成 S2/S3 孤岛（tail/none 都中，2026-10-10 查实）。
+     检查器文案本来就写了「或仅被 task/agent 引用」，这里把 task 那半边补上。
+     注意不能与 ovTargets 混用：T1 判的是「被覆盖的节点是否存在」，body 目标混进去会掩盖 T1 错误。 */
+  var ovRefs = {};
+  Object.keys(ovTargets).forEach(function(k){ ovRefs[k] = 1; });
+  if (taskObj){
+    Object.keys(taskObj.option || {}).forEach(function(ok){
+      var o = taskObj.option[ok] || {};
+      [o.pipeline_override || {}].concat((o.cases || []).map(function(c){ return c.pipeline_override || {}; })).forEach(function(ov){
+        Object.keys(ov).forEach(function(k){
+          v2NxArr(ov[k]).forEach(function(x){ if (x in p) ovRefs[x] = 1; });
+          Object.keys(ov[k].anchor || {}).forEach(function(a){ if (ov[k].anchor[a] in p) ovRefs[ov[k].anchor[a]] = 1; });
         });
       });
     });
@@ -25399,14 +25895,14 @@ function v2RunChecksEx(opts){
     v2Anchors(d).forEach(function(x){ if (x in p) incoming[x] = (incoming[x] || 0) + 1; });
   });
   names.forEach(function(n){
-    if (!incoming[n] && !/Entry$/.test(n) && !(p[n] && p[n].anchor) && !ovTargets[n])
+    if (!incoming[n] && !/Entry$/.test(n) && !(p[n] && p[n].anchor) && !ovRefs[n] && !v2AgentWired(n))
       add(files.length > 1 ? 'info' : 'warn', 'S2', n + '（无入边且非入口——补丁遗漏、残留节点或仅被 task/agent 引用' + (files.length > 1 ? '；多文件合并图常见于官方跨文件接线' : '') + '）');
   });
   var startN = names.filter(function(n){ return /Entry$/.test(n); });
   if (startN.length){
     var seeds = startN.slice();
-    names.forEach(function(n){ if (/配队2d2$|配队1boss$|给豆|狂点|boss_喂豆/.test(n)) seeds.push(n); });
-    Object.keys(ovTargets).forEach(function(k){ if (k in p) seeds.push(k); });
+    names.forEach(function(n){ if (v2AgentWired(n)) seeds.push(n); });
+    Object.keys(ovRefs).forEach(function(k){ if (k in p) seeds.push(k); });
     var reach = {}, queue = seeds.slice();
     while (queue.length){
       var cur = queue.pop();
@@ -25680,7 +26176,7 @@ function v2ChecksGo(){
 
 /* ---- 抽屉管理 ---- */
 var v2ActivePanel = null;
-var V2_PANELS = ['presets', 'order', 'route', 'boss', 'checks', 'save', 'export2', 'server'];
+var V2_PANELS = ['presets', 'order', 'route', 'boss', 'checks', 'save', 'import', 'export2', 'server'];
 function v2OpenPanel(name){
   if (v2ActivePanel === name){ v2ClosePanels(); return; }
   v2ActivePanel = name;
@@ -25806,9 +26302,7 @@ function v2BindExport2(){
   if (b('ex2Json')) b('ex2Json').addEventListener('click', function(){ v2ExportJSON(); });
   if (b('ex2Txt')) b('ex2Txt').addEventListener('click', function(){ v2ExportTxt(); });
   if (b('ex2Pipe')) b('ex2Pipe').addEventListener('click', function(){ v2ExportPipeline(); });
-  if (b('ex2ImportJson')) b('ex2ImportJson').addEventListener('click', function(){
-    var t = b('v2Out').value; if (t.trim()) v2ImportJSON(t);
-  });
+  /* 「应用粘贴的 JSON v2」已并入 📥 导入 面板（粘贴框 + 解析，自动识别 v2 阵型存档，2026-10-10 批 D2） */
   if (b('ex2Copy')) b('ex2Copy').addEventListener('click', function(){ copyText(b('v2Out').value); showToast('已复制'); });
   if (b('ex2Download')) b('ex2Download').addEventListener('click', function(){
     var t = b('v2Out').value;
@@ -27677,7 +28171,7 @@ var V3Bridge = (function () {
   var VIEW_TITLES = { formation: '布阵工作台', agent: 'Agent 工作台', settings: '设置', help: '帮助 / 文档', skin: '🎨 换肤中心' };
   var PANEL_TITLES = {
     presets: '📦 世界预设', order: '🔢 遍历顺序', route: '🧭 配队路由', boss: '👑 Boss 链',
-    checks: '🔍 检查链', save: '💾 存档', export2: '📤 导出 / 导入', server: '🌐 服务',
+    checks: '🔍 检查链', save: '💾 存档', import: '📥 导入脚本 / 阵型', export2: '📤 导出 / 部署', server: '🌐 服务',
     help: '📖 帮助手册'
   };
   var curView = 'formation';

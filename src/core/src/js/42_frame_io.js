@@ -321,8 +321,9 @@ function v2FrameImportPick(){
         : '✅ 已导入：前期布阵 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
           ' · 后期补卡 ' + r.late + ' 格' + (r.notes.length ? '；' + r.notes.join('；') : ''));
       if (typeof showToast === 'function') showToast(msg);
-      var outBox = document.getElementById('v2Out');
-      if (outBox) outBox.value = msg;
+      /* 结果写统一报告框（导入面板），旧版写导出面板的 v2Out（2026-10-10 批 D2） */
+      if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】\n' + msg);
+      else { var outBox0 = document.getElementById('v2Out'); if (outBox0) outBox0.value = msg; }
       inp.value = '';
     };
     rd.readAsText(f, 'utf-8');
@@ -350,14 +351,20 @@ function v2FrameImportPick(){
   });
   var im = document.getElementById('ex2FrameImp');
   if (im) im.addEventListener('click', function(){
-    var box = document.getElementById('v2Out');
+    /* 粘贴框改到导入面板（2026-10-10 批 D2：导入入口统一，旧版读 v2Out） */
+    var box = document.getElementById('impPaste') || document.getElementById('v2Out');
     var text = box ? box.value : '';
     if (!text.trim()){ v2FrameImportPick(); return; }   /* 空时直接走文件选择 */
     var r = v2ImportFrameJSON(text);
-    if (!r.ok){ showToast('解析失败：' + r.err); return; }
-    var msg = '已导入：前期布阵 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
+    if (!r.ok){
+      if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】解析失败：' + r.err);
+      showToast('解析失败：' + r.err);
+      return;
+    }
+    var msg = '已导入通用框架布阵：前期 ' + r.main + ' 格 · 守卫菇 ' + r.guards + ' · 铲除 ' + r.shovels +
       ' · 后期补卡 ' + r.late + ' 格' + (r.notes.length ? '；' + r.notes.join('；') : '');
-    if (box) box.value = msg;
+    if (typeof v2ImpReportSet === 'function') v2ImpReportSet('【通用框架 JSON】\n' + msg);
+    else if (box) box.value = msg;
     showToast('通用框架布阵已应用到画布');
   });
 })();

@@ -143,7 +143,42 @@ function v2RouteParamsExtra(pp, p){
   if (pp.front30 && f30f) extra.push('"front30_feed": "' + f30f + '"');
   if (pp.boss_feed_early) extra.push('"boss_feed_early": "' + pp.boss_feed_early + '"');
   if (pp.boss_feed_late) extra.push('"boss_feed_late": "' + pp.boss_feed_late + '"');
+  /* 第 XX 关后不补阵（批 B）：纯 pp 字段走这里 → 计步/计步_boss_start 的静态 cap 与 input 模板四处自动带齐；
+     链上的节点名（入口/原样值/抛花链尾/_nf）走 v2FarmStopExtra（需要 built.nodes）。 */
+  if (parseInt(pp.farm_stop_from, 10) > 0) extra.push('"farm_stop_from": ' + parseInt(pp.farm_stop_from, 10));
+  var fwmP = v2WaveModeNorm(pp.farm_wave_mode);
+  if (fwmP) extra.push('"farm_wave_mode": "' + fwmP + '"');
   return extra;
+}
+/* ---- 「第 XX 关后不补阵」链上参数（批 B，2026-10-10）----
+ * agent 只改写**一个**节点：布阵段前最后一个节点 entry，把它的 next 指向 [jump]（不补阵）或
+ * 还原成 back（补阵）——entry.next[0] 就是 back，所以每关写一次天然幂等。
+ *   · 有小关抛花：entry = 抛花链尾（抛花1 → 抛花2 → …），只改它一个 ⇒ 花照抛全，抛完进 点波5_nf
+ *     （计划原写法是"入口指向抛花链尾"，那会跳过前面几朵花；这里改成改链尾的 next，一朵不丢）
+ *   · 没抛花：entry = 点波_初始
+ * 每关都要重写而不是只在超过阈值时写：打满一轮自动刷新会从第 1 关重来，override 是持久的，
+ * 不还原就会出现"新一轮头 N 关也不补阵"。deck2 关同理，entry_d2 = 点波_初始_d2（deck2 没有抛花）。
+ * 集中在这一份实现里，pipeline 静态 cap 与 task input 模板两条路径共用。 */
+function v2FarmStopExtra(nodes, p){
+  var pp = (V2.route && V2.route.params) || {};
+  if ((parseInt(pp.farm_stop_from, 10) || 0) <= 0) return [];
+  var e1 = p + '点波_初始', e2 = p + '点波_初始_d2';
+  if (!nodes[e1] || !nodes[p + '点波5_nf']) return [];      /* 缺入口或缺 _nf：不补阵无法生效（R7 会报 warn） */
+  var firstOf = function(n){ var nx = (nodes[n] && nodes[n].next) || []; return nx[0] || ''; };
+  var esc = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var reTh = new RegExp('^' + esc + '抛花\\d+$');
+  var fe = e1, cur = firstOf(e1), guard = 0;
+  while (cur && reTh.test(cur) && guard++ < 10){ fe = cur; cur = firstOf(cur); }   /* fe = 布阵段前最后一个节点 */
+  var out = [];
+  out.push('"farm_stop_entry": "' + fe + '"');
+  out.push('"farm_stop_back": "' + firstOf(fe) + '"');
+  out.push('"farm_stop_jump": "' + p + '点波5_nf"');
+  if (nodes[e2] && nodes[p + '点波5_d2_nf']){
+    out.push('"farm_stop_entry_d2": "' + e2 + '"');
+    out.push('"farm_stop_back_d2": "' + firstOf(e2) + '"');
+    out.push('"farm_stop_jump_d2": "' + p + '点波5_d2_nf"');
+  }
+  return out;
 }
 function v2NodeNameOf(it, p, tag){
   if (it.name) return p + it.name;
@@ -201,6 +236,7 @@ function v2BuildPipeline(){
   var bossFeedNodes = [];
   var throwInfo = null;   /* 小关抛花: {after: 点波_初始节点名, nodes: [抛花节点名...]} */
   var rt = V2.route;
+  var noneMode = (rt.mode === 'none');
   function N(n, def){ nodes[n] = def; return n; }
   function N2(base){ if (!nodes[base]) return base; for (var i = 2; ; i++){ var n = base + '_' + i; if (!nodes[n]) return n; } }
   function chain(items, tag){
@@ -335,6 +371,23 @@ function v2BuildPipeline(){
   var d1head = chain(V2.order.deck1 || [], 'd1');
   var d2head = chain(V2.order.deck2 || [], 'd2');
 
+  /* ---- 「第 XX 关后不补阵」点波节点（2026-10-10 批 B）----
+     不补阵期 agent 把布阵链入口 override 成 [抛花链尾, 点波5_nf]（deck2 关用 点波_初始_d2 → 点波5_d2_nf）。
+     _nf 与全局档节点逐字段同构（自环 + 识别结算/识别开始战斗/识别boss关 打断），但**独立成节点**：
+     「不布阵点波档」只覆盖 _nf、「全局关内点波」只覆盖 点波5 家族，两个档位选项互不抢同一个节点
+     （MAA 限制：同一 custom 节点只允许一个 input 覆盖；两个 select 档位互相踩同样会变成先后顺序问题）。 */
+  if ((parseInt((V2.route.params || {}).farm_stop_from, 10) || 0) > 0){
+    ['点波5', '点波5_d2'].forEach(function(base){
+      var src = nodes[p + base];
+      if (!src) return;
+      var nf = p + base + '_nf';
+      if (nodes[nf]) return;
+      var cp = JSON.parse(JSON.stringify(src));
+      cp.next = (src.next || []).map(function(x){ return x === p + base ? nf : x; });
+      N(nf, cp);
+    });
+  }
+
   /* ---- Boss 链 ---- */
   var ops = V2.boss.ops || [];
   var bossHead = null, bprev = null;
@@ -371,8 +424,11 @@ function v2BuildPipeline(){
      （2026-09-08 龙芋卡第二关教训：wujin_返回 命中后进入 [开始挑战1,返回] 死胡同子链）。 */
   N(p + '过渡', { action: 'DoNothing', timeout: -1,
     next: [p + '识别开始战斗', p + '识别boss关'] });
+  /* 识别开始战斗：tail/phase 由 开始游戏X 节点点击，这里只等；none 没有那一步，
+     必须自己点，否则选卡界面没人点「开始战斗」→ 判断是否进入关内 成孤儿（2026-10-08 火龙实测）。
+     两模式都接 计步：计数模式下 计步 走 尾数路由；none 的 计步 route:false 直接去 判断是否进入关内。 */
   N(p + '识别开始战斗', { recognition: 'OCR', expected: ['开始战斗'], roi: [1060, 647, 201, 59], threshold: 0.75,
-    action: 'DoNothing', timeout: -1, next: rt.mode === 'none' ? [d1head || p + '点波5'] : [p + '计步'] });
+    action: noneMode ? 'Click' : 'DoNothing', timeout: -1, next: [p + '计步'] });
   N(p + '识别结算', { recognition: 'OCR', expected: '继续挑战', roi: [716, 621, 179, 50], action: 'Click',
     rate_limit: 1000, timeout: -1, next: [p + '过渡'] });
   N(p + '识别boss关', { recognition: 'ColorMatch', lower: [148, 213, 8], upper: [168, 233, 28], roi: [723, 56, 17, 22],
@@ -388,6 +444,7 @@ function v2BuildPipeline(){
     var pp = rt.params || {};
     var extra = v2RouteParamsExtra(pp, p);
     if (pp.bailuo_from > 0) extra.push('"bailuo_from": ' + pp.bailuo_from);   /* pipeline 静态 cap 含补白（task 版按节点分流） */
+    extra = extra.concat(v2FarmStopExtra(nodes, p));   /* 不补阵入口/back/via/jump（批 B，链上节点名） */
     var cap = '{"start_level": 1, "route_node": "' + p + '尾数路由"' + (extra.length ? ', ' + extra.join(', ') : '') + '}';
     N(p + '监控开关', { action: 'Custom', custom_action: 'fx_monitor_switch', custom_action_param: '{"enabled": true}', next: [p + '重置计数'] });
     N(p + '重置计数', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": ' + (pp.start_level || 1) + '}', next: [p + '初始化完毕'] });
@@ -415,6 +472,27 @@ function v2BuildPipeline(){
     N(p + '配队1boss_选卡', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '配队1boss_选卡_2'] });
     N(p + '配队1boss_选卡_2', { recognition: 'DirectHit', action: 'Click', target: [195, 218], pre_delay: 0, post_delay: 500, next: [p + '开始游戏boss'] });
     N(p + '开始游戏boss', { recognition: 'DirectHit', action: 'Click', target: [1139, 671], pre_delay: 0, post_delay: fastPost, next: [p + 'boss_判断是否进入关内'] });
+  } else {
+    /* none 模式（2026-10-10 Q1）：同样上 agent 计数——监控窗口
+       与「第XX关后不补阵」都依赖逐关 计步，level 不再等于「第几个 Boss 关」。
+       普关由 计步 计数、Boss 关由 计步_补给 计数，每关恰好一次、不双计（与 tail 语义一致）。
+       计步 route:false：无尾数路由，只计数后回 判断是否进入关内。 */
+    var ppN = rt.params || {};
+    /* none 模式也要带 farm_stop_*（批 B）：「不补阵」在单卡组同样生效——route:false 的 计步 里
+       agent 照样会按 level 改写布阵链入口。这里没有 v2RouteParamsExtra，所以纯字段也手动带上。 */
+    var farmN = [];
+    if ((parseInt(ppN.farm_stop_from, 10) || 0) > 0){
+      farmN.push('"farm_stop_from": ' + parseInt(ppN.farm_stop_from, 10));
+      var fwmN = v2WaveModeNorm(ppN.farm_wave_mode);
+      if (fwmN) farmN.push('"farm_wave_mode": "' + fwmN + '"');
+      farmN = farmN.concat(v2FarmStopExtra(nodes, p));
+    }
+    N(p + '监控开关', { action: 'Custom', custom_action: 'fx_monitor_switch', custom_action_param: '{"enabled": true}', next: [p + '重置计数'] });
+    N(p + '重置计数', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": ' + (ppN.start_level || 1) + '}', next: [p + '初始化完毕'] });
+    N(p + '重置到1', { action: 'Custom', custom_action: 'fx_counter_reset', custom_action_param: '{"start_level": 1, "force": true}', next: [p + '初始化完毕'] });
+    N(p + '计步', { action: 'Custom', custom_action: 'fx_counter',
+      custom_action_param: '{"start_level": 1, "route": false' + (farmN.length ? ', ' + farmN.join(', ') : '') + '}',
+      next: [p + '判断是否进入关内'] });
   }
   /* ---- 计数器 override 支撑节点（fx_counter 按路由参数改写这些节点的 next，目标必须存在；
    *      2026-09-08 龙芋教训：front30 速刷指向不存在的 给豆1_2，第2关 bad next 38ms 失败） ---- */
@@ -572,6 +650,25 @@ function v2BuildTask(built){
       { name: 'Yes', label: '开启(默认)', pipeline_override: (function(){ var o = {}; o[p + '监控开关'] = { custom_action_param: '{"enabled": true}' }; return o; })() }
     ]
   };
+  /* 无尽全自动循环选项（2026-10-10 起对 none 模式也生成）：打完整轮后自动花钻石刷新重打。
+     默认 No=不开（cases[0] 即 MPZ 默认），开了才有：过渡 多一个 wujin_返回 候选 + 官方
+     wujin_确定4 接 重置到1。原本只在计数模式生成，因为 Yes 分支引用的 重置到1 是 agent 节点、
+     none 模式不存在（T1 死引用）；A2 给 none 补上 计步四件套后该限制消失，且 重置到1 从此
+     被 task override 引用、不再是「入口不可达孤岛」（检查器 S2/S3 误报一并消失）。
+     用工厂函数是为了让两个模式各自在原位置挂载——tail 的选项顺序与现网导出件保持不变。 */
+  function autoLoopOptionDef(){
+    return {
+      type: 'switch', label: '无尽全自动循环', description: '打一遍后自动花钻石刷新重新打',
+      cases: [
+        { name: 'No', label: '否', pipeline_override: {} },
+        { name: 'Yes', label: '是', pipeline_override: (function(){
+            var o = {};
+            o[p + '过渡'] = { next: [p + '识别开始战斗', p + '识别boss关', 'wujin_返回'] };
+            o['wujin_确定4'] = { next: [p + '重置到1'] };
+            return o; })() }
+      ]
+    };
+  }
   if (rt.mode !== 'none'){
     var pp = rt.params || {};
     var extra = v2RouteParamsExtra(pp, p);   /* 与 v2BuildPipeline 共享（2026-09-14 审查去重） */
@@ -581,6 +678,10 @@ function v2BuildTask(built){
     /* bailuo_from 只进 计步：计步_boss_start 是 route:false 的绝对计数，与补白循环无关
        （保持与火龙 v2 部署产物一致，避免 override 串漂移） */
     if (pp.bailuo_from > 0) cap = cap.slice(0, -1) + ', "bailuo_from": ' + pp.bailuo_from + '}';
+    /* 不补阵链上参数（批 B）：pipeline 静态 cap 已带，input 模板这里必须同样带——
+       忘记带的话，用户在 MPZ 界面填「启动时关卡数」就会整串替换掉 cap，不补阵静默失效 */
+    var farmT = v2FarmStopExtra(built.nodes, p);
+    if (farmT.length) cap = cap.slice(0, -1) + ', ' + farmT.join(', ') + '}';
     var ovCount = {};
     ovCount[p + '计步'] = { custom_action_param: cap };
     ovCount[p + '计步_boss_start'] = { custom_action_param: '{"start_level": {关卡}, "route": false, "absolute": true, "route_node": "' + p + '尾数路由"' + (extra.length ? ', ' + extra.join(', ') : '') + '}' };
@@ -595,17 +696,7 @@ function v2BuildTask(built){
       inputs: [{ name: '关卡', label: '关卡', verify: '^([1-9]|[1-9][0-9]|1[0-4][0-9])$' }],
       pipeline_override: ovCount
     };
-    option[p + '无尽全自动循环'] = {
-      type: 'switch', label: '无尽全自动循环', description: '打一遍后自动花钻石刷新重新打',
-      cases: [
-        { name: 'No', label: '否', pipeline_override: {} },
-        { name: 'Yes', label: '是', pipeline_override: (function(){
-            var o = {};
-            o[p + '过渡'] = { next: [p + '识别开始战斗', p + '识别boss关', 'wujin_返回'] };
-            o['wujin_确定4'] = { next: [p + '重置到1'] };
-            return o; })() }
-      ]
-    };
+    option[p + '无尽全自动循环'] = autoLoopOptionDef();
     if (V2.debugCardUI !== false){
       option[p + 'boss关选卡界面开始'] = {
         type: 'switch', label: '从boss关选卡界面开始', description: '跳过普关流程直接从boss关开始（调试用），需配合启动时关卡数',
@@ -617,18 +708,29 @@ function v2BuildTask(built){
         ]
       };
     }
+  } else {
+    /* none 模式：没有「启动时关卡数」「从boss关选卡界面开始」（那是计数路由/调试专用），
+       但自动循环照样给（重置到1 已由 A2 生成，开了就能用）。默认仍是 No=不开。 */
+    option[p + '无尽全自动循环'] = autoLoopOptionDef();
   }
-  /* 「关内点波」任务选项（火龙 v2 同款）：路由参数 wave_mode 非空时生成，default_case=所选档。
+  /* 「关内点波」任务选项（火龙 v2 同款）：路由参数 wave_mode 非空时生成，default_case=所选档
+     （中文/英文同义，经 v2WaveModeNorm 归一——预设里存的是中文 case 名）。
      只收 action/repeat、不动 next（agent 每关会 override 点波 next）；override 目标按
      实际生成的节点收窄——点波5_d2 仅双卡组、点波1 仅 front30/bailuo、前10_点波 仅 front10，
      避免把不存在的节点写进 pipeline_override（T1 断链）。留空=不生成该选项，行为与旧版一致。 */
   (function(){
-    var wm = String((V2.route.params || {}).wave_mode || '');
+    var wm = v2WaveModeNorm((V2.route.params || {}).wave_mode);
     if (!wm || !built.nodes[p + '点波5']) return;
     var waveNodes = [p + '点波5'];
     if (built.nodes[p + '点波5_d2']) waveNodes.push(p + '点波5_d2');
     if (built.nodes[p + '点波1']) waveNodes.push(p + '点波1');
     if (built.nodes[p + '前10_点波']) waveNodes.push(p + '前10_点波');
+    /* 不补阵期「留空=跟全局」：全局档也要覆盖 _nf 节点，否则不补阵期退回节点自带节奏而不是用户选的档
+       （没开不补阵、或另设了「不布阵点波档」时不加——那时 _nf 由农场档独占覆盖） */
+    var ppG = V2.route.params || {};
+    if ((parseInt(ppG.farm_stop_from, 10) || 0) > 0 && !v2WaveModeNorm(ppG.farm_wave_mode)){
+      ['点波5_nf', '点波5_d2_nf'].forEach(function(b){ if (built.nodes[p + b]) waveNodes.push(p + b); });
+    }
     var holdOv = {}, burstOv = {};
     waveNodes.forEach(function(n){ holdOv[n] = { action: 'DoNothing' }; });
     waveNodes.forEach(function(n){
@@ -642,6 +744,31 @@ function v2BuildTask(built){
       cases: [
         { name: '不点波', label: '不点波（只等结算）', pipeline_override: holdOv },
         { name: '默认', label: '默认（点波5/点波1）', pipeline_override: {} },
+        { name: '狂点', label: '狂点加速', pipeline_override: burstOv }
+      ]
+    };
+  })();
+  /* 「不布阵点波档」任务选项（批 B）：第 N 关后不补阵期间的关内点波方式。
+     只 override _nf 节点（与全局档的 点波5 家族完全不重叠）；farm_wave_mode 留空时不生成，
+     由全局档覆盖 _nf 实现「跟全局」回落（Q3 语义）。 */
+  (function(){
+    var ppF = V2.route.params || {};
+    var from = parseInt(ppF.farm_stop_from, 10) || 0;
+    var fwm = v2WaveModeNorm(ppF.farm_wave_mode);
+    if (from <= 0 || !fwm) return;
+    var nfNodes = [p + '点波5_nf', p + '点波5_d2_nf'].filter(function(n){ return !!built.nodes[n]; });
+    if (!nfNodes.length) return;
+    var tap = built.nodes[nfNodes[0]].target || V2_WAVE_TAP;   /* 坐标从现役节点取，勿硬编码 */
+    var holdOv = {}, burstOv = {};
+    nfNodes.forEach(function(n){ holdOv[n] = { action: 'DoNothing' }; });
+    nfNodes.forEach(function(n){ burstOv[n] = { action: 'Click', target: tap, repeat: 6, repeat_delay: 200, post_delay: 0 }; });
+    option[p + '不布阵点波档'] = {
+      type: 'select', label: '不布阵点波档（第' + from + '关后）',
+      description: '第' + from + '关后不补阵期间的关内点波：不点波=只等结算(最稳)；默认=与全局档同节奏；狂点=突发连点(最快)。只作用于不补阵期，不影响正常布阵关。',
+      default_case: fwm === 'hold' ? '不点波' : (fwm === 'burst' ? '狂点' : '默认'),
+      cases: [
+        { name: '不点波', label: '不点波（只等结算）', pipeline_override: holdOv },
+        { name: '默认', label: '默认（同全局档节奏）', pipeline_override: {} },
         { name: '狂点', label: '狂点加速', pipeline_override: burstOv }
       ]
     };
@@ -673,7 +800,10 @@ function v2BuildTask(built){
       cases: cases, default_case: dftCase
     };
   }
-  /* 小关抛花开关 + 每朵花行列坐标（西部 xb_小关同构；开关默认否=关掉前原行为不变）
+  /* 小关抛花开关 + 每朵花行列坐标（西部 xb_小关同构）
+     case 序必须 Yes 在前：MPZ 取**首 case** 为默认值，No 在前等于「配了抛花却默认不抛」
+     （2026-10-10 火龙部署 P2 实测：部署后要手点成「是」才抛花）。该选项仅在有抛花步时生成，
+     所以 Yes 在前不会影响没配抛花的阵型。
      位置 input 只被开关 Yes 分支 option 引用，不进任务顶层 option 列表——
      两处都列会在 MFA 界面重复渲染（官方「创意庭院」嵌套用法同款约定，2026-09-08 龙芋实测教训） */
   var nestedOpts = {};
@@ -686,8 +816,8 @@ function v2BuildTask(built){
       type: 'switch', label: '小关是否抛花',
       description: '进关点波后抛能量花产豆（deck1 ' + built.throwInfo.nodes.length + ' 朵）；开启后可自定义每朵花的行列坐标',
       cases: [
-        { name: 'No', label: '否', pipeline_override: thNo },
-        { name: 'Yes', label: '是', option: built.throwInfo.nodes.map(function(_, ix){ return p + '抛花' + (ix + 1) + '位置'; }) }
+        { name: 'Yes', label: '是', option: built.throwInfo.nodes.map(function(_, ix){ return p + '抛花' + (ix + 1) + '位置'; }) },
+        { name: 'No', label: '否', pipeline_override: thNo }
       ]
     };
     built.throwInfo.nodes.forEach(function(nm, ix){
@@ -743,8 +873,33 @@ function v2ChainIssues(built){
  * 此项兜底手填参数（如自定义 front30_feed）。 */
 function v2CounterIssues(built){
   var p = built.prefix, nodes = built.nodes, rt = V2.route;
-  if (rt.mode === 'none') return [];
-  var pp = rt.params || {}, out = [];
+  var out = [];
+  if (rt.mode === 'none'){
+    /* none 模式（2026-10-10 Q1）：agent 计数入口 = 计步(普关)/计步_补给(Boss 关)，每关恰好一次；
+       监控开关/重置计数/重置到1 是「初始化卡槽和草坪位置」「监控窗口」两个选项的 override 目标，
+       缺了就是死引用（T1/T2 的老症状）。路由类 override 目标（front30/bailuo/beilei）在 none
+       不生成节点，故一律不校验——按旧代码 `return []` 直接放行会让 none 导出再次带着死引用出厂。 */
+    ['监控开关', '重置计数', '重置到1', '计步', '计步_补给'].forEach(function(n){
+      if (!nodes[p + n]) out.push(['R7', 'error', 'none 模式缺 agent 计数节点：' + p + n +
+        '（普关走 计步、Boss 关走 计步_补给；监控开关/重置计数/重置到1 供初始化与监控窗口选项覆盖）']);
+    });
+    var jb = nodes[p + '计步'];
+    if (jb){
+      var nx = jb.next || [];
+      if (!nx.length) out.push(['R7', 'error', 'none 模式 ' + p + '计步.next 为空：计完数没有出口（应指向 ' + p + '判断是否进入关内）']);
+      nx.forEach(function(n){
+        if (!nodes[n] && !/^(wujin_|种植物_初始化|神器_初始化)/.test(n))
+          out.push(['R7', 'error', 'none 模式 ' + p + '计步.next 指向不存在的节点：' + n + '（bad next 会直接中断任务）']);
+      });
+    }
+    /* 不补阵（批 B）：agent 会跳到 点波5_nf 并改写 点波_初始 —— 缺则静默不生效/直接 bad next */
+    if ((parseInt((rt.params || {}).farm_stop_from, 10) || 0) > 0){
+      if (!nodes[p + '点波5_nf']) out.push(['R7', 'error', '开了不补阵但缺 ' + p + '点波5_nf：agent 会跳向不存在的节点（bad next）']);
+      if (!nodes[p + '点波_初始']) out.push(['R7', 'warn', '开了不补阵但缺 ' + p + '点波_初始：没有可改写的布阵链入口，不补阵不生效']);
+    }
+    return out;
+  }
+  var pp = rt.params || {};
   var full = function(n){ return n.indexOf(p) === 0 ? n : p + n; };
   var has = function(n){ return !!nodes[full(n)]; };
   var targets = ['识别结算', '识别开始战斗', '识别boss关', '配队1普', '配队1boss'].map(full);
@@ -774,6 +929,13 @@ function v2CounterIssues(built){
     anchors.push('d1_胆小菇5_4');
     targets.push(full('蓓蕾滑8列_1'));
   }
+  /* 不补阵（批 B）：agent 改写 点波_初始 / 点波_初始_d2 的 next，跳到 抛花链尾 + _nf；
+     目标缺失 = bad next 直接失败（error），入口缺失 = 改写无效（warn，沿用 R7 惯例）。 */
+  if ((parseInt(pp.farm_stop_from, 10) || 0) > 0){
+    anchors = anchors.concat(['点波_初始', '点波_初始_d2']);
+    targets.push(p + '点波5_nf');
+    if (nodes[p + '点波5_d2']) targets.push(p + '点波5_d2_nf');
+  }
   var seen = {};
   targets.forEach(function(n){
     if (seen[n]) return;
@@ -797,17 +959,21 @@ function v2CounterIssues(built){
    把 description 原样抄进 interface.json 即可，不必再对着管线反推卡槽。 */
 function v2TaskIntro(){
   var L = [];
+  var r = V2.route, pp = r.params || {};
+  /* none 模式没有配队2/尾数分流/前N关参数节点（计数节点 2026-10-10 起有，见 A2），
+     简介一律不写这些字样——以前照抄画布卡槽表，出现「配队2[…]｜前20关不切deck2(deck1_first)」等
+     与生成脚本不符的承诺（T4：10-08/10-10 两次火龙部署都要手工改简介）。 */
+  var noneMode = (r.mode === 'none');
   try {
     if (typeof slotNames !== 'undefined' && slotNames && slotNames.length){
       var fmtDeck = function(arr){
         return arr.map(function(n, i){ return (i + 1) + (n && String(n).trim() ? n : '空'); }).join(' ');
       };
       L.push('卡槽 配队1[' + fmtDeck(slotNames.slice(0, 8)) + ']' +
-        (slotNames.slice(8).join('') ? ' 配队2[' + fmtDeck(slotNames.slice(8, 16)) + ']' : ''));
+        (!noneMode && slotNames.slice(8).join('') ? ' 配队2[' + fmtDeck(slotNames.slice(8, 16)) + ']' : ''));
     }
   } catch (e) {}
   var notes = [];
-  var r = V2.route, pp = r.params || {};
   var have = function(a){ return a && a.length; };
   if (r.mode === 'tail'){
     var d2t = (r.tail.d2 || []).filter(function(x){ return x >= 0 && x <= 9; });
@@ -819,13 +985,15 @@ function v2TaskIntro(){
   } else if (r.mode === 'phase'){
     notes.push('阶段分流 deck2@' + JSON.stringify(r.phase.deck2Levels || []));
   }
-  if (pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
-  if (pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
-  if (pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
-  if (pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
-  if (pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');
-  if (pp.beilei_stop > 0) notes.push('第' + pp.beilei_stop + '关后不补蓓蕾');
-  if (pp.bailuo_from > 0) notes.push('第' + pp.bailuo_from + '关起补白萝卜(防吸阵)');
+  if (!noneMode && pp.deck1_first > 0) notes.push('前' + pp.deck1_first + '关不切deck2(deck1_first)');
+  if (!noneMode && pp.fast_mode) notes.push('激进省时:前段post0+同卡组跳切');
+  if (!noneMode && pp.deck2_tail3_first > 0) notes.push('仅×3关切deck2到第' + pp.deck2_tail3_first + '关');
+  if (!noneMode && pp.front10 > 0) notes.push('前' + pp.front10 + '关小关先等结算(未命中拖豆' + (pp.front10_feed || '1-3') + '开大)');
+  if (!noneMode && pp.front30 > 0 && pp.front30 > (pp.front10 || 0)) notes.push('前' + pp.front30 + '关速刷(给豆' + (pp.front30_feed || '1-2') + '+狂点)');
+  if (!noneMode && pp.beilei_stop > 0) notes.push('第' + pp.beilei_stop + '关后不补蓓蕾');
+  if (!noneMode && pp.bailuo_from > 0) notes.push('第' + pp.bailuo_from + '关起补白萝卜(防吸阵)');
+  /* 不补阵（批 B）：所有模式适用，与 none 无关 */
+  if (pp.farm_stop_from > 0) notes.push('第' + pp.farm_stop_from + '关后不补阵(只走抛花→点波→等结算，Boss关照旧)');
   var ops = V2.boss.ops || [];
   for (var i = 0; i < ops.length; i++){
     if (ops[i].t === 'feed'){
@@ -836,10 +1004,15 @@ function v2TaskIntro(){
   }
   if (V2.throw && V2.throw.on && have(V2.throw.cells))
     notes.push('抛花卡槽' + (V2.throw.slot || 1) + '→' + V2.throw.cells.join('/'));
-  if (pp.wave_mode === 'hold') notes.push('「关内点波」默认不点波(只等结算)');
-  else if (pp.wave_mode === 'burst') notes.push('「关内点波」默认狂点');
+  var wmIntro = v2WaveModeNorm(pp.wave_mode);   /* 中文/英文同义归一，见 15_route.js */
+  if (wmIntro === 'hold') notes.push('「关内点波」默认不点波(只等结算)');
+  else if (wmIntro === 'burst') notes.push('「关内点波」默认狂点');
+  var fwmIntro = v2WaveModeNorm(pp.farm_wave_mode);
+  if (pp.farm_stop_from > 0 && fwmIntro === 'hold') notes.push('不补阵期不点波');
+  else if (pp.farm_stop_from > 0 && fwmIntro === 'burst') notes.push('不补阵期狂点');
   notes.push('首次运行/换分辨率必开「初始化卡槽和草坪位置」');
-  if (r.mode !== 'none') notes.push('勿与其它自制无尽同时运行(agent 计数器共用)');
+  /* 2026-10-10 Q1：none 模式也接 agent 计数（监控窗口/不补阵都要），提示对所有模式都要写 */
+  notes.push('勿与其它自制无尽同时运行(agent 计数器共用)');
   return (L.length ? L.join('') + '｜' : '') + notes.join('；');
 }
 

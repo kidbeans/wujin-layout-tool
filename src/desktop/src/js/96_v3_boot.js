@@ -50,7 +50,7 @@
   var VIEW_TITLES = { formation: '布阵工作台', agent: 'Agent 工作台', settings: '设置', help: '帮助 / 文档', skin: '🎨 换肤中心' };
   var PANEL_TITLES = {
     presets: '📦 世界预设', order: '🔢 遍历顺序', route: '🧭 配队路由', boss: '👑 Boss 链',
-    checks: '🔍 检查链', save: '💾 存档', export2: '📤 导出 / 导入', server: '🌐 服务',
+    checks: '🔍 检查链', save: '💾 存档', import: '📥 导入脚本 / 阵型', export2: '📤 导出 / 部署', server: '🌐 服务',
     help: '📖 帮助手册'
   };
   var curView = 'formation';

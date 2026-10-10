@@ -47,17 +47,17 @@ vm.runInThisContext(code, { filename: 'fast_mode_golden_bundle.js' });
 let pass = 0, fail = 0;
 function T(name, ok){ if (ok){ pass++; console.log('  ✓ ' + name); } else { fail++; console.log('  ✗ ' + name); } }
 
-function build(fast){
+function build(fast, extra){
   V2 = v2Clone(v2Default());
   V2.prefix = 'bh_'; V2.world = '冰河';
   V2.route = { mode: 'tail', tail: { d2: [3], boss: [5, 0] },
     phase: { deck2Levels: [2, 12], bossEarlyFeed: 20, farmFrom: 21 },
-    params: { start_level: 1, deck1_first: 20, front10: 0, front10_feed: '', front30: 0,
+    params: Object.assign({ start_level: 1, deck1_first: 20, front10: 0, front10_feed: '', front30: 0,
       front30_feed: '', deck2_tail3_first: 0, beilei_stop: 0,
       boss_feed_early: 'bh_boss_叠种5_1', boss_feed_late: 'bh_boss_叠种5_1',
-      bailuo_from: 0, wave_mode: '', fast_mode: fast ? 1 : 0 } };
-  V2.order = { deck1: [{ t: 'plant', slot: 2, cell: '1-1' }],
-               deck2: [{ t: 'plant', slot: 9, cell: '6-1' }] };
+      bailuo_from: 0, wave_mode: '', fast_mode: fast ? 1 : 0, farm_stop_from: 0, farm_wave_mode: '' }, extra || {}) };
+  V2.order = { deck1: [{ t: 'wave', name: '点波_初始' }, { t: 'plant', name: '洋芋', slot: 2, cell: '1-1' }, { t: 'wave', name: '点波5' }],
+               deck2: [{ t: 'wave', name: '点波_初始_d2' }, { t: 'plant', name: '阳光蓓蕾', slot: 9, cell: '6-1' }, { t: 'wave', name: '点波5_d2' }] };
   const built = v2BuildPipeline();
   return { nodes: built.nodes, task: v2BuildTask(built) };
 }
@@ -100,6 +100,29 @@ const norm = s => { const o = JSON.parse(s.replace('{关卡}', '1'));
 T('计步 cap 语义相等（键序无关）', norm(cap('计步')) === norm(depCap));
 T('开始游戏普 post 相等', on.nodes[P + '开始游戏普'].post_delay === dep[P + '开始游戏普'].post_delay);
 T('计步_补给 cap 语义相等', norm(cap('计步_补给')) === norm(dep[P + '计步_补给'].custom_action_param));
+
+console.log('== 批 B：第 XX 关后不补阵（farm_stop） ==');
+(function(){
+  const fa = build(0, { farm_stop_from: 100, farm_wave_mode: 'hold' });
+  T('farm_stop_from=0（off 路）不生成 _nf 节点', !off.nodes[P + '点波5_nf'] && !off.nodes[P + '点波5_d2_nf']);
+  T('farm_stop_from=100 生成 点波5_nf / 点波5_d2_nf（与全局节点同构）',
+    !!fa.nodes[P + '点波5_nf'] && !!fa.nodes[P + '点波5_d2_nf'] &&
+    JSON.stringify(fa.nodes[P + '点波5_nf'].next) ===
+      JSON.stringify([P + '识别结算', P + '识别开始战斗', P + '识别boss关', P + '点波5_nf']));
+  const fcap = JSON.parse(fa.nodes[P + '计步'].custom_action_param);
+  const ovc = fa.task.option[P + '启动时关卡数'].pipeline_override[P + '计步'].custom_action_param;
+  T('计步 静态 cap 与 input 模板都带 farm 链上参数（entry/back/jump + d2 组）',
+    fcap.farm_stop_from === 100 && fcap.farm_stop_entry === P + '点波_初始' &&
+    fcap.farm_stop_back === P + '洋芋' && fcap.farm_stop_jump === P + '点波5_nf' &&
+    fcap.farm_stop_entry_d2 === P + '点波_初始_d2' && fcap.farm_stop_jump_d2 === P + '点波5_d2_nf' &&
+    ovc.indexOf('"farm_stop_entry"') > -1 && ovc.indexOf('"farm_stop_jump_d2"') > -1);
+  const fwv = fa.task.option[P + '不布阵点波档'];
+  const gwv = fa.task.option[P + '关内点波'];
+  T('「不布阵点波档」只覆盖 _nf 节点，全局档不碰 _nf',
+    !!fwv && fwv.default_case === '不点波' &&
+    Object.keys(fwv.cases[0].pipeline_override).sort().join(',') === [P + '点波5_nf', P + '点波5_d2_nf'].sort().join(',') &&
+    (!gwv || !gwv.cases[0].pipeline_override[P + '点波5_nf']));
+})();
 
 console.log('\nRESULT: %d pass, %d fail', pass, fail);
 process.exit(fail ? 1 : 0);

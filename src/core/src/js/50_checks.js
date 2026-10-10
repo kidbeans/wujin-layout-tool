@@ -23,13 +23,66 @@ function v2StripJsonc(text){
   }
   return out.join('').replace(/,(\s*[}\]])/g, '$1');
 }
+/* ---- 逐段取 JSON 文档（配平扫描，字符串感知）----
+ * v2 源的形态是「①头注释 + ②pipeline 节点 JSON + ③task 片段 JSON」三段拼在一个文件里，
+ * 整文件 JSON.parse 必然失败（2026-10-10 之前 v2 源导入报「未解析出任何节点」）。
+ * 剥完注释后按「配平到一个顶层 {} / [] 就切一段」逐段 parse，能拼的都拼回来。 */
+function v2ParseDocs(text){
+  var out = [], i = 0, n = text.length;
+  while (i < n){
+    var ch = text[i];
+    if (ch !== '{' && ch !== '['){ i++; continue; }
+    var start = i, depth = 0, inStr = false, q = '', esc = false, end = -1;
+    for (; i < n; i++){
+      var c = text[i];
+      if (inStr){
+        if (esc){ esc = false; continue; }
+        if (c === '\\'){ esc = true; continue; }
+        if (c === q) inStr = false;
+        continue;
+      }
+      if (c === '"' || c === "'" || c === '`'){ inStr = true; q = c; continue; }
+      if (c === '{' || c === '[') depth++;
+      else if (c === '}' || c === ']'){ depth--; if (depth === 0){ end = i + 1; break; } }
+    }
+    if (end < 0) break;                        /* 尾部残缺：保留前面已取到的段 */
+    try{
+      var seg = JSON.parse(text.slice(start, end));
+      if (seg && typeof seg === 'object') out.push(seg);
+    }catch(e){}
+    i = end;
+  }
+  return out.length ? out : null;
+}
 function v2ParseAnyJson(text){
   try{ return JSON.parse(text); }catch(e){}
-  try{ return JSON.parse(v2StripJsonc(String(text))); }catch(e){}
-  return null;
+  var raw = v2StripJsonc(String(text == null ? '' : text));
+  try{ return JSON.parse(raw); }catch(e){}
+  var docs = v2ParseDocs(raw);
+  if (!docs) return null;
+  if (docs.length === 1) return docs[0];
+  /* 多文档：按出现顺序合并（后段不覆盖前段已有键，避免 task 片段的同名键吃掉节点） */
+  var merged = {};
+  docs.forEach(function(d){
+    if (Array.isArray(d)) return;
+    Object.keys(d).forEach(function(k){ if (!(k in merged)) merged[k] = d[k]; });
+  });
+  return Object.keys(merged).length ? merged : null;
 }
 
+/* v2 状态/ task 片段里「不是 pipeline 节点」的顶层键：合并图与导入都不该把它们当节点
+ * （v2 源会把 ③ task 片段一起带进来；旧行为把它们并入节点表 → 节点数虚高、S2/S3 噪声） */
+var V2_NON_NODE_KEYS = { version: 1, meta: 1, boards: 1, slots: 1, order: 1, route: 1, boss: 1,
+  throw: 1, debugCardUI: 1, option: 1, task: 1, nested: 1, _register: 1 };
+
 var V2_CHECK_WL = ['种植物_初始化_', 'wujin_', '卡槽', '种植物_', '通用_', '[JumpBack]', '迷你工具_', '无尽挑战_'];
+/* agent 运行时才接线的节点（静态图上没有入边）：尾数分流目标、速刷给豆/狂点、Boss 喂豆、
+   批 B 的不补阵 _nf 点波节点、海盗（phase）的路由/后期/分支族。
+   ⚠ 这份家族清单必须与 无尽脚本公共/endless_deploy.py 的 AGENT_WIRED 逐字一致，改一处同步另一处。
+   2026-10-10 补入 路由|后期|后20Boss|分支|重试|变身|点加速$：海盗的 海盗_配队1后期、海盗_路由_*、
+   haidao_路由_*、海盗_boss_分支_*、海盗_重试配队1后期 等节点静态无入边，漏了会被误报孤岛/不可达。
+   原 神器补给_神器 白名单项已于 2026-10-10 清理：该孤儿节点（复兴/童话各一）已从现网删除。 */
+function v2AgentWired(n){ return /配队2d2$|配队1boss$|给豆|狂点|boss_喂豆|点波5_nf$|点波5_d2_nf$|前10_|补白|快速点波循环|卡7_补植物|卡8_补植物|点波2$|点波1$|boss_叠电大|boss_叠种|boss_识别开始$|boss_判断是否进入关内$|路由|后期|后20Boss|分支|重试|变身|点加速$/.test(n || ''); }
 function v2NxArr(d){ return (d && Array.isArray(d.next)) ? d.next : []; }
 function v2Anchors(d){ if (d && d.anchor && typeof d.anchor === 'object') return Object.keys(d.anchor).map(function(k){ return d.anchor[k]; }); return []; }
 function v2CheckWhitelisted(ref){
@@ -42,8 +95,9 @@ function v2MergePipelines(files){
   (files || []).forEach(function(f){
     var p = v2ParseAnyJson(f.text);
     if (!p || typeof p !== 'object'){ notes.push('[S0] ' + f.name + ' 解析失败（非法 JSON/JSONC）'); return; }
-    parsed.push({ name: f.name, p: p });
+    var dropped = [];
     Object.keys(p).forEach(function(k){
+      if (V2_NON_NODE_KEYS[k]){ dropped.push(k); return; }   /* task 片段/ v2 状态字段：不是节点 */
       if (Object.prototype.hasOwnProperty.call(merged, k)){
         collisions.push(k + '  ← ' + f.name);
         var i = 2, nk = k + '#' + i;
@@ -51,6 +105,9 @@ function v2MergePipelines(files){
         merged[nk] = p[k];
       } else merged[k] = p[k];
     });
+    if (dropped.length) notes.push('[V4] ' + f.name + '：忽略非节点键 ' + dropped.join('/') +
+      '（task 片段/ v2 状态字段，检查与导入都不当节点）');
+    parsed.push({ name: f.name, p: p });
   });
   return { merged: merged, collisions: collisions, notes: notes, parsed: parsed };
 }
@@ -233,7 +290,7 @@ function v2RunChecksEx(opts){
   });
   add('info', 'V0', '识别：前缀 ' + (pfx || '(无)') + (world ? '（' + WJP_PRESETS[world].label + '，预设节点数 ' + WJP_PRESETS[world].n_nodes + '，实际 ' + names.length + '）' : '（合并 ' + (opts.pipeFiles || []).length + ' 个文件）'));
 
-  /* task override 目标（含 anchor 值） */
+  /* task override 目标（含 anchor 值）——T1 用：这些是「被覆盖的节点」，必须在 pipeline 里 */
   var ovTargets = {};
   if (taskObj){
     Object.keys(taskObj.option || {}).forEach(function(ok){
@@ -243,6 +300,24 @@ function v2RunChecksEx(opts){
           ovTargets[k] = 1;
           var a = ov[k] && ov[k].anchor;
           if (a) Object.keys(a).forEach(function(ak){ ovTargets[a[ak]] = 1; });
+        });
+      });
+    });
+  }
+  /* 「被 task 接线」的节点集合（S2/S3 用）= override 键 ∪ override 体里写进 next/anchor 的目标。
+     只认键会误报：重置到1 静态图上没有入边（只有 agent 运行时改写 wujin_确定4 的 next 才走到它），
+     于是「无尽全自动循环」开了才有意义的节点被报成 S2/S3 孤岛（tail/none 都中，2026-10-10 查实）。
+     检查器文案本来就写了「或仅被 task/agent 引用」，这里把 task 那半边补上。
+     注意不能与 ovTargets 混用：T1 判的是「被覆盖的节点是否存在」，body 目标混进去会掩盖 T1 错误。 */
+  var ovRefs = {};
+  Object.keys(ovTargets).forEach(function(k){ ovRefs[k] = 1; });
+  if (taskObj){
+    Object.keys(taskObj.option || {}).forEach(function(ok){
+      var o = taskObj.option[ok] || {};
+      [o.pipeline_override || {}].concat((o.cases || []).map(function(c){ return c.pipeline_override || {}; })).forEach(function(ov){
+        Object.keys(ov).forEach(function(k){
+          v2NxArr(ov[k]).forEach(function(x){ if (x in p) ovRefs[x] = 1; });
+          Object.keys(ov[k].anchor || {}).forEach(function(a){ if (ov[k].anchor[a] in p) ovRefs[ov[k].anchor[a]] = 1; });
         });
       });
     });
@@ -262,14 +337,14 @@ function v2RunChecksEx(opts){
     v2Anchors(d).forEach(function(x){ if (x in p) incoming[x] = (incoming[x] || 0) + 1; });
   });
   names.forEach(function(n){
-    if (!incoming[n] && !/Entry$/.test(n) && !(p[n] && p[n].anchor) && !ovTargets[n])
+    if (!incoming[n] && !/Entry$/.test(n) && !(p[n] && p[n].anchor) && !ovRefs[n] && !v2AgentWired(n))
       add(files.length > 1 ? 'info' : 'warn', 'S2', n + '（无入边且非入口——补丁遗漏、残留节点或仅被 task/agent 引用' + (files.length > 1 ? '；多文件合并图常见于官方跨文件接线' : '') + '）');
   });
   var startN = names.filter(function(n){ return /Entry$/.test(n); });
   if (startN.length){
     var seeds = startN.slice();
-    names.forEach(function(n){ if (/配队2d2$|配队1boss$|给豆|狂点|boss_喂豆/.test(n)) seeds.push(n); });
-    Object.keys(ovTargets).forEach(function(k){ if (k in p) seeds.push(k); });
+    names.forEach(function(n){ if (v2AgentWired(n)) seeds.push(n); });
+    Object.keys(ovRefs).forEach(function(k){ if (k in p) seeds.push(k); });
     var reach = {}, queue = seeds.slice();
     while (queue.length){
       var cur = queue.pop();

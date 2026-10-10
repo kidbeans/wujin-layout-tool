@@ -33,6 +33,7 @@ function v2RouteLevel(rt, level){
     } else target = 'd2';
   } else target = '普';
   if (target !== 'boss'){
+    if (p.farm_stop_from > 0 && level > p.farm_stop_from) notes.push('不补阵期：只走 抛花→点波→等结算（Boss 关不受影响）');
     if (p.front30 > 0 && level <= p.front30) notes.push('front30：速刷（给豆+狂点）');
     if (p.front10 > 0 && level <= p.front10) notes.push('front10：等结算循环(未命中拖豆' + (p.front10_feed || '1-3') + ')');
     if (p.beilei_stop > 0 && level > p.beilei_stop) notes.push('beilei_stop=' + p.beilei_stop + '：不补蓓蕾');
@@ -72,6 +73,13 @@ function v2RouteIssues(rt, ctx){
   if (rt.mode === 'none' && p.fast_mode) out.push(['R6', 'warn', '单卡组（无计数）模式没有切卡组动作，激进省时模式无效（请取消勾选）']);
   if (rt.mode === 'none' && !ctx.bossReady) out.push(['R2', 'error', '单卡组同样会遇到 Boss 关（尾数5/0），Boss 链为空会在 Boss 关失败（请到 Boss 面板配置）']);
   if (rt.mode === 'none' && ctx.subSlotsOn) out.push(['R6', 'info', '单卡组模式开启配队2不会产生路由（如需请改尾数分流）']);
+  /* 不补阵（B 批）：两档都留空时保持点波节点自带节奏；只有全局档时提示沿用关系 */
+  if (p.farm_stop_from > 0){
+    if (!v2WaveModeNorm(p.farm_wave_mode) && !v2WaveModeNorm(p.wave_mode))
+      out.push(['R6', 'warn', '第' + p.farm_stop_from + '关后不补阵已开，但「不布阵点波档」与全局档都留空：不补阵期间保持点波节点自带节奏（默认交替点波）']);
+    else if (!v2WaveModeNorm(p.farm_wave_mode))
+      out.push(['R6', 'info', '不补阵期点波沿用全局档：第' + p.farm_stop_from + '关后与关内是同一档位']);
+  }
   return out;
 }
 
@@ -159,6 +167,12 @@ function v2RouteDetail(rt, level){
   }
   if (p.beilei_stop > 0 && level > p.beilei_stop && tail !== 5 && tail !== 0) L.push('  → level > beilei_stop=' + p.beilei_stop + ' → 蓓蕾补种入口被 override（不补蓓蕾）');
   if (p.bailuo_from > 0 && level >= p.bailuo_from && tail !== 5 && tail !== 0) L.push('  → level ≥ bailuo_from=' + p.bailuo_from + ' → 点波5 被改写为补白萝卜循环（agent）');
+  if (p.farm_stop_from > 0 && level > p.farm_stop_from && tail !== 5 && tail !== 0){
+    L.push('  → level > farm_stop_from=' + p.farm_stop_from + ' → 布阵链入口被改写为 [抛花链尾, 点波5_nf]：不补阵，只抛花/点波/等结算（agent）' +
+      (v2WaveModeNorm(p.farm_wave_mode) ? '；点波档=' + v2WaveModeNorm(p.farm_wave_mode) : '；点波档沿用全局'));
+    if (rt.mode === 'tail' && (rt.tail.d2 || []).indexOf(tail) > -1)
+      L.push('  → 本关是 deck2 关：改写的是 deck2 链入口（点波_初始_d2 → 点波5_d2_nf），deck2 也不补阵');
+  }
   return L.join('\n');
 }
 function v2EstimateTime(rt, from, to, avgNormal, avgBoss){
@@ -183,6 +197,22 @@ var V2_ROUTE_PRESETS = [
   { name: '海盗', mode: 'phase', args: { start_level: 1 }, phase: { deck2Levels: [2, 12], bossEarlyFeed: 20, farmFrom: 21 } },
   { name: '西部/埃及(单卡组)', mode: 'none', args: { start_level: 1 } }
 ];
+
+/* ---- wave_mode 归一（2026-10-10）：英文键与中文 case 名同义等效 ----
+ * 画布下拉与生成器用英文值（hold/cycle/burst，空=不生成「关内点波」选项）；
+ * 但 gen_presets.py 手写表 → 30_presets_data.js 里存的是中文 case 名
+ * （wl_/ha_/ha2_/st_/bh_ = '不点波'，见 30_presets_data.js；gf2_ 是 'hold'）。
+ * 不做归一时，载入这些预设再导出会静默掉进 default_case='默认' 分支
+ * （现网部署件的 default_case 全是「不点波」，一重导默认档就被改）。
+ * 兼容中文名与 task 里 case 的 label 形态；未知值原样返回（default_case 回落「默认」，同旧行为）。 */
+function v2WaveModeNorm(wm){
+  var s = String(wm == null ? '' : wm).trim();
+  if (!s || s === 'hold' || s === 'cycle' || s === 'burst') return s;
+  if (s === '不点波' || s === '不点波（只等结算）' || s === '只等结算') return 'hold';
+  if (s === '狂点' || s === '狂点加速' || s === '狂点（突发连点）') return 'burst';
+  if (s === '默认' || s === '默认（点波5/点波1）' || s === '默认（交替）' || s === '交替') return 'cycle';
+  return s;
+}
 
 /* ---- 面板 UI ---- */
 function v2ReadRouteUI(){
@@ -212,6 +242,8 @@ function v2ReadRouteUI(){
   p_set('beilei_stop', ri('rtBeileiStop'));
   p_set('bailuo_from', ri('rtBailuoFrom'));
   rc.params.wave_mode = (document.getElementById('rtWaveMode') || {}).value || '';
+  p_set('farm_stop_from', ri('rtFarmStop'));
+  rc.params.farm_wave_mode = (document.getElementById('rtFarmWave') || {}).value || '';
   rc.params.boss_feed_early = q('rtBossFeedEarly').trim();
   rc.params.boss_feed_late = q('rtBossFeedLate').trim();
   /* 小关抛花（西部同构） */
@@ -241,7 +273,11 @@ function v2WriteRouteUI(){
   q('rtTail3First').value = rc.params.deck2_tail3_first || '';
   q('rtBeileiStop').value = rc.params.beilei_stop || '';
   if (q('rtBailuoFrom')) q('rtBailuoFrom').value = rc.params.bailuo_from || '';
-  if (q('rtWaveMode')) q('rtWaveMode').value = rc.params.wave_mode || '';
+  /* 回填显示也走归一：预设里存的中文值（'不点波'）要落到对应档位，否则下拉显示"不生成选项"
+     而状态里其实有值（15_route 与 40_export 对同一参数的分歧） */
+  if (q('rtWaveMode')) q('rtWaveMode').value = v2WaveModeNorm(rc.params.wave_mode) || '';
+  if (q('rtFarmStop')) q('rtFarmStop').value = rc.params.farm_stop_from || '';
+  if (q('rtFarmWave')) q('rtFarmWave').value = v2WaveModeNorm(rc.params.farm_wave_mode) || '';
   var V2th = V2.throw = V2.throw || { on: false, slot: 1, cells: [] };
   if (q('rtThrowOn')) q('rtThrowOn').checked = !!V2th.on;
   if (q('rtThrowSlot')) q('rtThrowSlot').value = V2th.slot || 1;
@@ -330,7 +366,11 @@ function v2RouteRender(){
     if (pr.deck2_tail3_first) extra.push('"deck2_tail3_first": ' + pr.deck2_tail3_first);
     if (pr.beilei_stop) extra.push('"beilei_stop": ' + pr.beilei_stop);
     if (pr.bailuo_from) extra.push('"bailuo_from": ' + pr.bailuo_from);
-    if (rt.mode === 'tail' && pr.front30 && pr.front30_feed) extra.push('"front30_feed": "' + pr.front30_feed + '"');
+    if (pr.farm_stop_from){
+      extra.push('"farm_stop_from": ' + pr.farm_stop_from);
+      if (pr.farm_wave_mode) extra.push('"farm_wave_mode": "' + v2WaveModeNorm(pr.farm_wave_mode) + '"');
+    }
+    if (rt.mode !== 'none' && pr.front30 && pr.front30_feed) extra.push('"front30_feed": "' + pr.front30_feed + '"');
     var cap = '{"start_level": {关卡}';
     if (extra.length) cap += ', ' + extra.join(', ');
     cap += '}';
@@ -368,6 +408,7 @@ function v2RouteStrip(rt, from, to){
     if (p.beilei_stop) marks.push([p.beilei_stop, 'beilei=' + p.beilei_stop]);
     if (p.bailuo_from) marks.push([p.bailuo_from, 'bailuo=' + p.bailuo_from]);
   }
+  if (p.farm_stop_from) marks.push([p.farm_stop_from, '不补阵=' + p.farm_stop_from]);
   ctx.fillStyle = '#333';
   ctx.font = '10px sans-serif';
   marks.forEach(function(m){
@@ -382,7 +423,7 @@ function initRoutePanel(){
    'rtDeck1First', 'rtFront10', 'rtFront10Feed', 'rtFront30', 'rtFront30Feed', 'rtTail3First', 'rtBeileiStop',
    'rtFrom', 'rtTo', 'rtAvgN', 'rtAvgB', 'rtDetailLv',
    'rtThrowOn', 'rtThrowSlot', 'rtThrowCells', 'rtBossFeedEarly', 'rtBossFeedLate',
-   'rtBailuoFrom', 'rtWaveMode'].forEach(function(id){
+   'rtBailuoFrom', 'rtWaveMode', 'rtFarmStop', 'rtFarmWave'].forEach(function(id){
     var e = document.getElementById(id);
     if (!e) return;
     /* ⚠ 顺序必须是「先读 DOM 进 state，再落盘/渲染」。
@@ -405,7 +446,8 @@ function initRoutePanel(){
     if (!pre) return;
     V2.route.mode = pre.mode;
     V2.route.params = Object.assign({ start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, front30_feed: '',
-      deck2_tail3_first: 0, beilei_stop: 0, boss_feed_early: '', boss_feed_late: '' }, pre.args || {});
+      deck2_tail3_first: 0, beilei_stop: 0, boss_feed_early: '', boss_feed_late: '',
+      bailuo_from: 0, wave_mode: '', farm_stop_from: 0, farm_wave_mode: '' }, pre.args || {});
     if (pre.phase) V2.route.phase = v2Clone(pre.phase);
     save();
     v2WriteRouteUI();

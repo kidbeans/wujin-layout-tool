@@ -18,7 +18,10 @@ function v2Default(){
       params: { start_level: 1, deck1_first: 0, front10: 0, front10_feed: '', front30: 0, fast_mode: 0,
                 front30_feed: '', deck2_tail3_first: 0, beilei_stop: 0,
                 boss_feed_early: '', boss_feed_late: '',
-                bailuo_from: 0, wave_mode: '' }
+                bailuo_from: 0, wave_mode: '',
+                /* 第 XX 关后不再补阵（2026-10-10 批 B）：0/空=关闭；
+                   farm_wave_mode 是不补阵期的关内点波档，留空=沿用全局 wave_mode */
+                farm_stop_from: 0, farm_wave_mode: '' }
     },
     boss: {
       ops: [],                            /* {t:'stack'|'feed'|'accel'|'flower', ...} */

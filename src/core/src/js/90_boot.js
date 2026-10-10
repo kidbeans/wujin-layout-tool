@@ -3,7 +3,7 @@
 
 /* ---- 抽屉管理 ---- */
 var v2ActivePanel = null;
-var V2_PANELS = ['presets', 'order', 'route', 'boss', 'checks', 'save', 'export2', 'server'];
+var V2_PANELS = ['presets', 'order', 'route', 'boss', 'checks', 'save', 'import', 'export2', 'server'];
 function v2OpenPanel(name){
   if (v2ActivePanel === name){ v2ClosePanels(); return; }
   v2ActivePanel = name;
@@ -129,9 +129,7 @@ function v2BindExport2(){
   if (b('ex2Json')) b('ex2Json').addEventListener('click', function(){ v2ExportJSON(); });
   if (b('ex2Txt')) b('ex2Txt').addEventListener('click', function(){ v2ExportTxt(); });
   if (b('ex2Pipe')) b('ex2Pipe').addEventListener('click', function(){ v2ExportPipeline(); });
-  if (b('ex2ImportJson')) b('ex2ImportJson').addEventListener('click', function(){
-    var t = b('v2Out').value; if (t.trim()) v2ImportJSON(t);
-  });
+  /* 「应用粘贴的 JSON v2」已并入 📥 导入 面板（粘贴框 + 解析，自动识别 v2 阵型存档，2026-10-10 批 D2） */
   if (b('ex2Copy')) b('ex2Copy').addEventListener('click', function(){ copyText(b('v2Out').value); showToast('已复制'); });
   if (b('ex2Download')) b('ex2Download').addEventListener('click', function(){
     var t = b('v2Out').value;

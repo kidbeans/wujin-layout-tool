@@ -129,17 +129,18 @@ function v2SrvIntoChecks(){
   }).catch(function(e){ showToast('载入失败：' + e); });
 }
 
+/* 服务面板只负责「列出 MPZ 上的文件并勾选」；解析与报告统一走导入面板（2026-10-10 批 D2）。
+   旧版在这里直接 v2ImportAnalyze 并自己写 impReport —— 同一件事两套代码，报告框也不是同一处。 */
 function v2SrvIntoImport(){
   var pipes = v2SrvPicked('pipe');
   if (!pipes.length){ showToast('先勾选 pipeline 文件'); return; }
   v2SrvFetchFiles(pipes).then(function(files){
     window.__v2ImpFiles = files;
-    var A = v2ImportAnalyze(files, (document.getElementById('v2Prefix') || {}).value);
-    window.__v2ImpResult = A;
-    document.getElementById('impReport').value = v2ImportReportText(A, files.map(function(f){ return f.name; }));
-    document.getElementById('impApply').disabled = !A.ok;
-    if (typeof v2OpenPanel === 'function') v2OpenPanel('export2');
-    showToast('解析完成，请查看报告后点「应用到画布」');
+    var el = document.getElementById('impPipeName');
+    if (el) el.textContent = files.length === 1 ? files[0].name : files.length + ' 个文件';
+    if (typeof v2ImpAnalyzeClick === 'function') v2ImpAnalyzeClick();
+    if (typeof v2OpenPanel === 'function') v2OpenPanel('import');
+    showToast('已解析勾选的 pipeline，报告见导入面板');
   }).catch(function(e){ showToast('载入失败：' + e); });
 }
 

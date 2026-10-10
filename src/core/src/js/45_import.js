@@ -186,6 +186,73 @@ function v2ImpBuildBoard(d1, d2){
   return { compact: '9x5 布阵: ' + txt.join('|'), rows: txt };
 }
 
+/* 槽位推断：植物步的槽号 → 首个植物名（deck1 取 1~8；deck2 的步已被走链归一成内部槽位 9~16，
+   折算成相对槽位 1~8）。旧代码在 v2ImportAnalyze 内只认 1~8，配队2 八个槽位永远推断不出来，
+   导入任何双卡组脚本都要人工补名（2026-10-10 实测复兴/童话/海盗三个 fixture 全中）。 */
+function v2ImpInferSlots(items, deck){
+  var m = {};
+  items.forEach(function(it){
+    if (it.t !== 'plant' || !it.slot) return;
+    var rel = (deck === 2) ? (it.slot > 8 ? it.slot - 8 : it.slot) : it.slot;
+    if (rel < 1 || rel > 8) return;
+    var nm = v2ImpPlantName(it.name);
+    if (nm && !m[rel]) m[rel] = nm;
+  });
+  var arr = [];
+  for (var i = 1; i <= 8; i++) arr.push(m[i] || '');
+  return arr;
+}
+
+/* task 片段的 _register.description 里有「卡槽 配队1[…] 配队2[…]」全量卡槽表（部署时写入，
+   gen_presets 逆向预设也用它）。走链只能推出链上出现过的槽位（deck2 尤其少），
+   这份文本才是卡槽真相——单选 pipeline 时配队2 只推得出 3/8，配上 task 片段即 8/8。 */
+function v2ImpSlotsFromTask(mp){
+  var desc = '';
+  (mp.parsed || []).forEach(function(x){
+    var r = (x.p || {})._register;
+    if (!desc && r && typeof r.description === 'string' && r.description.indexOf('卡槽') > -1) desc = r.description;
+  });
+  if (!desc) return null;
+  function parse(seg){
+    var out = ['', '', '', '', '', '', '', ''];
+    String(seg || '').split(/\s+/).forEach(function(tok){
+      var g = /^([1-8])(.*)$/.exec(tok);
+      if (!g) return;
+      var nm = String(g[2] || '').trim();
+      out[+g[1] - 1] = (nm === '空' ? '' : nm);      /* 简介里空槽位写作「3空」 */
+    });
+    return out;
+  }
+  var m1 = /配队1\[([^\]]*)\]/.exec(desc), m2 = /配队2\[([^\]]*)\]/.exec(desc);
+  if (!m1 && !m2) return null;
+  var name = '';
+  (mp.parsed || []).forEach(function(x){ var r = (x.p || {})._register; if (!name && r && r.name) name = r.name; });
+  return { deck1: parse(m1 && m1[1]), deck2: parse(m2 && m2[1]), desc: desc, taskName: name };
+}
+
+/* 抛花还原：task 片段里有「小关是否抛花」选项 ⇒ pipeline 里 点波_初始 之后的 抛花1..N 节点
+   是画布 V2.throw 生成的 → 还原成画布抛花设置（落格取节点 end、卡槽取 begin 的第N个槽位），
+   并把它们从顺序里摘掉（再导出时生成器按 V2.throw 重新插入，节点完全同构）。
+   没有该选项时不还原——避免把硬编码抛花步的脚本改走样。 */
+function v2ImpThrowFromPipe(p, pfx, mp){
+  var hasOpt = (mp.parsed || []).some(function(x){
+    return Object.keys((x.p || {}).option || {}).some(function(k){ return /小关是否抛花$/.test(k); });
+  });
+  if (!hasOpt) return null;
+  var esc = pfx.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var names = Object.keys(p).filter(function(k){ return new RegExp('^' + esc + '抛花\\d+$').test(k); }).sort();
+  if (!names.length) return null;
+  var cells = [], slot = 1;
+  names.forEach(function(k){
+    var m = /格子(\d)_(\d)$/.exec(String(p[k].end || ''));
+    if (m) cells.push(m[1] + '-' + m[2]);
+    var s = v2ImpSlot(p[k].begin);
+    if (s && s !== 1) slot = s;
+  });
+  if (!cells.length) return null;
+  return { on: true, slot: slot, cells: cells, names: names };
+}
+
 /* 主入口：files=[{name,text}] → 画像 A（含报告字段）；不落 DOM */
 function v2ImportAnalyze(files, prefixHint){
   var A = { ok: false, warns: [], notes: [], unknown: [] };
@@ -196,12 +263,42 @@ function v2ImportAnalyze(files, prefixHint){
   (mp.notes || []).forEach(function(n){ A.notes.push(n); });
   (mp.collisions || []).forEach(function(c){ A.warns.push('同名节点冲突（V2）: ' + c); });
   A.nNodes = Object.keys(p).length;
-  if (!A.nNodes){ A.warns.push('未解析出任何节点'); return A; }
+  /* 选错文件的指路（2026-10-10 批 D3）：以前一律「未解析出任何节点」，用户不知道错在哪 */
+  function hasKey(keys){
+    return (mp.parsed || []).some(function(x){ return Object.keys(x.p || {}).some(function(k){ return keys.indexOf(k) > -1; }); });
+  }
+  if (!A.nNodes){
+    var oks = [];
+    (mp.parsed || []).forEach(function(x){ Object.keys((x.p || {}).option || {}).forEach(function(k){ oks.push(k); }); });
+    var toolTask = oks.some(function(k){
+      return /(初始化卡槽和草坪位置|监控窗口|启动时关卡数|小关是否抛花|boss喂豆位置|关内点波|无尽全自动循环)$/.test(k);
+    });
+    if (files.length && /"version"\s*:\s*2/.test(String(files[0].text)) && /"(boards|slots|order)"\s*:/.test(String(files[0].text)))
+      A.warns.push('这是布阵工具的 v2 阵型存档（完整状态：棋盘/卡槽/顺序/路由），不是 pipeline 脚本——' +
+        '本面板直接点「解析」会识别为阵型并载入画布');
+    else if (toolTask || hasKey(['_register']))
+      A.warns.push('这是 task 片段（选项定义），不含 pipeline 节点——请与配套的 YS_*.json（pipeline）一起选；' +
+        '只想部署的话用导出面板的「🚀 部署到 MPZ」');
+    else if (oks.length || hasKey(['option']))
+      A.warns.push('这是选项集 JSON（官方通用框架 / task 选项定义），不含无尽布阵链——' +
+        '官方通用框架请在「📥 导入」面板点「解析通用框架 JSON」');
+    else
+      A.warns.push('未识别到 pipeline 节点；支持：v2 源（生成 pipeline 片段得到的三段合一文件）、' +
+        'YS_*.json / Endless_*.json（pipeline）、*_wj.json（task 片段，需与 pipeline 一起选）');
+    return A;
+  }
 
   /* 前缀：找 判断是否进入关内 判定节点（后缀精确），多候选时列出 */
   var S_D1 = '判断是否进入关内', S_D2 = '判断进入关内_deck2', S_BOSS = '判断进入关内_boss', S_FARM = '判断进入关内_后期';
   var cands = Object.keys(p).filter(function(k){ var n = String(k); return n === S_D1 || n.slice(-S_D1.length) === S_D1; });
-  if (!cands.length){ A.warns.push('未找到「判断是否进入关内」判定节点（可能不是无尽布阵脚本）'); return A; }
+  if (!cands.length){
+    if (hasKey(['option', 'task']))
+      A.warns.push('这是官方通用框架 / 选项集 JSON（只有 option 定义），不含无尽布阵链；' +
+        '请在「📥 导入」面板用「解析通用框架 JSON」导入');
+    else
+      A.warns.push('未找到「判断是否进入关内」判定节点（可能不是无尽布阵脚本，或只选了骨架/片段文件）');
+    return A;
+  }
   var pfx = '';
   var d1Judge = cands[0];
   if (cands.length > 1){
@@ -229,19 +326,28 @@ function v2ImportAnalyze(files, prefixHint){
   if (farm.length) A.order.farm = farm;
   A.counts = { d1: d1.length, d2: d2.length, farm: farm.length, boss: boss.length };
 
-  /* 槽位推断：植物步的槽号 → 首个植物名 */
-  function inferSlots(items){
-    var m = {};
-    items.forEach(function(it){
-      if (it.t !== 'plant' || !it.slot || it.slot < 1 || it.slot > 8) return;
-      var nm = v2ImpPlantName(it.name);
-      if (nm && !m[it.slot]) m[it.slot] = nm;
+  A.slots = { deck1: v2ImpInferSlots(d1, 1), deck2: d2.length ? v2ImpInferSlots(d2, 2) : [] };
+  /* task 片段在的话，用 _register 简介里的卡槽表补齐（走链推不出的槽位，deck2 尤其多） */
+  var slotSrc = v2ImpSlotsFromTask(mp);
+  if (slotSrc){
+    var filledByTask = 0;
+    ['deck1', 'deck2'].forEach(function(dk){
+      if (A.slots[dk].length !== 8) return;      /* 该 deck 本就没链（如 none 模式的 deck2）→ 不补，免得凭空造出配队2 */
+      slotSrc[dk].forEach(function(nm, i){
+        if (nm && !A.slots[dk][i]){ A.slots[dk][i] = nm; filledByTask++; }
+      });
     });
-    var arr = [];
-    for (var i = 1; i <= 8; i++) arr.push(m[i] || '');
-    return arr;
+    if (filledByTask) A.notes.push('卡槽表补齐 ' + filledByTask + ' 格：取自 task 片段 _register 简介（走链只能推出链上出现过的槽位）');
+    if (slotSrc.taskName) A.taskName = slotSrc.taskName;
   }
-  A.slots = { deck1: inferSlots(d1), deck2: d2.length ? inferSlots(d2) : [] };
+  /* 抛花设置还原（需 task 片段佐证） */
+  var thSrc = v2ImpThrowFromPipe(p, pfx, mp);
+  if (thSrc){
+    A.throw = { on: true, slot: thSrc.slot, cells: thSrc.cells };
+    A.order.deck1 = d1.filter(function(it){ return !(it.t === 'plant' && /^抛花\d+$/.test(it.name || '')); });
+    A.notes.push('抛花设置已还原：卡槽' + thSrc.slot + ' → ' + thSrc.cells.join('/') +
+      '（' + thSrc.names.length + ' 朵；已从顺序里摘出，导出时按画布抛花设置重新生成）');
+  }
 
   /* 路由参数：计步 custom_action_param（双层解码） */
   var params = {};
@@ -278,6 +384,14 @@ function v2ImportAnalyze(files, prefixHint){
   if (emptySlots.length) A.warns.push('以下槽位未在链中出现（载入后留空，请人工补名）: ' + emptySlots.join('、'));
   if (isPhase) A.notes.push('检测到相位路由（haidao 计步分流）：deck2=[2,12]、Boss 前20直喂/后叠电豌、21 关起挂机链，均按海盗默认填充');
   if (farm.length) A.notes.push('farm 挂机链 ' + farm.length + ' 步（21 关后小关用），已存入顺序数据 farm 段');
+  /* 「v2 源」只指**单文件**里同时装着节点与 task 片段（三段合一）；
+     两份文件分开选（YS_*.json + *_wj.json）不算 v2 源，别说岔了 */
+  var isV2Src = (mp.parsed || []).some(function(x){
+    var o = x.p || {};
+    var hasNode = Object.keys(o).some(function(k){ return !V2_NON_NODE_KEYS[k]; });
+    return hasNode && !!(o.option || o.task || o.nested);
+  });
+  if (isV2Src) A.notes.push('已识别为布阵工具 v2 源：按 ② pipeline 段导入，③ task 片段（选项定义）已忽略——选项由部署/导出时重新生成');
   A.ok = true;
   return A;
 }
@@ -311,7 +425,12 @@ function v2ImportApply(A, worldKey){
   V2.boss.ops = v2Clone((A.boss && A.boss.ops) || []);
   V2.boss.feedSelect = !!(A.boss && A.boss.feedSelect);
   V2.boss.feedCell = (A.boss && A.boss.feedCell) || '2-3';
+  if (A.throw && A.throw.on) V2.throw = v2Clone(A.throw);      /* 抛花设置还原，否则再导出丢「小关是否抛花」选项 */
   V2.debugCardUI = true;
+  if (A.taskName){
+    var tn2 = document.getElementById('v2TaskName');
+    if (tn2){ tn2.value = A.taskName; try{ localStorage.setItem('v2taskname', A.taskName); }catch(e){} }
+  }
   save();
   buildAllChips(); renderSlots(); renderGrid(); updateStatus();
   var bs = document.getElementById('btnSubSlots');
@@ -346,35 +465,99 @@ function v2ImportReportText(A, fileNames){
   return L.join('\n');
 }
 
-/* UI 装配 */
+/* ---- 统一入口（2026-10-10 批 D2）：文件选择 / 粘贴框 / 服务面板三条路共用同一套解析与报告框 ----
+ * 之前三处各写一份：导出面板里的 pipeline 导入块、导出面板的「应用粘贴的 JSON v2」、
+ * 服务面板的「导入勾选 pipeline → 画布」；都能用但入口分散、报告框不统一。 */
+function v2ImpReportSet(text){
+  var box = document.getElementById('impReport') || document.getElementById('v2Out');
+  if (box) box.value = text;
+}
+/* 完整 v2 阵型存档（version:2 + boards + slots）：不走 pipeline 走链，直接载入画布状态 */
+function v2ImpFullV2(text){
+  var d = null;
+  try{ d = v2ParseAnyJson(text); }catch(e){ return null; }
+  if (!d || typeof d !== 'object' || Array.isArray(d) || d.version !== 2) return null;
+  if (!d.boards || !d.slots) return null;
+  return d;
+}
+/* 解析（不改画布）：v2 阵型 → 状态画像；其余 → pipeline/task 走链画像。报告写入统一报告框 */
+function v2ImpParse(files){
+  var state = { kind: '', files: files || [], A: null, text: '' };
+  if (!state.files.length) return state;
+  state.text = state.files.map(function(f){ return f.text; }).join('\n');
+  if (state.files.length === 1){
+    var full = v2ImpFullV2(state.text);
+    if (full){
+      state.kind = 'full';
+      var nCells = 0;
+      try{ (full.boards.main || []).forEach(function(r){ (r || []).forEach(function(c){ if (c && (c.base || c.merge || c.vine)) nCells++; }); }); }catch(e){}
+      v2ImpReportSet('【导入识别报告】' + (state.files[0].name || '粘贴内容') + '\n' +
+        '识别为：布阵工具 v2 阵型存档（完整状态）\n' +
+        '世界 ' + ((full.meta && full.meta.world) || '（未命名）') + ' · 前缀 ' + ((full.meta && full.meta.prefix) || 'wj_') +
+        ' · 棋盘 ' + (full.meta ? (full.meta.cols || 9) + 'x' + (full.meta.rows || 5) : '9x5') + '（有植物 ' + nCells + ' 格）\n' +
+        '顺序：deck1 ' + (((full.order || {}).deck1) || []).length + ' 步 / deck2 ' + (((full.order || {}).deck2) || []).length + ' 步' +
+        ' · 路由模式 ' + (((full.route || {}).mode) || 'tail') + '\n' +
+        (full.meta && full.meta.intro ? '简介：' + full.meta.intro + '\n' : '') +
+        '\n—— 点「应用到画布」覆盖棋盘/卡槽/顺序/路由/Boss（可 Ctrl+Z 撤销）');
+      return state;
+    }
+  }
+  state.kind = 'frag';
+  var A = v2ImportAnalyze(state.files, (document.getElementById('v2Prefix') || {}).value);
+  state.A = A;
+  v2ImpReportSet(v2ImportReportText(A, state.files.map(function(f){ return f.name; })));
+  return state;
+}
+function v2ImpFilesNow(){
+  var files = (window.__v2ImpFiles || []).slice();
+  if (!files.length){
+    var t = ((document.getElementById('impPaste') || {}).value || '');
+    if (t.trim()) files = [{ name: '粘贴内容', text: t }];
+  }
+  return files;
+}
+function v2ImpOk(st){ return !!st && (st.kind === 'full' || (st.A && st.A.ok)); }
+function v2ImpAnalyzeClick(){
+  var files = v2ImpFilesNow();
+  if (!files.length){ showToast('先选文件，或把内容粘贴到下面的框'); return; }
+  window.__v2ImpState = v2ImpParse(files);
+  var ap = document.getElementById('impApply');
+  if (ap) ap.disabled = !v2ImpOk(window.__v2ImpState);
+  showToast(v2ImpOk(window.__v2ImpState) ? '解析完成，请查看报告后点「应用到画布」' : '解析失败，详见报告');
+}
+function v2ImpApplyClick(){
+  var st = window.__v2ImpState;
+  if (!v2ImpOk(st)){ showToast('请先点「解析（先看报告）」'); return; }
+  if (st.kind === 'full'){ v2ImportJSON(st.text); return; }
+  if (v2ImportApply(st.A)) showToast('导入完成：' + (st.A.prefix || '（无前缀）') + ' 画像已应用');
+}
+
+/* UI 装配（导入面板） */
 function v2ImportBind(){
   var inp = document.getElementById('impPipe');
   if (!inp) return;
   inp.addEventListener('change', function(){
     var fs = Array.prototype.slice.call(inp.files || []);
     if (!fs.length) return;
-    var names = fs.map(function(f){ return f.name; });
-    document.getElementById('impPipeName').textContent = names.join(', ');
     Promise.all(fs.map(function(f){
-      return new Promise(function(res){ var rd = new FileReader(); rd.onload = function(){ res({ name: f.name, text: String(rd.result) }); rd.readAsText(f, 'utf-8'); }; });
+      return new Promise(function(res){ var rd = new FileReader(); rd.onload = function(){ res({ name: f.name, text: String(rd.result) }); }; rd.readAsText(f, 'utf-8'); });
     })).then(function(files){
       window.__v2ImpFiles = files;
-      var A = v2ImportAnalyze(files, (document.getElementById('v2Prefix') || {}).value);
-      window.__v2ImpResult = A;
-      document.getElementById('impReport').value = v2ImportReportText(A, names);
-      document.getElementById('impApply').disabled = !A.ok;
+      var el = document.getElementById('impPipeName');
+      if (el) el.textContent = files.length === 1 ? files[0].name : files.length + ' 个文件';
+      v2ImpAnalyzeClick();            /* 选完即解析，少点一次 */
     });
   });
-  var an = document.getElementById('impAnalyze');
-  if (an) an.addEventListener('click', function(){
-    if (!window.__v2ImpFiles){ showToast('先选择 pipeline JSON'); return; }
-    var A = v2ImportAnalyze(window.__v2ImpFiles, (document.getElementById('v2Prefix') || {}).value);
-    window.__v2ImpResult = A;
-    document.getElementById('impReport').value = v2ImportReportText(A, window.__v2ImpFiles.map(function(f){ return f.name; }));
-    document.getElementById('impApply').disabled = !A.ok;
+  var b = function(id){ return document.getElementById(id); };
+  if (b('impAnalyze')) b('impAnalyze').addEventListener('click', v2ImpAnalyzeClick);
+  if (b('impApply')) b('impApply').addEventListener('click', v2ImpApplyClick);
+  if (b('impClear')) b('impClear').addEventListener('click', function(){
+    window.__v2ImpFiles = null; window.__v2ImpState = null;
+    inp.value = '';
+    var el = b('impPipeName'); if (el) el.textContent = '未选择';
+    var box = b('impPaste'); if (box) box.value = '';
+    var ap = b('impApply'); if (ap) ap.disabled = true;
+    v2ImpReportSet('已清空。选择文件（可多选）或粘贴内容后自动解析；解析成功才可「应用到画布」。');
   });
-  var ap = document.getElementById('impApply');
-  if (ap) ap.addEventListener('click', function(){
-    if (v2ImportApply(window.__v2ImpResult)) showToast('导入完成：' + (window.__v2ImpResult.prefix || '（无前缀）') + ' 画像已应用');
-  });
+  v2ImpReportSet('选择文件或粘贴内容后点「解析（先看报告）」；解析成功才可「应用到画布」。');
 }
