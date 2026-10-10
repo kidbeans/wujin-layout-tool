@@ -138,6 +138,7 @@ function v2BindExport2(){
     if (!t.trim()){ showToast('导出区为空'); return; }
     v2Download('无尽阵型_v2_' + new Date().toISOString().slice(0, 10) + '.json', t);
   });
+  if (b('ex2Restore')) b('ex2Restore').addEventListener('click', function(){ v2RestoreAfterUpdate(); });
   if (b('ex2Deploy')) b('ex2Deploy').addEventListener('click', function(){
     if (typeof v2DeployMpz === 'function') v2DeployMpz();
     else showToast('部署模块未加载');

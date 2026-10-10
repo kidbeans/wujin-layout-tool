@@ -33,7 +33,12 @@ function v2DeployParts(built, task, taskName){
     taskName: taskName || (task.task && task.task[0] && task.task[0].name) || '自定义无尽',
     optionKeys: optionKeys,
     pipelineJson: JSON.stringify(built.nodes, null, 1),
-    optionJson: JSON.stringify({ option: task.option }, null, 1),
+    optionJson: JSON.stringify({ option: task.option,
+      _register: { name: taskName || (task.task && task.task[0] && task.task[0].name) || '自定义无尽',
+                   entry: (task.task && task.task[0] && task.task[0].entry) || (p + 'Entry'),
+                   option: optionKeys,
+                   description: (task.task && task.task[0] && task.task[0].description) || '',
+                   resource: ['自制无尽'] } }, null, 1),   /* _register：更新还原的自描述来源（MAA 忽略未知键） */
     customActions: customActions
   };
 }
@@ -152,7 +157,18 @@ function v2DeployMpz(){
     /* ③ interface 合并写回 */
     var m = v2DeployInterface(ifRaw, parts, './resource_self/task/' + parts.fragName);
     var p2 = m.note === '无变更' ? Promise.resolve() : backup(ifPath).then(function(){ return V3Bridge.writeText(ifPath, m.text); });
-    return p2.then(function(){ step('✓ interface.json（' + m.note + '）'); });
+    return p2.then(function(){ step('✓ interface.json（' + m.note + '）'); })
+      .then(function(){   /* 注册表：更新还原按此清单重建全部自制注册 */
+        var regPath = rs + '/resource_self/task/_wujin_registry.json';
+        return V3Bridge.readText(regPath).then(function(rt){
+          var reg = null;
+          try { reg = (typeof v2ParseAnyJson === 'function') ? v2ParseAnyJson(rt) : JSON.parse(rt); } catch (e) { reg = null; }
+          if (!reg || Object.prototype.toString.call(reg.tasks) !== '[object Array]') reg = { tasks: [] };
+          reg.tasks = reg.tasks.filter(function(t){ return t.entry !== parts.entry; });
+          reg.tasks.push({ wj: parts.fragName, entry: parts.entry });
+          return V3Bridge.writeText(regPath, JSON.stringify(reg, null, 1));
+        }).then(function(){ step('✓ 注册表 _wujin_registry.json（' + parts.entry + '）'); });
+      });
   }).then(function(){
     /* ④ agent：fx 计数器检查/修补/自愈 */
     var ca = parts.customActions;
@@ -180,6 +196,17 @@ function v2DeployMpz(){
         return V3Bridge.writeText(fxMon, V2_AGENT_FX_MONITOR_PY).then(function(){
           step('✓ agent/fx_monitor.py 缺失，已由内置源码写入（监控窗口重启 MPZ 后生效）');
         });
+      });
+    });
+  }).then(function(){
+    /* ④c agent：海盗相位计数器自愈（独立于 fx 分支——海盗任务不用 fx_counter） */
+    if (!parts.customActions.haidao_step_route) return null;
+    var hdPy = rs + '/agent/haidao_counter.py';
+    return V3Bridge.readText(hdPy).then(function(src){
+      if (src != null){ step('✓ agent/haidao_counter.py 在位'); return null; }
+      if (typeof V2_AGENT_HAIDAO_PY !== 'string'){ step('⚠ agent/haidao_counter.py 缺失且内置源码未加载'); return null; }
+      return V3Bridge.writeText(hdPy, V2_AGENT_HAIDAO_PY).then(function(){
+        step('✓ agent/haidao_counter.py 缺失，已由内置源码写入');
       });
     });
   }).then(function(){

@@ -368,6 +368,9 @@ dialog::backdrop {
 /* 顺序/Boss 列表 */
 .v2orderlist { max-height: 300px; overflow: auto; border: 1px dashed #c7d2de;
   border-radius: 8px; padding: 4px; margin: 6px 0; background: #fbfcfe; }
+.ordrow.orddrop { box-shadow: 0 -3px 0 0 #38bdf8 inset; }
+.ordrow.orddropend { box-shadow: 0 3px 0 0 #38bdf8 inset; }
+.v2grow { flex: 1 1 auto; }
 .ordrow { display: flex; align-items: center; gap: 4px; padding: 2px 4px;
   border-bottom: 1px solid rgba(15, 23, 42, 0.07); font-size: 12px; color: #1e293b; }
 .ordrow:last-child { border-bottom: none; }

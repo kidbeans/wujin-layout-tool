@@ -38,6 +38,7 @@ V2_JS = [
     'js/47_touch.js',
     'js/48_server.js',
     'js/48b_deploy.js',
+    'js/48c_restore.js',
     'js/49_agent_counter.js',
     'js/50_checks.js',
     'js/90_boot.js',

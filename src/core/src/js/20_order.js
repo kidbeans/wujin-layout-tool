@@ -65,7 +65,7 @@ function v2RenderOrder(){
     } else if (it.t === 'feed'){
       html += '<label class="ordchk"><input type="checkbox" data-f="loop" data-i="' + i + '"' + (it.loop ? ' checked' : '') + '>循环</label>' +
         '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (it.cell || '') + '" size="4">' +
-        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 1500 : it.post) + '" title="post ms" size="3">';
+        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 1500 : it.post) + '" title="喂豆循环间隔 ms（=喂豆节点 post_delay）" size="3">';
     } else if (it.t === 'shovel'){
       html += '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (it.cell || '') + '" size="4">' +
         '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 100 : it.post) + '" title="post ms" size="3">';
@@ -82,6 +82,10 @@ function v2RenderOrder(){
   box.innerHTML = html;
   var cnt = document.getElementById('ordCount');
   if (cnt) cnt.textContent = items.length + ' 步';
+  /* 面板内撤销/重做按钮：栈空置灰（v2UndoStack/v2RedoStack 在 10_state 定义） */
+  var ub = document.getElementById('ordUndo'), rb = document.getElementById('ordRedo');
+  if (ub) ub.disabled = !(typeof v2UndoStack !== 'undefined' && v2UndoStack.length);
+  if (rb) rb.disabled = !(typeof v2RedoStack !== 'undefined' && v2RedoStack.length);
 }
 
 function v2OrderBind(){
@@ -112,16 +116,48 @@ function v2OrderBind(){
     dragI = +row.dataset.i;
     e.dataTransfer.setData('text/plain', 'ord');
   });
-  box.addEventListener('dragover', function(e){ e.preventDefault(); });
-  box.addEventListener('drop', function(e){
+  /* ④ 拖拽实时落点（2026-10-10）：dragover 按光标在目标行上/下半算插入索引，
+     .orddrop(上沿蓝线)/.orddropend(末行下沿蓝线) 指示；drop 用该索引，删源后右移修正 */
+  var dropI = null;
+  function clearMark(){
+    var m = box.querySelector('.orddrop,.orddropend');
+    if (m) m.classList.remove('orddrop', 'orddropend');
+    dropI = null;
+  }
+  box.addEventListener('dragover', function(e){
     e.preventDefault();
     var row = e.target.closest('.ordrow'); if (!row || dragI === null) return;
-    var to = +row.dataset.i, items = v2OrderItems();
+    var items = v2OrderItems();
+    var rect = row.getBoundingClientRect();
+    var to = +row.dataset.i + (e.clientY > rect.top + rect.height / 2 ? 1 : 0);
+    if (to === dropI) return;
+    clearMark();
+    dropI = to;
+    var ref = to < items.length ? box.querySelector('.ordrow[data-i="' + to + '"]')
+                                : box.querySelector('.ordrow[data-i="' + (items.length - 1) + '"]');
+    if (ref) ref.classList.add(to < items.length ? 'orddrop' : 'orddropend');
+  });
+  box.addEventListener('dragleave', function(e){ if (!box.contains(e.relatedTarget)) clearMark(); });
+  box.addEventListener('drop', function(e){
+    e.preventDefault();
+    if (dragI === null) return;
+    var items = v2OrderItems();
+    var to = dropI;
+    clearMark();
+    if (to === null){
+      var row = e.target.closest('.ordrow');
+      if (!row){ dragI = null; return; }
+      to = +row.dataset.i;
+    }
     var moved = items.splice(dragI, 1)[0];
+    if (to > dragI) to -= 1;
     items.splice(to, 0, moved);
     dragI = null;
     save(); v2RenderOrder(); renderGrid();
   });
+  var ub2 = document.getElementById('ordUndo'), rb2 = document.getElementById('ordRedo');
+  if (ub2) ub2.addEventListener('click', function(){ v2Undo(); });
+  if (rb2) rb2.addEventListener('click', function(){ v2Redo(); });
   var dk = document.getElementById('ordDeck');
   if (dk) dk.addEventListener('change', function(){ v2OrderDeck = dk.value; save(); v2RenderOrder(); renderGrid(); });
   var gen = document.getElementById('ordGen');
@@ -227,8 +263,9 @@ function v2AutoGenOrder(deckNo){
     if (tslot === null && n && n.indexOf('瓷砖') > -1 &&
         ((deckNo === 2 && i + 1 > 8) || (deckNo === 1 && i + 1 <= 8))) tslot = i + 1;
   });
-  for (var r = 0; r < rows; r++){
-    for (var c = 0; c < cols; c++){
+  /* 2026-10-10 用户要求：草案默认先右侧再往左（列优先，右列起，列内自上而下） */
+  for (var c = cols - 1; c >= 0; c--){
+    for (var r = 0; r < rows; r++){
       var cell = grid[r][c];
       if (!cell) continue;
       var base = cell.base;
@@ -247,7 +284,7 @@ function v2AutoGenOrder(deckNo){
   }
   var merges = cells.filter(function(x){ return x.base === '大哥' && x.merge; });
   var others = cells.filter(function(x){ return !(x.base === '大哥' && x.merge); });
-  var key = function(x){ return x.r * 100 + x.c; };
+  var key = function(x){ return (cols - 1 - x.c) * 100 + x.r; };   /* 右列优先（2026-10-10） */
   merges.sort(function(a, b){ return key(a) - key(b); });
   others.sort(function(a, b){ return key(a) - key(b); });
   /* 按卡槽分组（同槽连种，减少换卡成本），槽号升序 */

@@ -21,7 +21,7 @@ function v2RenderBoss(){
     } else if (o.t === 'feed'){
       html += '<label class="ordchk"><input type="checkbox" data-f="loop" data-i="' + i + '"' + (o.loop ? ' checked' : '') + '>循环</label>' +
         '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (o.cell || '') + '" size="4" title="喂哪格">' +
-        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (o.post == null ? 1500 : o.post) + '" title="post ms" size="3">';
+        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (o.post == null ? 1500 : o.post) + '" title="喂豆循环间隔 ms（=喂豆节点 post_delay）" size="3">';
     } else if (o.t === 'flower'){
       html += '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (o.cell || '') + '" size="4" title="能量花种哪格">';
     } else {
@@ -38,6 +38,9 @@ function v2RenderBoss(){
   if (opt) opt.checked = !!V2.boss.feedSelect;
   var dbg = document.getElementById('bossDebugCard');
   if (dbg) dbg.checked = V2.debugCardUI !== false;
+  var ub = document.getElementById('bossUndo'), rb = document.getElementById('bossRedo');
+  if (ub) ub.disabled = !(typeof v2UndoStack !== 'undefined' && v2UndoStack.length);
+  if (rb) rb.disabled = !(typeof v2RedoStack !== 'undefined' && v2RedoStack.length);
 }
 
 function v2BossBind(){
@@ -75,6 +78,9 @@ function v2BossBind(){
   if (fs) fs.addEventListener('change', function(){ V2.boss.feedSelect = fs.checked; save(); });
   var dbg = document.getElementById('bossDebugCard');
   if (dbg) dbg.addEventListener('change', function(){ V2.debugCardUI = dbg.checked; save(); });
+  var bub = document.getElementById('bossUndo'), brb = document.getElementById('bossRedo');
+  if (bub) bub.addEventListener('click', function(){ v2Undo(); });
+  if (brb) brb.addEventListener('click', function(){ v2Redo(); });
   var val = document.getElementById('bossValidate');
   if (val) val.addEventListener('click', function(){
     var rep = v2BossIssues();

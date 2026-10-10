@@ -51,6 +51,9 @@
       <button id="ordValidate">校验顺序</button>
       <button id="ordGold" class="primary" title="金卡初始每种3次：推演只种前3个时，第一关每行是否仍有守阵主力（迫击炮类追踪直接视为安全）">🥇 金卡推演</button>
       <label class="ordchk"><input type="checkbox" id="ordVis" checked> 棋盘链路可视化</label>
+      <span class="v2grow"></span>
+      <button id="ordUndo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+      <button id="ordRedo" title="重做 (Ctrl+Y)">↪ 重做</button>
       <span id="ordCount" class="v2muted"></span>
     </div>
     <div id="ordList" class="v2orderlist"></div>
@@ -144,7 +147,9 @@
     </div>
     <div class="v2hint">范式参考：叠电大=叠×2轮→(能量花)→加速→循环喂豆（复兴/西部）；喂豆开大=喂豆→加速→喂豆→循环（童话，末步勾循环）。识别boss关→神器补给骨架由导出自动补齐。规则：B1目标格 B2循环收尾 B5节奏 B6血厚教训。</div>
     <textarea id="bossReport" class="v2report" readonly placeholder="点「校验Boss」输出 B1~B6 报告"></textarea>
-    <div class="v2row"><button id="bossValidate">校验Boss</button></div>
+    <div class="v2row"><button id="bossValidate">校验Boss</button><span class="v2grow"></span>
+      <button id="bossUndo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+      <button id="bossRedo" title="重做 (Ctrl+Y)">↪ 重做</button></div>
   </div>
 
   <!-- 检查 -->
@@ -210,6 +215,7 @@
       <button id="ex2Copy">复制</button>
       <button id="ex2Download">下载 .json</button>
       <button id="ex2Deploy" title="把当前画布一键部署进 MPZ：写 pipeline/task 片段 + 注册 interface.json + agent 计数器检查（幂等，改前自动备份）。需桌面版，且「🌐 服务」面板已设 MPZ 根目录">🚀 部署到 MPZ</button>
+      <button id="ex2Restore" title="MPZ 官方更新后一键还原：按注册表重建全部自制任务注册 + agent 文件自愈（只追加不覆盖官方，改前自动备份）。需桌面版">🩹 更新还原</button>
     </div>
     <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」；导入时先粘贴到本框再点解析）"></textarea>
     <div class="v2p-h" style="margin-top:10px;">📥 MPZ pipeline 导入（YS_*.json / Endless_*.json，可多选）</div>

@@ -1427,6 +1427,9 @@ dialog::backdrop {
 /* 顺序/Boss 列表 */
 .v2orderlist { max-height: 300px; overflow: auto; border: 1px dashed #c7d2de;
   border-radius: 8px; padding: 4px; margin: 6px 0; background: #fbfcfe; }
+.ordrow.orddrop { box-shadow: 0 -3px 0 0 #38bdf8 inset; }
+.ordrow.orddropend { box-shadow: 0 3px 0 0 #38bdf8 inset; }
+.v2grow { flex: 1 1 auto; }
 .ordrow { display: flex; align-items: center; gap: 4px; padding: 2px 4px;
   border-bottom: 1px solid rgba(15, 23, 42, 0.07); font-size: 12px; color: #1e293b; }
 .ordrow:last-child { border-bottom: none; }
@@ -3020,6 +3023,9 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <button id="ordValidate">校验顺序</button>
       <button id="ordGold" class="primary" title="金卡初始每种3次：推演只种前3个时，第一关每行是否仍有守阵主力（迫击炮类追踪直接视为安全）">🥇 金卡推演</button>
       <label class="ordchk"><input type="checkbox" id="ordVis" checked> 棋盘链路可视化</label>
+      <span class="v2grow"></span>
+      <button id="ordUndo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+      <button id="ordRedo" title="重做 (Ctrl+Y)">↪ 重做</button>
       <span id="ordCount" class="v2muted"></span>
     </div>
     <div id="ordList" class="v2orderlist"></div>
@@ -3113,7 +3119,9 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
     </div>
     <div class="v2hint">范式参考：叠电大=叠×2轮→(能量花)→加速→循环喂豆（复兴/西部）；喂豆开大=喂豆→加速→喂豆→循环（童话，末步勾循环）。识别boss关→神器补给骨架由导出自动补齐。规则：B1目标格 B2循环收尾 B5节奏 B6血厚教训。</div>
     <textarea id="bossReport" class="v2report" readonly placeholder="点「校验Boss」输出 B1~B6 报告"></textarea>
-    <div class="v2row"><button id="bossValidate">校验Boss</button></div>
+    <div class="v2row"><button id="bossValidate">校验Boss</button><span class="v2grow"></span>
+      <button id="bossUndo" title="撤销 (Ctrl+Z)">↩ 撤销</button>
+      <button id="bossRedo" title="重做 (Ctrl+Y)">↪ 重做</button></div>
   </div>
 
   <!-- 检查 -->
@@ -3179,6 +3187,7 @@ body.v3.maa ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); bo
       <button id="ex2Copy">复制</button>
       <button id="ex2Download">下载 .json</button>
       <button id="ex2Deploy" title="把当前画布一键部署进 MPZ：写 pipeline/task 片段 + 注册 interface.json + agent 计数器检查（幂等，改前自动备份）。需桌面版，且「🌐 服务」面板已设 MPZ 根目录">🚀 部署到 MPZ</button>
+      <button id="ex2Restore" title="MPZ 官方更新后一键还原：按注册表重建全部自制任务注册 + agent 文件自愈（只追加不覆盖官方，改前自动备份）。需桌面版">🩹 更新还原</button>
     </div>
     <textarea id="v2Out" class="v2report" style="min-height:260px" placeholder="导出/生成的结果（通用框架 JSON：导出后可在 MaaPvz 可视化编辑器「导入 JSON」；导入时先粘贴到本框再点解析）"></textarea>
     <div class="v2p-h" style="margin-top:10px;">📥 MPZ pipeline 导入（YS_*.json / Endless_*.json，可多选）</div>
@@ -6301,7 +6310,7 @@ function v2RenderOrder(){
     } else if (it.t === 'feed'){
       html += '<label class="ordchk"><input type="checkbox" data-f="loop" data-i="' + i + '"' + (it.loop ? ' checked' : '') + '>循环</label>' +
         '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (it.cell || '') + '" size="4">' +
-        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 1500 : it.post) + '" title="post ms" size="3">';
+        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 1500 : it.post) + '" title="喂豆循环间隔 ms（=喂豆节点 post_delay）" size="3">';
     } else if (it.t === 'shovel'){
       html += '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (it.cell || '') + '" size="4">' +
         '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (it.post == null ? 100 : it.post) + '" title="post ms" size="3">';
@@ -6318,6 +6327,10 @@ function v2RenderOrder(){
   box.innerHTML = html;
   var cnt = document.getElementById('ordCount');
   if (cnt) cnt.textContent = items.length + ' 步';
+  /* 面板内撤销/重做按钮：栈空置灰（v2UndoStack/v2RedoStack 在 10_state 定义） */
+  var ub = document.getElementById('ordUndo'), rb = document.getElementById('ordRedo');
+  if (ub) ub.disabled = !(typeof v2UndoStack !== 'undefined' && v2UndoStack.length);
+  if (rb) rb.disabled = !(typeof v2RedoStack !== 'undefined' && v2RedoStack.length);
 }
 
 function v2OrderBind(){
@@ -6348,16 +6361,48 @@ function v2OrderBind(){
     dragI = +row.dataset.i;
     e.dataTransfer.setData('text/plain', 'ord');
   });
-  box.addEventListener('dragover', function(e){ e.preventDefault(); });
-  box.addEventListener('drop', function(e){
+  /* ④ 拖拽实时落点（2026-10-10）：dragover 按光标在目标行上/下半算插入索引，
+     .orddrop(上沿蓝线)/.orddropend(末行下沿蓝线) 指示；drop 用该索引，删源后右移修正 */
+  var dropI = null;
+  function clearMark(){
+    var m = box.querySelector('.orddrop,.orddropend');
+    if (m) m.classList.remove('orddrop', 'orddropend');
+    dropI = null;
+  }
+  box.addEventListener('dragover', function(e){
     e.preventDefault();
     var row = e.target.closest('.ordrow'); if (!row || dragI === null) return;
-    var to = +row.dataset.i, items = v2OrderItems();
+    var items = v2OrderItems();
+    var rect = row.getBoundingClientRect();
+    var to = +row.dataset.i + (e.clientY > rect.top + rect.height / 2 ? 1 : 0);
+    if (to === dropI) return;
+    clearMark();
+    dropI = to;
+    var ref = to < items.length ? box.querySelector('.ordrow[data-i="' + to + '"]')
+                                : box.querySelector('.ordrow[data-i="' + (items.length - 1) + '"]');
+    if (ref) ref.classList.add(to < items.length ? 'orddrop' : 'orddropend');
+  });
+  box.addEventListener('dragleave', function(e){ if (!box.contains(e.relatedTarget)) clearMark(); });
+  box.addEventListener('drop', function(e){
+    e.preventDefault();
+    if (dragI === null) return;
+    var items = v2OrderItems();
+    var to = dropI;
+    clearMark();
+    if (to === null){
+      var row = e.target.closest('.ordrow');
+      if (!row){ dragI = null; return; }
+      to = +row.dataset.i;
+    }
     var moved = items.splice(dragI, 1)[0];
+    if (to > dragI) to -= 1;
     items.splice(to, 0, moved);
     dragI = null;
     save(); v2RenderOrder(); renderGrid();
   });
+  var ub2 = document.getElementById('ordUndo'), rb2 = document.getElementById('ordRedo');
+  if (ub2) ub2.addEventListener('click', function(){ v2Undo(); });
+  if (rb2) rb2.addEventListener('click', function(){ v2Redo(); });
   var dk = document.getElementById('ordDeck');
   if (dk) dk.addEventListener('change', function(){ v2OrderDeck = dk.value; save(); v2RenderOrder(); renderGrid(); });
   var gen = document.getElementById('ordGen');
@@ -6463,8 +6508,9 @@ function v2AutoGenOrder(deckNo){
     if (tslot === null && n && n.indexOf('瓷砖') > -1 &&
         ((deckNo === 2 && i + 1 > 8) || (deckNo === 1 && i + 1 <= 8))) tslot = i + 1;
   });
-  for (var r = 0; r < rows; r++){
-    for (var c = 0; c < cols; c++){
+  /* 2026-10-10 用户要求：草案默认先右侧再往左（列优先，右列起，列内自上而下） */
+  for (var c = cols - 1; c >= 0; c--){
+    for (var r = 0; r < rows; r++){
       var cell = grid[r][c];
       if (!cell) continue;
       var base = cell.base;
@@ -6483,7 +6529,7 @@ function v2AutoGenOrder(deckNo){
   }
   var merges = cells.filter(function(x){ return x.base === '大哥' && x.merge; });
   var others = cells.filter(function(x){ return !(x.base === '大哥' && x.merge); });
-  var key = function(x){ return x.r * 100 + x.c; };
+  var key = function(x){ return (cols - 1 - x.c) * 100 + x.r; };   /* 右列优先（2026-10-10） */
   merges.sort(function(a, b){ return key(a) - key(b); });
   others.sort(function(a, b){ return key(a) - key(b); });
   /* 按卡槽分组（同槽连种，减少换卡成本），槽号升序 */
@@ -7020,7 +7066,7 @@ function v2RenderBoss(){
     } else if (o.t === 'feed'){
       html += '<label class="ordchk"><input type="checkbox" data-f="loop" data-i="' + i + '"' + (o.loop ? ' checked' : '') + '>循环</label>' +
         '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (o.cell || '') + '" size="4" title="喂哪格">' +
-        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (o.post == null ? 1500 : o.post) + '" title="post ms" size="3">';
+        '<input type="number" class="ordpd" data-f="post" data-i="' + i + '" value="' + (o.post == null ? 1500 : o.post) + '" title="喂豆循环间隔 ms（=喂豆节点 post_delay）" size="3">';
     } else if (o.t === 'flower'){
       html += '<input class="ordcell" data-f="cell" data-i="' + i + '" value="' + (o.cell || '') + '" size="4" title="能量花种哪格">';
     } else {
@@ -7037,6 +7083,9 @@ function v2RenderBoss(){
   if (opt) opt.checked = !!V2.boss.feedSelect;
   var dbg = document.getElementById('bossDebugCard');
   if (dbg) dbg.checked = V2.debugCardUI !== false;
+  var ub = document.getElementById('bossUndo'), rb = document.getElementById('bossRedo');
+  if (ub) ub.disabled = !(typeof v2UndoStack !== 'undefined' && v2UndoStack.length);
+  if (rb) rb.disabled = !(typeof v2RedoStack !== 'undefined' && v2RedoStack.length);
 }
 
 function v2BossBind(){
@@ -7074,6 +7123,9 @@ function v2BossBind(){
   if (fs) fs.addEventListener('change', function(){ V2.boss.feedSelect = fs.checked; save(); });
   var dbg = document.getElementById('bossDebugCard');
   if (dbg) dbg.addEventListener('change', function(){ V2.debugCardUI = dbg.checked; save(); });
+  var bub = document.getElementById('bossUndo'), brb = document.getElementById('bossRedo');
+  if (bub) bub.addEventListener('click', function(){ v2Undo(); });
+  if (brb) brb.addEventListener('click', function(){ v2Redo(); });
   var val = document.getElementById('bossValidate');
   if (val) val.addEventListener('click', function(){
     var rep = v2BossIssues();
@@ -24735,7 +24787,12 @@ function v2DeployParts(built, task, taskName){
     taskName: taskName || (task.task && task.task[0] && task.task[0].name) || '自定义无尽',
     optionKeys: optionKeys,
     pipelineJson: JSON.stringify(built.nodes, null, 1),
-    optionJson: JSON.stringify({ option: task.option }, null, 1),
+    optionJson: JSON.stringify({ option: task.option,
+      _register: { name: taskName || (task.task && task.task[0] && task.task[0].name) || '自定义无尽',
+                   entry: (task.task && task.task[0] && task.task[0].entry) || (p + 'Entry'),
+                   option: optionKeys,
+                   description: (task.task && task.task[0] && task.task[0].description) || '',
+                   resource: ['自制无尽'] } }, null, 1),   /* _register：更新还原的自描述来源（MAA 忽略未知键） */
     customActions: customActions
   };
 }
@@ -24854,7 +24911,18 @@ function v2DeployMpz(){
     /* ③ interface 合并写回 */
     var m = v2DeployInterface(ifRaw, parts, './resource_self/task/' + parts.fragName);
     var p2 = m.note === '无变更' ? Promise.resolve() : backup(ifPath).then(function(){ return V3Bridge.writeText(ifPath, m.text); });
-    return p2.then(function(){ step('✓ interface.json（' + m.note + '）'); });
+    return p2.then(function(){ step('✓ interface.json（' + m.note + '）'); })
+      .then(function(){   /* 注册表：更新还原按此清单重建全部自制注册 */
+        var regPath = rs + '/resource_self/task/_wujin_registry.json';
+        return V3Bridge.readText(regPath).then(function(rt){
+          var reg = null;
+          try { reg = (typeof v2ParseAnyJson === 'function') ? v2ParseAnyJson(rt) : JSON.parse(rt); } catch (e) { reg = null; }
+          if (!reg || Object.prototype.toString.call(reg.tasks) !== '[object Array]') reg = { tasks: [] };
+          reg.tasks = reg.tasks.filter(function(t){ return t.entry !== parts.entry; });
+          reg.tasks.push({ wj: parts.fragName, entry: parts.entry });
+          return V3Bridge.writeText(regPath, JSON.stringify(reg, null, 1));
+        }).then(function(){ step('✓ 注册表 _wujin_registry.json（' + parts.entry + '）'); });
+      });
   }).then(function(){
     /* ④ agent：fx 计数器检查/修补/自愈 */
     var ca = parts.customActions;
@@ -24885,6 +24953,17 @@ function v2DeployMpz(){
       });
     });
   }).then(function(){
+    /* ④c agent：海盗相位计数器自愈（独立于 fx 分支——海盗任务不用 fx_counter） */
+    if (!parts.customActions.haidao_step_route) return null;
+    var hdPy = rs + '/agent/haidao_counter.py';
+    return V3Bridge.readText(hdPy).then(function(src){
+      if (src != null){ step('✓ agent/haidao_counter.py 在位'); return null; }
+      if (typeof V2_AGENT_HAIDAO_PY !== 'string'){ step('⚠ agent/haidao_counter.py 缺失且内置源码未加载'); return null; }
+      return V3Bridge.writeText(hdPy, V2_AGENT_HAIDAO_PY).then(function(){
+        step('✓ agent/haidao_counter.py 缺失，已由内置源码写入');
+      });
+    });
+  }).then(function(){
     log.push('完成。重启 MPZ（MFAAvalonia）后，任务列表资源切「自制无尽」即可看到「' + parts.taskName + '」');
     v2OutSet('/* ===== 🚀 部署报告（' + new Date().toLocaleString() + '）— 本块仅为提示，不属于片段内容 =====\n' +
       log.map(function(l){ return ' * ' + l; }).join('\n') + '\n */');
@@ -24892,6 +24971,146 @@ function v2DeployMpz(){
   }).catch(function(e){
     v2OutSet('【未部署】' + ((e && e.message) || e) + '\n' + log.map(function(l){ return '· ' + l; }).join('\n'));
     showToast('未部署（原因见导出框）');
+  });
+}
+
+/* ===== js/48c_restore.js ===== */
+/* ================= 48c_restore.js —— 官方 MPZ 更新后一键还原（v4.1.0） =================
+ * 官方 zip 原地更新会整体替换 agent/ 与 interface.json（resource_self/ 不动）。
+ * 本模块按「注册表 + _register 自描述」重建，全程只追加不覆盖官方文件：
+ *   1. agent/fx_counter.py、fx_monitor.py、haidao_counter.py 缺失 → 内置源码自愈写入
+ *   2. agent/main.py 追加自制 import（v2PatchAgentMain 幂等锚点）；fx_main.py 存在或接口指向它则重建
+ *   3. interface.json：resource[自制无尽] + import[*_wj.json] + task[_register 全量] 合并写回（先备份）
+ * 来源：resource_self/task/_wujin_registry.json（由一键部署维护）。缺注册表 → 提示先部署一次。
+ */
+"use strict";
+
+function v2RestoreAfterUpdate(){
+  if (typeof V3Bridge === 'undefined' || V3Bridge.mode !== 'tauri' || !V3Bridge.writeText){
+    showToast('更新还原需要桌面版'); return;
+  }
+  var root = (V2_SRV.mpz || v2SrvMpzRoot() || '').trim();
+  root = root.replace(/[\/\\]+$/, '');
+  if (!root){ showToast('先在「🌐 服务」面板设置 MPZ 根目录'); return; }
+  var rs = root.replace(/\\/g, '/');
+  var log = ['【更新还原】→ ' + rs];
+  function step(s){ log.push(s); }
+  function backup(path){
+    return V3Bridge.readText(path).then(function(old){
+      if (old == null) return null;
+      return V3Bridge.writeText(path + '.' + v2DeployStamp() + '.bak', old).then(function(){ step('· 备份 ' + path.split('/').pop()); });
+    });
+  }
+  function parseAny(t){
+    return (typeof v2ParseAnyJson === 'function') ? v2ParseAnyJson(t) : JSON.parse(t);
+  }
+  var ifPath = rs + '/interface.json';
+  var regPath = rs + '/resource_self/task/_wujin_registry.json';
+  var ifD = null, regs = [];
+  Promise.resolve().then(function(){
+    return V3Bridge.readText(ifPath);
+  }).then(function(raw){
+    if (raw == null) throw new Error('interface.json 读不到');
+    ifD = parseAny(raw);
+    return V3Bridge.readText(regPath);
+  }).then(function(rt){
+    if (rt == null) throw new Error('缺 _wujin_registry.json 注册表——请用 v4.1.0 对各任务先「部署到 MPZ」一次');
+    var reg = parseAny(rt);
+    return (reg && reg.tasks) || [];
+  }).then(function(tasks){
+    var chain = Promise.resolve();
+    tasks.forEach(function(t){
+      chain = chain.then(function(){
+        return V3Bridge.readText(rs + '/resource_self/task/' + t.wj).then(function(w){
+          if (w == null){ step('⚠ 片段缺失跳过 ' + t.wj); return; }
+          var j = null;
+          try { j = parseAny(w); } catch (e) {}
+          if (!j || !j._register){ step('⚠ 无 _register（旧版部署件）跳过 ' + t.wj); return; }
+          regs.push({ wj: t.wj, r: j._register });
+        });
+      });
+    });
+    return chain;
+  }).then(function(){
+    if (!regs.length) throw new Error('注册表内无可用 _register 条目');
+    /* ① interface 合并 */
+    var res = ifD.resource || (ifD.resource = []);
+    var hasSelf = false;
+    res.forEach(function(r){ if (r.name === '自制无尽') hasSelf = true; });
+    if (!hasSelf) res.push({ name: '自制无尽', path: ['./resource', './resource_self'] });
+    var imp = ifD.import || (ifD.import = []);
+    var tasksArr = ifD.task || (ifD.task = []);
+    regs.forEach(function(x){
+      var ip = './resource_self/task/' + x.wj;
+      if (imp.indexOf(ip) < 0) imp.push(ip);
+      var t = { name: x.r.name, entry: x.r.entry, option: x.r.option,
+                resource: x.r.resource || ['自制无尽'], default_check: false,
+                description: x.r.description || '' };
+      var at = -1;
+      tasksArr.forEach(function(tt, i){ if (tt.entry === x.r.entry) at = i; });
+      if (at >= 0) tasksArr[at] = t; else tasksArr.push(t);
+    });
+    /* ①b 官方任务归一化（2026-10-10 实测）：0.5.5 起官方任务不带 resource 标签，
+       MFAAvalonia 会把无标签任务显示进所有资源组（「自制无尽」里冒出一堆官方任务）。
+       还原时统一把无标签任务归属第一个非自制资源组。 */
+    var officialRes = null;
+    res.forEach(function(r){ if (!officialRes && r.name !== '自制无尽') officialRes = r.name; });
+    if (officialRes) tasksArr.forEach(function(t){
+      if (!t.resource || !t.resource.length) t.resource = [officialRes];
+    });
+    return backup(ifPath).then(function(){
+      return V3Bridge.writeText(ifPath, JSON.stringify(ifD, null, 2) + '\n');
+    }).then(function(){ step('✓ interface.json 重注册 ' + regs.length + ' 个自制任务'); });
+  }).then(function(){
+    /* ② agent 三件套自愈（内置源码） */
+    var files = [['fx_counter.py', 'V2_AGENT_FX_PY'], ['fx_monitor.py', 'V2_AGENT_FX_MONITOR_PY'],
+                 ['haidao_counter.py', 'V2_AGENT_HAIDAO_PY']];
+    var chain = Promise.resolve();
+    files.forEach(function(f){
+      chain = chain.then(function(){
+        var p = rs + '/agent/' + f[0];
+        return V3Bridge.readText(p).then(function(src){
+          if (src != null){ step('✓ agent/' + f[0] + ' 在位'); return null; }
+          var emb = window[f[1]];
+          if (typeof emb !== 'string'){ step('⚠ agent/' + f[0] + ' 缺失且无内置源码'); return null; }
+          return V3Bridge.writeText(p, emb).then(function(){ step('✓ agent/' + f[0] + ' 已自愈写入'); });
+        });
+      });
+    });
+    return chain;
+  }).then(function(){
+    /* ③ main.py 追加自制 import（幂等）；fx_main.py 存在或接口指向它则按新 main 重建 */
+    var agentPy = rs + '/agent/main.py';
+    return V3Bridge.readText(agentPy).then(function(mt){
+      if (mt == null){ step('⚠ 未找到 agent/main.py'); return; }
+      var r = v2PatchAgentMain(mt);
+      var mainText = r.text == null ? mt : r.text;
+      var chain = (mainText === mt) ? Promise.resolve()
+        : backup(agentPy).then(function(){ return V3Bridge.writeText(agentPy, mainText); })
+          .then(function(){ step('✓ agent/main.py ' + r.note); });
+      return chain.then(function(){
+        var fm = rs + '/agent/fx_main.py';
+        var pointsFm = ifD.agent && String((ifD.agent.child_args || []).join()).indexOf('fx_main') > -1;
+        return V3Bridge.readText(fm).then(function(cur){
+          if (cur == null && !pointsFm) return null;
+          var want = mainText;
+          ['fx_counter', 'fx_monitor', 'haidao_counter'].forEach(function(m){
+            if (!new RegExp('^import ' + m + '$', 'm').test(want)) want += '\nimport ' + m;
+          });
+          if (!/[\n]$/.test(want)) want += '\n';
+          if (cur === want){ step('✓ agent/fx_main.py 在位且最新'); return null; }
+          return V3Bridge.writeText(fm, want).then(function(){ step('✓ agent/fx_main.py 重建（官方全量+自制）'); });
+        });
+      });
+    });
+  }).then(function(){
+    log.push('完成。重启 MPZ 后任务列表资源切「自制无尽」核对任务数（本次还原 ' + regs.length + ' 个）。');
+    v2OutSet('/* ===== 🩹 更新还原报告（' + new Date().toLocaleString() + '）=====\n' +
+      log.map(function(l){ return ' * ' + l; }).join('\n') + '\n */');
+    showToast('还原完成：' + regs.length + ' 个任务');
+  }).catch(function(e){
+    v2OutSet('【还原失败】' + ((e && e.message) || e) + '\n' + log.map(function(l){ return '· ' + l; }).join('\n'));
+    showToast('还原失败（原因见导出框）');
   });
 }
 
@@ -24908,6 +25127,7 @@ var V2_AGENT_FX_PY = "\"\"\"\\\nMPZ \u81ea\u5236\u65e0\u5c3d \u00b7 agent \u5173
  * 一键部署时若 agent/fx_monitor.py 缺失则由此自愈写入（2026-09-08 龙芋漏部署教训）。
  * ================= */
 var V2_AGENT_FX_MONITOR_PY = "\"\"\"\n\u590d\u5174\u65e0\u5c3d \u00b7 \u5173\u5361\u6570\u5b9e\u65f6\u76d1\u63a7\u7a97\u53e3\n=================================\n\u968f agent \u8fdb\u7a0b\u542f\u52a8(\u7531 MPZ \u62c9\u8d77 python agent/main.py \u65f6\u81ea\u52a8\u52a0\u8f7d),\n\u5f39\u51fa\u4e00\u4e2a\u7f6e\u9876\u5c0f\u7a97\u53e3, \u5b9e\u65f6\u663e\u793a\u5f53\u524d\u5173\u5361\u6570\u3001\u5c3e\u6570\u8def\u7531\u548c\u6700\u8fd1\u65e5\u5fd7\u3002\n\n\u5b9e\u73b0\u8981\u70b9:\n- \u7528 tkinter(\u6807\u51c6\u5e93, \u96f6\u65b0\u4f9d\u8d56); \u82e5\u73af\u5883\u65e0\u663e\u793a/\u5bfc\u5165\u5931\u8d25\u5219\u9759\u9ed8\u964d\u7ea7(\u4e0d\u5f71\u54cd\u811a\u672c\u8fd0\u884c)\n- GUI \u5728 daemon \u7ebf\u7a0b\u4e2d\u8dd1 root.update() \u8f6e\u8be2, \u4e0d\u963b\u585e agent \u4e3b\u7ebf\u7a0b(AgentServer.join())\n- \u8de8\u7ebf\u7a0b\u66f4\u65b0\u7528 root.after() \u8c03\u5ea6\u5230 tk \u4e3b\u5faa\u73af, \u7ebf\u7a0b\u5b89\u5168\n\"\"\"\n\nimport os\nimport queue\nimport re\nimport threading\nimport time\n\ntry:\n    import tkinter as tk\n    _GUI_AVAILABLE = True\nexcept Exception:  # \u65e0\u663e\u793a\u5668/\u65e0 tkinter \u73af\u5883\n    _GUI_AVAILABLE = False\n\n\nclass FxMonitor:\n    \"\"\"\n    \u5355\u4f8b\u76d1\u63a7\u7a97\u53e3\u3002\n    \u7ebf\u7a0b\u6a21\u578b: \u6240\u6709 tk \u64cd\u4f5c(\u521b\u5efa Tk/update/\u6d88\u8d39\u961f\u5217)\u90fd\u5728\u540e\u53f0 GUI \u7ebf\u7a0b\u5185;\n    \u4e3b\u7ebf\u7a0b(agent \u52a8\u4f5c\u7ebf\u7a0b)\u53ea\u901a\u8fc7 update() \u5f80\u7ebf\u7a0b\u5b89\u5168\u961f\u5217\u653e\u6570\u636e, \u7edd\u4e0d\u76f4\u63a5\u78b0 tk\u3002\n    \"\"\"\n\n    _instance = None\n    _lock = threading.Lock()\n\n    def __init__(self):\n        if not _GUI_AVAILABLE:\n            raise RuntimeError(\"tkinter \u4e0d\u53ef\u7528\")\n        self._updates = queue.Queue(maxsize=200)\n        self._stop = threading.Event()\n        # GUI \u7ebf\u7a0b: \u81ea\u5df1\u521b\u5efa Tk \u5e76\u8dd1\u4e8b\u4ef6\u5faa\u73af, \u907f\u514d\u8de8\u7ebf\u7a0b tk \u8c03\u7528\n        self._thread = threading.Thread(target=self._gui_main, daemon=True)\n        self._thread.start()\n\n    def _gui_main(self):\n        \"\"\"GUI \u7ebf\u7a0b: \u521b\u5efa\u7a97\u53e3 + \u8f6e\u8be2\u4e8b\u4ef6 + \u6d88\u8d39\u66f4\u65b0\u961f\u5217(\u5168\u7a0b\u672c\u7ebf\u7a0b\u5185)\"\"\"\n        try:\n            self.root = tk.Tk()\n        except Exception:\n            return\n        self.root.title(\"\u590d\u5174\u65e0\u5c3d \u00b7 \u5173\u5361\u76d1\u63a7\")\n        self.root.geometry(\"360x300\")\n        try:\n            self.root.attributes(\"-topmost\", True)\n        except tk.TclError:\n            pass\n        self._build_ui()\n        self._log_lines = []\n        self._last = {\"level\": None, \"route\": \"\", \"msg\": \"\"}\n        while not self._stop.is_set():\n            try:\n                self.root.update()\n                while True:\n                    try:\n                        level, route, msg = self._updates.get_nowait()\n                    except queue.Empty:\n                        break\n                    self._apply(level, route, msg)\n            except tk.TclError:\n                break\n            time.sleep(0.05)\n\n    def _build_ui(self):\n        pad = {\"padx\": 12, \"pady\": 6}\n        tk.Label(self.root, text=\"\u5f53\u524d\u5173\u5361\", font=(\"Microsoft YaHei\", 10)).pack(**pad)\n        self.level_var = tk.StringVar(value=\"\u7b2c  \u2014  \u5173\")\n        tk.Label(self.root, textvariable=self.level_var,\n                 font=(\"Microsoft YaHei\", 28, \"bold\"), fg=\"#c0392b\").pack()\n        self.route_var = tk.StringVar(value=\"\u7b49\u5f85\u542f\u52a8...\")\n        tk.Label(self.root, textvariable=self.route_var,\n                 font=(\"Microsoft YaHei\", 12)).pack(**pad)\n        tk.Label(self.root, text=\"\u6700\u8fd1\u65e5\u5fd7\", font=(\"Microsoft YaHei\", 9)).pack()\n        self.log_var = tk.StringVar(value=\"(agent \u542f\u52a8)\")\n        tk.Label(self.root, textvariable=self.log_var, justify=\"left\",\n                 anchor=\"w\", font=(\"Consolas\", 9), fg=\"#555\").pack(fill=\"x\", **pad)\n\n    def update(self, level, route, msg):\n        \"\"\"\u4ece\u4efb\u610f\u7ebf\u7a0b\u8c03\u7528: \u5165\u961f, \u7531 GUI \u7ebf\u7a0b\u6d88\u8d39(\u7ebf\u7a0b\u5b89\u5168)\"\"\"\n        if not _GUI_AVAILABLE:\n            return\n        try:\n            self._updates.put_nowait((level, route, msg))\n        except (queue.Full, RuntimeError):\n            pass\n\n    def _apply(self, level, route, msg):\n        self.level_var.set(f\"\u7b2c {level} \u5173\")\n        self.route_var.set(route if route else \"\u2014\")\n        self._log_lines.append(msg)\n        if len(self._log_lines) > 6:\n            self._log_lines.pop(0)\n        self.log_var.set(\"\\n\".join(self._log_lines))\n        # \u5feb\u7167: \u4f9b\u5916\u90e8/\u6d4b\u8bd5\u8de8\u7ebf\u7a0b\u8bfb\u53d6(GIL \u4fdd\u8bc1\u7b80\u5355\u8d4b\u503c\u539f\u5b50)\n        self._last = {\"level\": level, \"route\": route, \"msg\": msg}\n\n    def close(self):\n        \"\"\"\u505c\u6b62 GUI \u7ebf\u7a0b(\u4e0d\u8de8\u7ebf\u7a0b destroy tk, daemon \u7ebf\u7a0b\u968f\u8fdb\u7a0b\u9000\u51fa\u5373\u53ef)\"\"\"\n        self._stop.set()\n\n    @classmethod\n    def get(cls):\n        if not _GUI_AVAILABLE:\n            return None\n        with cls._lock:\n            if cls._instance is None:\n                try:\n                    cls._instance = FxMonitor()\n                except Exception:\n                    cls._instance = None\n            return cls._instance\n\n\ndef gui_log(level, route, msg):\n    \"\"\"\u4f9b fx_counter \u8c03\u7528: \u66f4\u65b0\u7a97\u53e3 + \u9644\u5e26\u7a97\u53e3\u4e0d\u5b58\u5728\u5219\u5c1d\u8bd5\u521b\u5efa\"\"\"\n    mon = FxMonitor.get()\n    if mon is not None:\n        mon.update(level, route, msg)\n\n\n_LEVEL_RE = re.compile(r\"\u7b2c(\\d+)\u5173\")\n_ROUTE_RE = re.compile(r\"->\\s*(\\S+)\")\n\n\ndef notify(msg: str):\n    \"\"\"\u89e3\u6790\u65e5\u5fd7\u884c, \u63d0\u53d6\u5173\u5361\u6570/\u8def\u7531\u5e76\u66f4\u65b0\u7a97\u53e3(\u65e0\u7a97\u53e3\u5219\u521b\u5efa)\"\"\"\n    if not _GUI_AVAILABLE:\n        return\n    m = _LEVEL_RE.search(msg)\n    level = int(m.group(1)) if m else None\n    r = _ROUTE_RE.search(msg)\n    route = r.group(1) if r else \"\"\n    if level is not None:\n        gui_log(level, route, msg)\n";
+var V2_AGENT_HAIDAO_PY = "\"\"\"\n\u6d77\u76d7\u65e0\u5c3d \u00b7 agent \u5173\u5361\u8ba1\u6570\u5668\u4e0e\u8def\u7531\u5206\u6d41\u670d\u52a1\n=============================================\n\u4e3a MPZ \u7684 agent \u673a\u5236\u6ce8\u518c custom action, \u4f9b\u6d77\u76d7\u65e0\u5c3d pipeline \u8c03\u7528:\n- haidao_step_route: \u5173\u5361\u8ba1\u6570\u4e0e\u8def\u7531\n  * phase \u5224\u5b9a: \u5c3e\u65702\u5173(2/12/22/32...) -> build_deck2; boss(\u5c3e\u65705/0) <=20 -> boss_direct_feed,\n    >20 -> boss_dianda_feed; \u666e\u901a\u5173 <=20 -> build_deck1; >20 -> farm_post20\n  * \u53c2\u6570(\u5747\u53ef\u7701\u7565):\n      increment     true \u65f6\u5173\u5361 +1 (\u901a\u5173\u7ed3\u7b97\u540e\u8c03\u7528)\n      route         false \u65f6\u53ea\u8ba1\u6570\u4e0d\u6539\u5199 next (\u5173\u5361\u81ea\u589e/\u8865\u7ed9\u8ba1\u6b65\u7528)\n      route_node    \u8981 override \u7684 pipeline \u8282\u70b9\u540d, \u9ed8\u8ba4 \"haidao_\u8ba1\u6b65\u5206\u6d41\"\n      target_prefix \u8def\u7531\u76ee\u6807\u540d\u524d\u7f00, \u9ed8\u8ba4 \"haidao_\u8def\u7531_\"\n                    (boss \u8fdb\u5173\u540e\u7684\u5206\u652f\u8def\u7531\u7528 \"\u6d77\u76d7_boss_\u5206\u652f_\")\n- haidao_set_level: \u628a\u8ba1\u6570\u5668\u91cd\u7f6e\u5230 start_level (\u4efb\u52a1\u542f\u52a8/\u542f\u52a8\u65f6\u5173\u5361\u6570\u9009\u9879)\n- haidao_monitor_switch: \u76d1\u63a7\u7a97\u53e3\u5f00\u5173(\u4efb\u52a1\u9009\u9879 haidao_\u76d1\u63a7\u7a97\u53e3)\n\n\u76d1\u63a7\u7a97\u53e3: \u4e0e\u590d\u5174/\u7ae5\u8bdd\u5171\u7528 fx_monitor(\u81ea\u5236\u65e0\u5c3d \u00b7 \u5173\u5361\u76d1\u63a7);\n\u65e5\u5fd7\u884c\u6309 \"\u7b2cN\u5173 -> \u8def\u7531\" \u683c\u5f0f\u8f93\u51fa, \u4f9b fx_monitor.notify \u89e3\u6790\u663e\u793a\u3002\n\"\"\"\n\nimport json\nimport os\nfrom datetime import datetime\n\nfrom maa.agent.agent_server import AgentServer\nfrom maa.custom_action import CustomAction\nfrom maa.context import Context\n\ntry:\n    import fx_monitor\nexcept Exception:\n    fx_monitor = None\n\n_DIR = os.path.dirname(os.path.abspath(__file__))\nSTATE_FILE = os.path.join(_DIR, \"haidao_state.json\")\n_LOG_DIR = os.path.join(os.path.dirname(_DIR), \"debug\")\n_LOG_PATH = os.path.join(_LOG_DIR, \"haidao_counter.log\")\n\n_state = {\"level\": None}\n_monitor_enabled = True\n\n\ndef _log(msg: str):\n    print(f\"[haidao_counter] {msg}\")\n    try:\n        os.makedirs(_LOG_DIR, exist_ok=True)\n        with open(_LOG_PATH, \"a\", encoding=\"utf-8\") as f:\n            f.write(f\"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}\\n\")\n    except OSError:\n        pass\n    if fx_monitor is not None and _monitor_enabled:\n        try:\n            fx_monitor.notify(msg)\n        except Exception:\n            pass\n\n\ndef _load_state():\n    if os.path.exists(STATE_FILE):\n        try:\n            with open(STATE_FILE, \"r\", encoding=\"utf-8\") as f:\n                data = json.load(f)\n                return int(data.get(\"current_level\", 1))\n        except Exception:\n            return 1\n    return 1\n\n\ndef _save_state(level: int):\n    try:\n        with open(STATE_FILE, \"w\", encoding=\"utf-8\") as f:\n            json.dump({\"current_level\": level}, f)\n    except Exception:\n        pass\n\n\ndef _parse_param(custom_action_param: str) -> dict:\n    if not custom_action_param:\n        return {}\n    try:\n        p = json.loads(custom_action_param)\n        if isinstance(p, str):\n            p2 = json.loads(p)\n            if isinstance(p2, dict):\n                return p2\n        elif isinstance(p, dict):\n            return p\n        return {}\n    except Exception:\n        return {}\n\n\ndef _route_phase(level: int) -> str:\n    is_boss = (level % 5 == 0)\n    # \u6bcf\u9022\u5c3e\u65702(2/12/22/32/42...)\u4f7f\u7528 Deck 2 \u8865\u79cd\u74f7\u7816\u548c\u94a2\u5730\u523a(\u7a7a\u683c\u8865\u79cd, \u5df2\u5360\u7528\u683c\u6ed1\u52a8\u843d\u7a7a\u65e0\u5bb3)\n    if level % 10 == 2:\n        return \"build_deck2\"\n    if is_boss:\n        if level <= 20:\n            return \"boss_direct_feed\"\n        return \"boss_dianda_feed\"\n    if level <= 20:\n        return \"build_deck1\"\n    return \"farm_post20\"\n\n\n@AgentServer.custom_action(\"haidao_step_route\")\nclass HaiDaoStepRoute(CustomAction):\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        increment = bool(param.get(\"increment\", False))\n        route = bool(param.get(\"route\", True))\n        route_node = param.get(\"route_node\", \"haidao_\u8ba1\u6b65\u5206\u6d41\")\n        target_prefix = param.get(\"target_prefix\", \"haidao_\u8def\u7531_\")\n\n        if _state[\"level\"] is None:\n            _state[\"level\"] = _load_state()\n\n        if increment:\n            _state[\"level\"] += 1\n            _save_state(_state[\"level\"])\n\n        phase = _route_phase(_state[\"level\"])\n        target = f\"{target_prefix}{phase}\"\n        if route:\n            context.override_next(route_node, [target])\n            _log(f\"\u7b2c{_state['level']}\u5173 -> {target}\")\n        else:\n            _log(f\"\u7b2c{_state['level']}\u5173 (\u4ec5\u8ba1\u6570, \u4e0d\u8def\u7531)\")\n        return True\n\n\n@AgentServer.custom_action(\"haidao_set_level\")\nclass HaiDaoSetLevel(CustomAction):\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        param = _parse_param(argv.custom_action_param)\n        start = int(param.get(\"start_level\", 1))\n        _state[\"level\"] = start\n        _save_state(start)\n        _log(f\"\u8ba1\u6570\u5668\u91cd\u7f6e\u4e3a\u7b2c{start}\u5173\")\n        return True\n\n\n@AgentServer.custom_action(\"haidao_monitor_switch\")\nclass HaiDaoMonitorSwitch(CustomAction):\n    def run(self, context: Context, argv: CustomAction.RunArg):\n        global _monitor_enabled\n        param = _parse_param(argv.custom_action_param)\n        _monitor_enabled = bool(param.get(\"enabled\", True))\n        _log(f\"\u76d1\u63a7\u7a97\u53e3\u5f00\u5173: {_monitor_enabled}\")\n        return True\n";
 
 /* ===== js/50_checks.js ===== */
 /* ================= v2 检查面板：pipeline/task/interface 检查链 + 日志时间线 =================
@@ -25590,6 +25810,7 @@ function v2BindExport2(){
     if (!t.trim()){ showToast('导出区为空'); return; }
     v2Download('无尽阵型_v2_' + new Date().toISOString().slice(0, 10) + '.json', t);
   });
+  if (b('ex2Restore')) b('ex2Restore').addEventListener('click', function(){ v2RestoreAfterUpdate(); });
   if (b('ex2Deploy')) b('ex2Deploy').addEventListener('click', function(){
     if (typeof v2DeployMpz === 'function') v2DeployMpz();
     else showToast('部署模块未加载');
@@ -27164,7 +27385,7 @@ var V3Agent = {
       V3Bridge.appInfo().then(function (info){
         if (info && info.wsRoot){ self.st.wsRoot = info.wsRoot; self.save(); self.renderSettings(); }
         var about = self.el('v3setAbout');
-        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.0.9') + '）· Tauri 2 桌面壳 · '
+        if (about && info) about.innerHTML = '无尽布阵工具 v4（' + (info.version || '4.1.0') + '）· Tauri 2 桌面壳 · '
           + '技能库：resource/agent_skill/（用户可在 %APPDATA%/com.mpz.wujinbz.v3beta/agent_ws 同级自建技能目录参考）；'
           + '数据存本机 WebView localStorage（不随程序传播）。';
       });
