@@ -1,10 +1,10 @@
 /* 批 D 回归矩阵：导入入口的文件识别 / 解析 / 指路文案（4 类文件 × 多用例）
  *
  * 覆盖（2026-10-10 批 D）：
- *   ① 现网 none 件 YS_bh2.json 单文件        → ok，72 节点，none 模式
+ *   ① 现网 none 件 YS_bh2.json 单文件        → ok，节点数随现网件（当前 76），none 模式
  *   ② 它的 task 片段 bh2_wj.json 单文件      → 失败，但文案指名「task 片段」
- *   ③ 两份一起                              → ok，72 节点（task 键不再被当节点）
- *   ④ v2 源（头注释 + pipeline + task 三段）  → ok，72 节点，notes 说明「按 ② pipeline 段导入」
+ *   ③ 两份一起                              → ok，同上节点数（task 键不再被当节点）
+ *   ④ v2 源（头注释 + pipeline + task 三段）  → ok，72 节点（冻结画布导出），notes 说明「按 ② pipeline 段导入」
  *   ⑤ 现网 tail 件 YS_bh.json 单文件         → ok，103 节点，配队2 八个槽位名全部推断出来
  *   ⑥ 完整 v2 阵型存档（v2ExportJSON 产物）  → v2ImpFullV2 命中，走状态载入而不是走链
  *   ⑦ 官方通用框架 JSON                      → 失败，文案指路「解析通用框架 JSON」
@@ -90,11 +90,16 @@ if (!F.bh2pipe || !F.bh2task || !F.bh2src || !F.bhpipe){
   process.exit(2);
 }
 
+/* 现网件节点数是“会变的事实”（重导/重部会增减）→ 按文件动态取，别写死数字（曾因 72→76 误报） */
+const N_EXPECT = Object.keys(JSON.parse(F.bh2pipe)).length;
+/* ④ 用的是「冻结的 2026-10-10 画布导出」（非现网镜像），它自带 72 节点；画布重导后同步这里 */
+const N_SRC_EXPECT = 72;
+
 console.log('== ① YS_bh2.json 单文件（none 现网） ==');
 (function(){
   const a = A([F.bh2pipe], ['YS_bh2.json'], 'bh2_');
-  T('ok=true / 72 节点 / none 模式 / 前缀 bh2_',
-    a.ok && a.nNodes === 72 && a.route.mode === 'none' && a.prefix === 'bh2_',
+  T('ok=true / ' + N_EXPECT + ' 节点 / none 模式 / 前缀 bh2_',
+    a.ok && a.nNodes === N_EXPECT && a.route.mode === 'none' && a.prefix === 'bh2_',
     'ok=' + a.ok + ' n=' + a.nNodes + ' mode=' + a.route.mode + ' pfx=' + a.prefix);
   T('deck2 未使用 → 槽位表为空', a.slots.deck2.length === 0);
 })();
@@ -109,7 +114,7 @@ console.log('== ② bh2_wj.json 单文件（task 片段） ==');
 console.log('== ③ 两份一起（= 真实「导入现网件」用法） ==');
 (function(){
   const a = A([F.bh2pipe, F.bh2task], ['YS_bh2.json', 'bh2_wj.json'], 'bh2_');
-  T('ok=true / 72 节点（task 键不再当节点并入）', a.ok && a.nNodes === 72, 'n=' + a.nNodes);
+  T('ok=true / ' + N_EXPECT + ' 节点（task 键不再当节点并入）', a.ok && a.nNodes === N_EXPECT, 'n=' + a.nNodes);
   T('notes 记明忽略非节点键', (a.notes || []).join('｜').indexOf('非节点键') > -1, (a.notes || []).join('｜'));
   T('任务名取自 task 片段 _register', a.taskName === '冰河火龙无尽', String(a.taskName));
   T('两份分开选不误标「v2 源」（那是单文件三段合一的说法）',
@@ -124,7 +129,7 @@ console.log('== ④ v2 源（头注释 + pipeline + task 三段） ==');
 (function(){
   const a = A([F.bh2src], ['无尽阵型_v2_2026-10-10.json'], '');
   T('ok=true（旧版报「未解析出任何节点」）', a.ok, warnsOf(a));
-  T('72 节点 / 前缀 bh2_ / none', a.nNodes === 72 && a.prefix === 'bh2_' && a.route.mode === 'none',
+  T(N_SRC_EXPECT + ' 节点 / 前缀 bh2_ / none', a.nNodes === N_SRC_EXPECT && a.prefix === 'bh2_' && a.route.mode === 'none',
     'n=' + a.nNodes + ' pfx=' + a.prefix);
   T('notes 说明按 ② pipeline 段导入', (a.notes || []).join('｜').indexOf('② pipeline 段') > -1, (a.notes || []).join('｜'));
 })();

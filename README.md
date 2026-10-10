@@ -23,14 +23,14 @@ PvZ2 无尽用的布阵工具。在 9×5 画布上摆阵——种什么、按什
 **手机网页版**：打开 <https://kidbeans.github.io/wujin-layout-tool/> 直接用；也可以把 `index.html`
 存到手机里离线用。手机浏览器里「添加到主屏幕」，点开跟小 App 一样。
 
-**Windows 桌面版**（v4.1.0，2026-10-10 构建）比网页版多三样：Agent 工作台、一键部署到 MPZ、原生「另存为」。
-- [便携版](https://kidbeans.github.io/wujin-layout-tool/WujinLayoutTool-v4.1.0-portable.exe)，
+**Windows 桌面版**（v4.2.0，2026-10-10 构建）比网页版多三样：Agent 工作台、一键部署到 MPZ、原生「另存为」。
+- [便携版](https://kidbeans.github.io/wujin-layout-tool/WujinLayoutTool-v4.2.0-portable.exe)，
   13.26 MB，双击就跑
-- [安装器](https://kidbeans.github.io/wujin-layout-tool/WujinLayoutTool-v4.1.0-setup.exe)，
+- [安装器](https://kidbeans.github.io/wujin-layout-tool/WujinLayoutTool-v4.2.0-setup.exe)，
   4.20 MB，想要开始菜单、桌面快捷方式时用
 
 要 Windows 10/11 x64，用系统自带的 WebView2，不用装 Python 和 Node。校验值在 `checksums.sha256`。
-以后发新版都放 [Releases](https://github.com/kidbeans/wujin-layout-tool/releases)，当前是 4.1.0。
+以后发新版都放 [Releases](https://github.com/kidbeans/wujin-layout-tool/releases)，当前是 4.2.0。
 
 ## 手机上怎么用
 
@@ -54,7 +54,7 @@ PvZ2 无尽用的布阵工具。在 9×5 画布上摆阵——种什么、按什
 
 ```
 index.html                    手机/网页版，也是 Pages 的首页（构建产物）
-WujinLayoutTool-v4.1.0-*.exe  Windows 桌面版
+WujinLayoutTool-v4.2.0-*.exe  Windows 桌面版
 checksums.sha256              上面三个文件的校验值
 docs/                         使用说明、手机版说明、桌面客户端分享包说明
 src/web/                      桌面版的单文件网页版，手机版就是拿它构建的
